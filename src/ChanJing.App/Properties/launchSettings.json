@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ChanJing.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ChanJing.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

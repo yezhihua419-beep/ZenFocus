@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="ChanJing_App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ChanJing_App"
+    RequestedTheme="Light">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- 枯山水色板 -->
+            <Color x:Key="XuanZhiWhite">#F4F1E8</Color>
+            <Color x:Key="SuJuan">#ECE8DD</Color>
+            <Color x:Key="Mo">#2B2925</Color>
+            <Color x:Key="WuHui">#8C8578</Color>
+            <Color x:Key="TaiQing">#6E7F63</Color>
+            <Color x:Key="JinShan">#A8842C</Color>
+            <Color x:Key="ZheShi">#A0563B</Color>
+
+            <SolidColorBrush x:Key="BrushBackground" Color="{StaticResource XuanZhiWhite}" />
+            <SolidColorBrush x:Key="BrushPanel" Color="{StaticResource SuJuan}" />
+            <SolidColorBrush x:Key="BrushTextPrimary" Color="{StaticResource Mo}" />
+            <SolidColorBrush x:Key="BrushTextSecondary" Color="{StaticResource WuHui}" />
+            <SolidColorBrush x:Key="BrushState" Color="{StaticResource TaiQing}" />
+            <SolidColorBrush x:Key="BrushAccent" Color="{StaticResource JinShan}" />
+            <SolidColorBrush x:Key="BrushWarning" Color="{StaticResource ZheShi}" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
