@@ -4,6 +4,7 @@ using Xunit;
 namespace ChanJing.Tests;
 
 /// <summary>hosts 标记段管理器测试（使用临时文件，不触碰真实 hosts）。</summary>
+[Collection("Hosts")]
 public class HostsBlockerTests : IDisposable
 {
     private readonly string _tempDir;
