@@ -30,6 +30,7 @@ public sealed partial class MainWindow : Window
         _tray.Show("禅净 — 先管住手，再看清时间");
 
         AppServices.Activity.LimitExceeded += OnLimitExceeded;
+        AppServices.Activity.DistractionDetected += OnDistractionDetected;
         AppWindow.Closing += OnClosing;
     }
 
@@ -58,6 +59,15 @@ public sealed partial class MainWindow : Window
         DispatcherQueue.TryEnqueue(() =>
         {
             _tray.ShowBalloon($"「{domain}」已达今日限额，休息一下吧。", "禅净 · 每日限额");
+        });
+    }
+
+    /// <summary>专注中打开被屏蔽站点（同一会话每域名只提醒一次）。</summary>
+    private void OnDistractionDetected(string domain)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _tray.ShowBalloon($"你打开了「{domain}」。深呼吸，回到眼前的事。", "禅净 · 分心提醒");
         });
     }
 

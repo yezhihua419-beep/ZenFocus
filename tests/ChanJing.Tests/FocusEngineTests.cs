@@ -57,6 +57,40 @@ public class FocusEngineTests : IDisposable
     }
 
     [Fact]
+    public void Pause_ThenResume_IsPausedFlips()
+    {
+        _engine.Start(null, 25);
+        Assert.False(_engine.IsPaused);
+
+        _engine.Pause();
+        Assert.True(_engine.IsPaused);
+
+        _engine.Resume();
+        Assert.False(_engine.IsPaused);
+    }
+
+    [Fact]
+    public void PauseWithoutRunning_IsNoOp()
+    {
+        _engine.Pause();
+        Assert.False(_engine.IsPaused);
+        _engine.Resume();
+        Assert.False(_engine.IsPaused);
+    }
+
+    [Fact]
+    public void Finish_WhilePaused_StillWorks()
+    {
+        _engine.Start(null, 25);
+        _engine.Pause();
+
+        var done = _engine.Finish(completed: true);
+
+        Assert.Equal(FocusSessionState.Completed, done.State);
+        Assert.False(_engine.IsPaused);
+    }
+
+    [Fact]
     public void Finish_WithoutStart_Throws()
     {
         Assert.Throws<InvalidOperationException>(() => _engine.Finish(completed: true));

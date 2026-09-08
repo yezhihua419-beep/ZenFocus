@@ -71,8 +71,8 @@
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <!-- WinUI 3 + 裁剪已知不稳定（XAML 反射），发布保持不裁剪 -->
+    <PublishTrimmed>False</PublishTrimmed>
   </PropertyGroup>
 </Project>
 

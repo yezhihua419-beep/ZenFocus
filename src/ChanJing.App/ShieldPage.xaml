@@ -13,6 +13,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -21,13 +23,18 @@
                    Foreground="{StaticResource BrushTextPrimary}" />
         <TextBlock Grid.Row="0" FontSize="13" Margin="0,34,0,0"
                    Foreground="{StaticResource BrushTextSecondary}"
-                   Text="选择要屏蔽的分类，勾选后点击「应用屏蔽」生效" />
+                   Text="勾选分类、添加域名，点击「应用屏蔽」生效（覆盖所有浏览器，含隐身窗口）" />
 
         <!-- 分类名单 -->
-        <StackPanel x:Name="CategoryPanel" Grid.Row="1" Margin="0,12,0,0" Spacing="8" />
+        <StackPanel Grid.Row="1" Margin="0,12,0,0" Spacing="8">
+            <StackPanel x:Name="CategoryPanel" Spacing="8" />
+            <TextBlock x:Name="LimitHint" FontSize="11" Visibility="Collapsed"
+                       Foreground="{StaticResource BrushWarning}"
+                       Text="免费版最多 3 个屏蔽目标（分类 + 自定义域名）。" />
+        </StackPanel>
 
         <!-- 自定义域名 -->
-        <StackPanel Grid.Row="2" Margin="0,20,0,0" Spacing="8">
+        <StackPanel Grid.Row="2" Margin="0,18,0,0" Spacing="8">
             <TextBlock Text="自定义域名" FontSize="13"
                        Foreground="{StaticResource BrushTextSecondary}" />
             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -48,8 +55,61 @@
             </ItemsControl>
         </StackPanel>
 
+        <!-- 每日限额 -->
+        <StackPanel Grid.Row="3" Margin="0,18,0,0" Spacing="8">
+            <TextBlock Text="每日限额（某站点今日最多用多久，超限提醒）" FontSize="13"
+                       Foreground="{StaticResource BrushTextSecondary}" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBox x:Name="LimitDomainBox" PlaceholderText="域名，如 bilibili.com"
+                         Width="220" Padding="12,8"
+                         Background="{StaticResource BrushPanel}"
+                         BorderBrush="{StaticResource BrushTextSecondary}" />
+                <NumberBox x:Name="LimitMinutesBox" Value="30" Minimum="1" Maximum="1440"
+                           SmallChange="5" LargeChange="30" Width="110" SpinButtonPlacementMode="Compact"
+                           Header="分钟/天" />
+                <Button Content="添加限额" Click="AddLimit_Click"
+                        Background="{StaticResource BrushState}" Foreground="White" Padding="18,8" />
+            </StackPanel>
+            <ItemsControl x:Name="LimitList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="180,*,120" Margin="0,2">
+                            <TextBlock Text="{Binding Text}" FontSize="12"
+                                       Foreground="{StaticResource BrushTextPrimary}" />
+                            <Button Grid.Column="2" Content="删除" Tag="{Binding Domain}"
+                                    Click="DeleteLimit_Click" FontSize="11" Padding="10,2"
+                                    Background="Transparent"
+                                    Foreground="{StaticResource BrushWarning}"
+                                    BorderBrush="{StaticResource BrushTextSecondary}"
+                                    HorizontalAlignment="Left" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
+        <!-- 临时放行 -->
+        <StackPanel Grid.Row="4" Margin="0,18,0,0" Spacing="8">
+            <TextBlock Text="临时放行（查资料时放行某站 10 分钟，到期自动恢复屏蔽）" FontSize="13"
+                       Foreground="{StaticResource BrushTextSecondary}" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBox x:Name="AllowDomainBox" PlaceholderText="域名，如 bilibili.com"
+                         Width="220" Padding="12,8"
+                         Background="{StaticResource BrushPanel}"
+                         BorderBrush="{StaticResource BrushTextSecondary}" />
+                <Button Content="放行 10 分钟" Click="AddAllow_Click"
+                        Background="{StaticResource BrushPanel}" Padding="18,8" />
+                <Button Content="清除全部放行" Click="ClearAllow_Click"
+                        Background="Transparent" Padding="14,8"
+                        Foreground="{StaticResource BrushTextSecondary}"
+                        BorderBrush="{StaticResource BrushTextSecondary}" />
+            </StackPanel>
+            <TextBlock x:Name="AllowStatus" FontSize="11"
+                       Foreground="{StaticResource BrushTextSecondary}" />
+        </StackPanel>
+
         <!-- 操作区 -->
-        <StackPanel Grid.Row="4" Spacing="12">
+        <StackPanel Grid.Row="6" Spacing="12">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
                 <Button x:Name="ApplyButton" Content="应用屏蔽" Click="Apply_Click"
                         Background="{StaticResource BrushState}" Foreground="White"
@@ -58,12 +118,16 @@
                         Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                         Foreground="{StaticResource BrushTextSecondary}"
                         Padding="32,10" CornerRadius="24" />
+                <Button Content="清理残留" Click="CleanUp_Click"
+                        Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                        Foreground="{StaticResource BrushTextSecondary}"
+                        Padding="32,10" CornerRadius="24" />
             </StackPanel>
             <TextBlock x:Name="StatusText" FontSize="12" HorizontalAlignment="Center"
                        Foreground="{StaticResource BrushState}" />
             <TextBlock FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap"
                        Foreground="{StaticResource BrushTextSecondary}"
-                       Text="说明：屏蔽通过 hosts 生效，覆盖所有浏览器（含隐身窗口）。仅管理禅净自己的配置段，不触碰其他软件条目。" />
+                       Text="说明：屏蔽通过 hosts 生效，仅管理禅净自己的配置段。写入需要管理员权限；若提示失败，请右键以管理员身份重新运行本程序。" />
         </StackPanel>
     </Grid>
 </Page>

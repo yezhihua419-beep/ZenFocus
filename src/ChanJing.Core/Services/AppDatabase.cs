@@ -55,6 +55,10 @@ public sealed class AppDatabase
     {
         var conn = new SqliteConnection($"Data Source={_dbPath}");
         conn.Open();
+        // 多连接并发写时等待最多 3 秒，避免 SQLITE_BUSY 直接失败。
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "PRAGMA busy_timeout = 3000;";
+        cmd.ExecuteNonQuery();
         return conn;
     }
 

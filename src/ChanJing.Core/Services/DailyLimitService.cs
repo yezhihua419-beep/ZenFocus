@@ -53,14 +53,12 @@ public sealed class DailyLimitService
             string.Join(",", limits.Select(kv => $"{kv.Key}:{kv.Value}")));
     }
 
-    /// <summary>标题匹配：标题含域名或主域（bilibili.com → "bilibili"）即命中。</summary>
+    /// <summary>标题匹配：完整域名 / 主域（≥5 字符）/ 品牌词，命中即算。</summary>
     public IReadOnlyList<string> MatchDomains(string? text)
     {
         if (string.IsNullOrWhiteSpace(text)) return Array.Empty<string>();
-        var lower = text.ToLowerInvariant();
         return GetLimits().Keys
-            .Where(d => lower.Contains(d, StringComparison.Ordinal) ||
-                        lower.Contains(DomainUtil.MainDomain(d), StringComparison.Ordinal))
+            .Where(d => DomainUtil.TitleMatches(text, d))
             .ToList();
     }
 

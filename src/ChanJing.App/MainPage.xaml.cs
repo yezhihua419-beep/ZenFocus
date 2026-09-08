@@ -38,6 +38,31 @@ public sealed partial class MainPage : Page
 
         if (_engine.IsRunning) EnterFocusView();
         else EnterIdleView();
+
+        ShowFirstRunGuideIfNeeded();
+    }
+
+    /// <summary>首启引导：告诉新用户屏蔽功能在哪，并给权限/杀软预防针。</summary>
+    private async void ShowFirstRunGuideIfNeeded()
+    {
+        if (_db.GetSetting("onboarded") is not null) return;
+        _db.SetSetting("onboarded", "true");
+
+        var dialog = new ContentDialog
+        {
+            Title = "欢迎使用禅净",
+            Content = "先管住手，再看清时间。\n\n下一步：到「屏蔽」页勾选要屏蔽的分类（短视频、B 站…），点击「应用屏蔽」——之后所有浏览器都打不开这些网站，包括隐身窗口。\n\n首次应用屏蔽会请求管理员权限，个别杀毒软件可能弹窗，属正常现象。",
+            PrimaryButtonText = "去设置屏蔽",
+            CloseButtonText = "稍后再说",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary && Frame is not null)
+        {
+            Frame.Navigate(typeof(ShieldPage));
+        }
     }
 
     private void OnTick(object? sender, object e)
@@ -133,21 +158,84 @@ public sealed partial class MainPage : Page
         ShowFeedback(_engine.GenerateFeedback(done));
     }
 
-    /// <summary>摩擦式退出：破功前给一次深呼吸的冷静机会。</summary>
+    /// <summary>临时离开：暂停计时，暂停期间不计入专注时长。</summary>
+    private void PauseToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (_engine.IsPaused)
+        {
+            _engine.Resume();
+            PauseButton.Content = "临时离开";
+            PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextSecondary"];
+            TimerText.Text = FormatElapsed(_engine.Elapsed);
+        }
+        else
+        {
+            _engine.Pause();
+            PauseButton.Content = "继续专注";
+            PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushState"];
+            TimerText.Text = "已暂停";
+        }
+    }
+
+    /// <summary>摩擦式退出：破功前给 3 秒冷静期，按钮倒计时后才可结束。</summary>
     private async void Break_Click(object sender, RoutedEventArgs e)
     {
+        var remaining = 3;
+        var hint = new TextBlock
+        {
+            Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？\n\n请等 3 秒再决定。",
+            TextWrapping = TextWrapping.Wrap,
+            FontSize = 14,
+            Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextPrimary"]
+        };
+        var endButton = new Button
+        {
+            Content = $"结束（{remaining}）",
+            IsEnabled = false,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Padding = new Thickness(32, 10, 32, 10),
+            Background = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushWarning"],
+            Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
+            CornerRadius = new CornerRadius(24)
+        };
+        var panel = new StackPanel { Spacing = 14 };
+        panel.Children.Add(hint);
+        panel.Children.Add(endButton);
+
         var dialog = new ContentDialog
         {
             Title = "发生了什么？",
-            Content = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？",
+            Content = panel,
             PrimaryButtonText = "再定心一会儿",
-            CloseButtonText = "结束",
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
 
+        var cooldown = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        cooldown.Tick += (_, _) =>
+        {
+            remaining--;
+            if (remaining <= 0)
+            {
+                cooldown.Stop();
+                endButton.IsEnabled = true;
+                endButton.Content = "结束";
+                hint.Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？";
+            }
+            else
+            {
+                endButton.Content = $"结束（{remaining}）";
+            }
+        };
+        cooldown.Start();
+        endButton.Click += (_, _) =>
+        {
+            cooldown.Stop();
+            dialog.Hide(); // 返回 None → 破功
+        };
+
         var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.None) // 用户点了"结束"
+        if (result == ContentDialogResult.None) // 用户确认结束
         {
             var done = _engine.Finish(completed: false);
             ShowFeedback(_engine.GenerateFeedback(done));

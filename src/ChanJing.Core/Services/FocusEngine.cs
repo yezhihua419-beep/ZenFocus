@@ -4,13 +4,16 @@ using ChanJing.Core.Models;
 namespace ChanJing.Core.Services;
 
 /// <summary>
-/// 专注引擎：正计时、无倒计时、破功记录与即时反馈。
-/// 引擎只维护状态与时间戳，UI 层用 DispatcherTimer 每秒刷新显示，避免线程问题。
+/// 专注引擎：正计时、无倒计时、可暂停、破功记录与即时反馈。
+/// 计时用单调时钟（Environment.TickCount64），不受系统时间调整影响。
+/// 引擎只维护状态与时间戳，UI 层用 DispatcherTimer 每秒刷新显示。
 /// </summary>
 public sealed class FocusEngine
 {
     private readonly AppDatabase _db;
-    private DateTime _startedUtc;
+    private long _startedTicks;
+    private long _pausedMs;
+    private long? _pauseStartTicks;
     private int _distractionCount;
 
     public FocusEngine(AppDatabase db) => _db = db;
@@ -20,8 +23,19 @@ public sealed class FocusEngine
 
     public bool IsRunning => Current is not null;
 
-    /// <summary>已专注时长（正计时）。</summary>
-    public TimeSpan Elapsed => DateTime.UtcNow - _startedUtc;
+    /// <summary>是否处于暂停状态。</summary>
+    public bool IsPaused => _pauseStartTicks.HasValue;
+
+    /// <summary>已专注时长（正计时，扣除暂停）。</summary>
+    public TimeSpan Elapsed
+    {
+        get
+        {
+            if (!IsRunning) return TimeSpan.Zero;
+            var total = Environment.TickCount64 - _startedTicks - _pausedMs;
+            return TimeSpan.FromMilliseconds(Math.Max(0, total));
+        }
+    }
 
     /// <summary>开始一次专注（默认 25 分钟，正计时）。</summary>
     public void Start(string? wish, int plannedMinutes = 25)
@@ -34,11 +48,32 @@ public sealed class FocusEngine
             State = FocusSessionState.Running,
             Wish = string.IsNullOrWhiteSpace(wish) ? null : wish.Trim()
         };
-        _startedUtc = DateTime.UtcNow;
+        _startedTicks = Environment.TickCount64;
+        _pausedMs = 0;
+        _pauseStartTicks = null;
         _distractionCount = 0;
     }
 
-    /// <summary>记录一次分心信号（如访问被屏蔽站点）。</summary>
+    /// <summary>暂停计时（如临时离开），暂停期间不计入专注时长。</summary>
+    public void Pause()
+    {
+        if (IsRunning && !IsPaused)
+        {
+            _pauseStartTicks = Environment.TickCount64;
+        }
+    }
+
+    /// <summary>恢复计时。</summary>
+    public void Resume()
+    {
+        if (IsPaused)
+        {
+            _pausedMs += Environment.TickCount64 - _pauseStartTicks!.Value;
+            _pauseStartTicks = null;
+        }
+    }
+
+    /// <summary>记录一次分心信号（如访问被屏蔽站点）。同源去重由调用方负责。</summary>
     public void RegisterDistraction()
     {
         if (IsRunning) _distractionCount++;
@@ -60,6 +95,7 @@ public sealed class FocusEngine
         var done = Current;
         _db.SaveFocusSession(done);
         Current = null;
+        _pauseStartTicks = null;
         return done;
     }
 

@@ -15,5 +15,5 @@ public static class AppServices
     public static readonly FocusEngine Engine = new(Db);
     public static readonly BlocklistService Blocklist = new(Db);
     public static readonly DailyLimitService DailyLimits = new(Db);
-    public static readonly WindowActivityService Activity = new(Db, DailyLimits);
+    public static readonly WindowActivityService Activity = new(Db, DailyLimits, Engine, Blocklist);
 }

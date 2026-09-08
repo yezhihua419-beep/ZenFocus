@@ -85,4 +85,43 @@ public class BlocklistServiceTests : IDisposable
         _service.Remove();
         Assert.False(_service.IsApplied());
     }
+
+    [Fact]
+    public void TempAllow_ExcludesDomainFromActive()
+    {
+        _service.SetEnabledCategories(new[] { "短视频" });
+        Assert.Contains("douyin.com", _service.GetActiveDomains());
+
+        _service.AddTempAllow("douyin.com", 10);
+
+        Assert.DoesNotContain("douyin.com", _service.GetActiveDomains());
+        Assert.Single(_service.GetTempAllows());
+    }
+
+    [Fact]
+    public void MatchBlockedDomains_MatchesMainDomain()
+    {
+        _service.SetEnabledCategories(new[] { "短视频" });
+
+        var matched = _service.MatchBlockedDomains("抖音 - 记录美好生活 - Google Chrome");
+
+        Assert.Contains("douyin.com", matched);
+    }
+
+    [Fact]
+    public void FreeLimit_RespectsActivation()
+    {
+        Assert.False(_service.IsActivated());
+
+        // 未激活：第 4 个目标超限
+        _service.SetEnabledCategories(new[] { "短视频", "社交", "资讯", "购物" });
+        Assert.True(_service.IsOverFreeLimit());
+
+        // 激活后不再受限
+        var db2 = new AppDatabase(Path.Combine(_tempDir, "test.db"));
+        db2.SetSetting(BlocklistService.SettingKeyActivated, "true");
+        var activated = new BlocklistService(db2);
+        Assert.True(activated.IsActivated());
+        Assert.False(activated.IsOverFreeLimit());
+    }
 }

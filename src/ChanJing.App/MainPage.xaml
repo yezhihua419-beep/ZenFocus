@@ -80,6 +80,10 @@
                         Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                         Foreground="{StaticResource BrushTextSecondary}"
                         Padding="28,10" CornerRadius="24" />
+                <Button x:Name="PauseButton" Content="临时离开" Click="PauseToggle_Click"
+                        Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                        Foreground="{StaticResource BrushTextSecondary}"
+                        Padding="28,10" CornerRadius="24" />
             </StackPanel>
         </StackPanel>
 

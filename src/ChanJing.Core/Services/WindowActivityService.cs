@@ -6,26 +6,43 @@ using System.Text;
 namespace ChanJing.Core.Services;
 
 /// <summary>
-/// 前台窗口采集服务：每 5 秒记录当前前台窗口的进程名与标题哈希；
-/// 同时按每日限额规则对窗口标题做域名匹配，累计使用并触发超限事件。
+/// 前台窗口采集服务：每 5 秒记录当前前台窗口的进程名与标题哈希（内存缓冲，每分钟落库）；
+/// 每日限额累计与超限提醒（同域名每日只提醒一次）；
+/// 专注中命中屏蔽站点 → 记分心 + 提醒（同域名每次专注只提醒一次）。
 /// 隐私友好：只存进程名 + 标题 SHA256 前 16 位，不落明文标题、无截图。
 /// </summary>
 public sealed class WindowActivityService : IDisposable
 {
     public const int TickSeconds = 5;
+    private const int FlushEveryTicks = 12; // 60 秒落库一次
 
     private readonly AppDatabase _db;
     private readonly DailyLimitService _dailyLimits;
+    private readonly FocusEngine _engine;
+    private readonly BlocklistService _blocklist;
+    private readonly object _lock = new();
+
     private Timer? _timer;
     private bool _disposed;
+    private int _tickCount;
+    private readonly Dictionary<string, int> _buffer = new();
+    private readonly HashSet<string> _notifiedLimits = new();
+    private string? _notifiedDistractionKey;
+    private DateTime _notifiedDay = DateTime.Today;
 
-    /// <summary>某域名达当日上限时触发（参数为域名）。线程：Timer 后台线程。</summary>
+    /// <summary>某域名达当日上限时触发（后台线程）。</summary>
     public event Action<string>? LimitExceeded;
 
-    public WindowActivityService(AppDatabase db, DailyLimitService dailyLimits)
+    /// <summary>专注中被屏蔽站点分心时触发（后台线程）。</summary>
+    public event Action<string>? DistractionDetected;
+
+    public WindowActivityService(AppDatabase db, DailyLimitService dailyLimits,
+        FocusEngine engine, BlocklistService blocklist)
     {
         _db = db;
         _dailyLimits = dailyLimits;
+        _engine = engine;
+        _blocklist = blocklist;
     }
 
     public bool IsRunning => _timer is not null;
@@ -40,31 +57,92 @@ public sealed class WindowActivityService : IDisposable
     {
         _timer?.Dispose();
         _timer = null;
+        FlushBuffer();
     }
 
     private void Tick(object? state)
     {
         try
         {
+            // 跨天重置提醒去重
+            if (DateTime.Today != _notifiedDay)
+            {
+                _notifiedDay = DateTime.Today;
+                _notifiedLimits.Clear();
+                _notifiedDistractionKey = null;
+            }
+
+            _blocklist.RemoveExpiredTempAllows();
+
             var info = GetForegroundInfo();
             if (info.ProcessName is null) return;
 
-            _db.AddAppUsage(DateTime.Today.ToString("yyyy-MM-dd"), info.ProcessName, info.TitleHash, TickSeconds);
+            // 缓冲采集，每 60 秒批量落库（降低写频次与锁竞争）
+            lock (_lock)
+            {
+                var key = $"{DateTime.Today:yyyy-MM-dd}|{info.ProcessName}|{info.TitleHash}";
+                _buffer[key] = _buffer.GetValueOrDefault(key) + TickSeconds;
+            }
+            if (++_tickCount % FlushEveryTicks == 0)
+            {
+                FlushBuffer();
+            }
 
-            // 每日限额：标题匹配域名 → 累计 → 超限事件（事件在后台线程，App 层自行调度）
-            var matched = _dailyLimits.MatchDomains(info.TitleText);
-            foreach (var domain in matched)
+            // 每日限额：匹配标题 → 累计 → 超限（每日只提醒一次）
+            foreach (var domain in _dailyLimits.MatchDomains(info.TitleText))
             {
                 _dailyLimits.AddUsage(domain, TickSeconds);
-                if (_dailyLimits.IsExceeded(domain))
+                if (_dailyLimits.IsExceeded(domain) && _notifiedLimits.Add(domain))
                 {
                     LimitExceeded?.Invoke(domain);
+                }
+            }
+
+            // 专注中命中屏蔽站点 → 记分心（同域名每次专注只记一次/提醒一次）
+            if (_engine.IsRunning && info.TitleText is not null)
+            {
+                foreach (var domain in _blocklist.MatchBlockedDomains(info.TitleText))
+                {
+                    var key = $"{_engine.Current!.StartedAt:o}|{domain}";
+                    if (_notifiedDistractionKey == key) continue;
+                    _notifiedDistractionKey = key;
+                    _engine.RegisterDistraction();
+                    DistractionDetected?.Invoke(domain);
                 }
             }
         }
         catch
         {
             // 采集失败静默，不影响主流程。
+        }
+    }
+
+    private void FlushBuffer()
+    {
+        List<(string Day, string Process, string? Hash, int Seconds)> batch;
+        lock (_lock)
+        {
+            if (_buffer.Count == 0) return;
+            batch = _buffer
+                .Select(kv =>
+                {
+                    var parts = kv.Key.Split('|');
+                    return (parts[0], parts[1], parts.Length > 2 ? parts[2] : (string?)null, kv.Value);
+                })
+                .ToList();
+            _buffer.Clear();
+        }
+
+        foreach (var item in batch)
+        {
+            try
+            {
+                _db.AddAppUsage(item.Day, item.Process, item.Hash, item.Seconds);
+            }
+            catch
+            {
+                // 落库失败静默，下轮重新采集
+            }
         }
     }
 
