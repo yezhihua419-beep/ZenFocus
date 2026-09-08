@@ -9,10 +9,12 @@ namespace ChanJing_App;
 public sealed class TrayIconService : IDisposable
 {
     private const uint NIM_ADD = 0x00000000;
+    private const uint NIM_MODIFY = 0x00000001;
     private const uint NIM_DELETE = 0x00000002;
     private const uint NIF_MESSAGE = 0x00000001;
     private const uint NIF_ICON = 0x00000002;
     private const uint NIF_TIP = 0x00000004;
+    private const uint NIF_INFO = 0x00000010;
     private const uint WM_APP = 0x8000;
     private const uint WM_TRAYICON = WM_APP + 1;
     private const uint WM_LBUTTONDBLCLK = 0x0203;
@@ -26,6 +28,7 @@ public sealed class TrayIconService : IDisposable
     private readonly Action _onExit;
     private IntPtr _hwnd;
     private IntPtr _icon;
+    private NOTIFYICONDATA _nid;
     private WndProcDelegate? _wndProcDelegate; // 持有委托防止被 GC 回收
 
     private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
@@ -65,7 +68,19 @@ public sealed class TrayIconService : IDisposable
             uCallbackMessage = WM_TRAYICON
         };
         nid.szTip = tooltip.Length > MAX_TIP_LENGTH ? tooltip[..MAX_TIP_LENGTH] : tooltip;
-        _ = Shell_NotifyIcon(NIM_ADD, ref nid);
+        _nid = nid;
+        _ = Shell_NotifyIcon(NIM_ADD, ref _nid);
+    }
+
+    /// <summary>托盘气泡通知（如每日限额提醒）。</summary>
+    public void ShowBalloon(string text, string title)
+    {
+        if (_hwnd == IntPtr.Zero) return;
+        _nid.uFlags |= NIF_INFO;
+        _nid.szInfo = text.Length > 255 ? text[..255] : text;
+        _nid.szInfoTitle = title.Length > 63 ? title[..63] : title;
+        _nid.dwInfoFlags = 0;
+        _ = Shell_NotifyIcon(NIM_MODIFY, ref _nid);
     }
 
     private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -148,6 +163,16 @@ public sealed class TrayIconService : IDisposable
         public IntPtr hIcon;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string szTip;
+        public uint dwState;
+        public uint dwStateMask;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string szInfo;
+        public uint uVersion;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string szInfoTitle;
+        public uint dwInfoFlags;
+        public Guid guidItem;
+        public IntPtr hBalloonIcon;
     }
 
     [StructLayout(LayoutKind.Sequential)]

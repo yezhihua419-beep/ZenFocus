@@ -41,6 +41,11 @@
                         <SymbolIcon Symbol="World" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="统计" Tag="stats">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Clock" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame" />

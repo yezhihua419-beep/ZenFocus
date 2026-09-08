@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="ChanJing_App.StatsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:ChanJing_App"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource BrushBackground}" Padding="48,24,48,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="统计" FontSize="26" FontWeight="SemiBold"
+                   Foreground="{StaticResource BrushTextPrimary}" />
+
+        <!-- 今日卡片 -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="48" Margin="0,20,0,0">
+            <StackPanel Spacing="2">
+                <TextBlock x:Name="TodayCount" FontSize="22" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
+                <TextBlock Text="今日定心（次）" FontSize="12"
+                           Foreground="{StaticResource BrushTextSecondary}" />
+            </StackPanel>
+            <StackPanel Spacing="2">
+                <TextBlock x:Name="TodayMinutes" FontSize="22" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
+                <TextBlock Text="今日专注（分）" FontSize="12"
+                           Foreground="{StaticResource BrushTextSecondary}" />
+            </StackPanel>
+            <StackPanel Spacing="2">
+                <TextBlock x:Name="StreakDays" FontSize="22" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
+                <TextBlock Text="连续定心（天）" FontSize="12"
+                           Foreground="{StaticResource BrushTextSecondary}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- 近 7 天柱状 -->
+        <StackPanel Grid.Row="2" Margin="0,26,0,0">
+            <TextBlock Text="近 7 天专注（分钟）" FontSize="13"
+                       Foreground="{StaticResource BrushTextSecondary}" />
+            <Grid x:Name="WeekChart" Height="110" Margin="0,10,0,0" />
+            <Grid x:Name="WeekLabels" Height="18" />
+        </StackPanel>
+
+        <!-- 今日使用分布 -->
+        <StackPanel Grid.Row="3" Margin="0,20,0,0">
+            <TextBlock Text="今日使用分布" FontSize="13"
+                       Foreground="{StaticResource BrushTextSecondary}" />
+            <ItemsControl x:Name="UsageList" Margin="0,8,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="130,*,70" Margin="0,5">
+                            <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis"
+                                       Foreground="{StaticResource BrushTextPrimary}" />
+                            <ProgressBar Grid.Column="1" Maximum="{Binding Max}" Value="{Binding Value}"
+                                         Height="8" VerticalAlignment="Center"
+                                         Foreground="{StaticResource BrushState}"
+                                         Background="{StaticResource BrushPanel}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Text}" FontSize="12"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{StaticResource BrushTextSecondary}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</Page>

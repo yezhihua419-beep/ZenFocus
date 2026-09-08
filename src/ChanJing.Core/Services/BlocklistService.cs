@@ -50,10 +50,7 @@ public sealed class BlocklistService
     public void SetCustomDomains(IEnumerable<string> domains)
     {
         var cleaned = domains
-            .Select(d => d.Trim())
-            .Select(d => d.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? d[8..] : d)
-            .Select(d => d.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ? d[7..] : d)
-            .Select(d => d.Trim().TrimStart('.').TrimEnd('/', '.', ' ').ToLowerInvariant())
+            .Select(DomainUtil.Clean)
             .Where(d => !string.IsNullOrWhiteSpace(d))
             .Distinct();
         _db.SetSetting(SettingKeyCustomDomains, string.Join(",", cleaned));

@@ -41,6 +41,26 @@
                        Text="默认定心 25 分钟 · 正计时 · 心无旁骛" />
         </StackPanel>
 
+        <!-- 呼吸引导：开始前的 3 秒静心 -->
+        <StackPanel x:Name="BreathingPanel" Grid.Row="1" Visibility="Collapsed"
+                    VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
+            <Grid Width="130" Height="130" HorizontalAlignment="Center">
+                <Ellipse x:Name="BreathCircle" Fill="{StaticResource BrushState}" Opacity="0.9"
+                         RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.RenderTransform>
+                        <ScaleTransform x:Name="BreathScale" />
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+            </Grid>
+            <TextBlock x:Name="BreathText" Text="吸气…" FontSize="16" HorizontalAlignment="Center"
+                       Foreground="{StaticResource BrushState}" />
+            <TextBlock Text="跟随呼吸，心先静下来" FontSize="12" HorizontalAlignment="Center"
+                       Foreground="{StaticResource BrushTextSecondary}" />
+            <Button Content="跳过" Click="SkipBreath_Click" HorizontalAlignment="Center"
+                    Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
+                    Padding="16,6" CornerRadius="16" />
+        </StackPanel>
+
         <!-- 专注态：正计时（无倒计时）+ 结束 -->
         <StackPanel x:Name="FocusPanel" Grid.Row="1" Visibility="Collapsed"
                     VerticalAlignment="Center" HorizontalAlignment="Center"
