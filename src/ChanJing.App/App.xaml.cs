@@ -51,9 +51,15 @@ public partial class App : Application
         _mutex = new System.Threading.Mutex(true, @"Local\ChanJing.App.SingleInstance", out var createdNew);
         if (!createdNew)
         {
-            MessageBox(IntPtr.Zero, "禅净已在运行，可在右下角托盘找到它。", "禅净", 0x40);
-            Exit();
-            return;
+            // 提权重启时旧进程可能还没完全退出，等待 1.5 秒后重试一次
+            System.Threading.Thread.Sleep(1500);
+            _mutex = new System.Threading.Mutex(true, @"Local\ChanJing.App.SingleInstance", out createdNew);
+            if (!createdNew)
+            {
+                MessageBox(IntPtr.Zero, "禅净已在运行，可在右下角托盘找到它。", "禅净", 0x40);
+                Exit();
+                return;
+            }
         }
 
         _window = new MainWindow();
@@ -108,22 +114,6 @@ public partial class App : Application
                 };
                 await dialog.ShowAsync();
             }
-        }
-    }
-
-    /// <summary>提权重启前主动释放单实例 Mutex，避免管理员进程被"已在运行"拦截。</summary>
-    public void ReleaseMutexForRestart()
-    {
-        try
-        {
-            _mutex?.ReleaseMutex();
-            _mutex?.Dispose();
-            _mutex = null;
-            LogAction("释放单实例锁", "准备提权重启");
-        }
-        catch
-        {
-            // 释放失败忽略，进程退出时系统会回收
         }
     }
 

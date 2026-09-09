@@ -25,6 +25,7 @@ public sealed partial class ShieldPage : Page
             FileName = Environment.ProcessPath!,
             UseShellExecute = true,
             Verb = "runas",
+            WorkingDirectory = AppContext.BaseDirectory,
             Arguments = $"{arg} --db-path=\"{AppServices.DbPath}\""
         };
         Process.Start(psi);
@@ -46,8 +47,6 @@ public sealed partial class ShieldPage : Page
         if (result != ContentDialogResult.Primary) return false;
         try
         {
-            // 提权重启前主动释放单实例锁，避免管理员进程被"已在运行"拦截
-            (App.Current as App)?.ReleaseMutexForRestart();
             RelaunchElevated(action);
             App.LogAction("提权重启", action);
             return true;
