@@ -41,7 +41,7 @@
                     <StackPanel x:Name="CategoryPanel" Orientation="Horizontal">
                     </StackPanel>
                     <TextBlock x:Name="LimitHint" FontSize="11" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushWarn}"
+                               Foreground="{StaticResource BrushWarning}"
                                Text="免费版最多启用 3 个屏蔽目标（分类+自定义域名合计），升级后无限制。" />
                 </StackPanel>
 
