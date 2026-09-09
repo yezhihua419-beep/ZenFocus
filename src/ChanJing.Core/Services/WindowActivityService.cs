@@ -9,6 +9,7 @@ namespace ChanJing.Core.Services;
 /// 前台窗口采集服务：每 5 秒记录当前前台窗口的进程名与标题哈希（内存缓冲，每分钟落库）；
 /// 每日限额累计与超限提醒（同域名每日只提醒一次）；
 /// 专注中命中屏蔽站点 → 记分心 + 提醒（同域名每次专注只提醒一次）。
+/// 桌面应用拦截：统一只最小化，杀进程由 UI 层在后台线程执行（避免阻塞 UI）。
 /// 隐私友好：只存进程名 + 标题 SHA256 前 16 位，不落明文标题、无截图。
 /// </summary>
 public sealed class WindowActivityService : IDisposable
@@ -136,7 +137,8 @@ public sealed class WindowActivityService : IDisposable
                 }
             }
 
-            // 桌面应用拦截：屏蔽已生效时，前台命中分心 App → 最小化/结束进程 + 提醒。
+            // 桌面应用拦截：屏蔽已生效时，前台命中分心 App → 最小化 + 触发AppBlocked事件。
+            // 杀进程由 UI 层在后台线程执行（避免阻塞 UI 线程）。
             // 专注中持续拦截（2 秒冷却，最小化后用户再点回会再次拦截）；非专注 10 秒冷却。
             if (_blocklist.IsApplied() && info.Hwnd != IntPtr.Zero)
             {
@@ -150,21 +152,7 @@ public sealed class WindowActivityService : IDisposable
                         if (DateTime.UtcNow - last > TimeSpan.FromSeconds(cooldown))
                         {
                             _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
-                            if (_blocklist.GetAppBlockMode() == "kill" && info.Pid > 0)
-                            {
-                                try
-                                {
-                                    Process.GetProcessById(info.Pid).Kill();
-                                }
-                                catch
-                                {
-                                    ShowWindow(info.Hwnd, SW_MINIMIZE);
-                                }
-                            }
-                            else
-                            {
-                                ShowWindow(info.Hwnd, SW_MINIMIZE);
-                            }
+                            ShowWindow(info.Hwnd, SW_MINIMIZE);
                             AppBlocked?.Invoke(info.ProcessName, cat);
                         }
                     }

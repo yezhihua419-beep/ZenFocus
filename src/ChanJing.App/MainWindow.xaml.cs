@@ -168,22 +168,34 @@ public sealed partial class MainWindow : Window
                 var mode = AppServices.Blocklist.GetAppBlockMode();
                 if (mode == "kill")
                 {
-                    // 杀所有同名进程（抖音有多个进程+守护进程，只杀前台窗口的进程不够）
-                    var killed = 0;
-                    foreach (var proc in System.Diagnostics.Process.GetProcessesByName(processName))
+                    // 杀进程放后台线程，不阻塞 UI；杀完后调度回 UI 弹气泡
+                    _ = Task.Run(() =>
                     {
-                        try
+                        var killed = 0;
+                        var failed = 0;
+                        var procs = System.Diagnostics.Process.GetProcessesByName(processName);
+                        foreach (var proc in procs)
                         {
-                            proc.Kill();
-                            killed++;
+                            try
+                            {
+                                proc.Kill();
+                                killed++;
+                            }
+                            catch (Exception killEx)
+                            {
+                                failed++;
+                                App.LogAction("结束进程失败", $"{proc.ProcessName} PID={proc.Id} {killEx.GetType().Name}: {killEx.Message}");
+                            }
                         }
-                        catch (Exception killEx)
+                        // 杀完后等 500ms 验证是否真的没了
+                        Thread.Sleep(500);
+                        var remaining = System.Diagnostics.Process.GetProcessesByName(processName).Length;
+                        App.LogAction("结束进程结果", $"{processName} 找到{procs.Length}个 杀掉{killed}个 失败{failed}个 残留{remaining}个");
+                        DispatcherQueue.TryEnqueue(() =>
                         {
-                            App.LogAction("结束进程失败", $"{proc.ProcessName} PID={proc.Id} {killEx.Message}");
-                        }
-                    }
-                    App.LogAction("结束进程", $"{processName} 杀掉{killed}个进程");
-                    _tray.ShowBalloon($"「{processName}」属于{category}，已结束{killed}个进程。", "禅净 · 桌面应用拦截");
+                            _tray.ShowBalloon($"「{processName}」属于{category}，已结束{killed}个进程{(remaining > 0 ? $"（残留{remaining}个）" : "")}。", "禅净 · 桌面应用拦截");
+                        });
+                    });
                 }
                 else
                 {

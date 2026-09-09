@@ -14,6 +14,7 @@ public sealed partial class ShieldPage : Page
 {
     private readonly BlocklistService _blocklist = AppServices.Blocklist;
     private readonly DailyLimitService _limits = AppServices.DailyLimits;
+    private bool _isLoading; // OnLoaded刷新期间不触发SelectionChanged保存，避免页面销毁时ComboBox重置覆盖用户设置
 
     /// <summary>以管理员身份重启本程序并执行指定屏蔽动作（apply/remove/cleanup）。
     /// 同时传递 --db-path 确保管理员进程读写同一个数据库，避免设置"丢失"。</summary>
@@ -71,6 +72,7 @@ public sealed partial class ShieldPage : Page
 
     private void RefreshAll()
     {
+        _isLoading = true;
         try
         {
             CategoryPanel.Children.Clear();
@@ -97,7 +99,6 @@ public sealed partial class ShieldPage : Page
             RefreshLimits();
             RefreshAllowStatus();
             RefreshApps();
-            // OnLoaded 触发时 ComboBox 已初始化完成，直接设置即可
             AppModeBox.SelectedIndex = blockMode == "kill" ? 1 : 0;
             RefreshStatus();
             App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count} 拦截方式={blockMode} UI设置={(blockMode == "kill" ? 1 : 0)}");
@@ -106,6 +107,10 @@ public sealed partial class ShieldPage : Page
         {
             App.LogCrash("ShieldPage.RefreshAll", ex);
             StatusText.Text = $"页面加载异常：{ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
@@ -430,6 +435,7 @@ public sealed partial class ShieldPage : Page
 
     private void AppMode_Changed(object sender, SelectionChangedEventArgs e)
     {
+        if (_isLoading) return; // OnLoaded刷新或页面销毁时ComboBox重置，不保存，避免覆盖用户设置
         try
         {
             var mode = AppModeBox.SelectedIndex == 1 ? "kill" : "minimize";
