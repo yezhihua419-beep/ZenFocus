@@ -18,14 +18,17 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <!-- 标题 -->
-                <TextBlock Text="屏蔽" FontSize="26" FontWeight="SemiBold"
-                           Foreground="{StaticResource BrushTextPrimary}" />
-                <TextBlock Grid.Row="0" FontSize="13" Margin="0,34,0,0"
-                           Foreground="{StaticResource BrushTextSecondary}"
-                           Text="勾选分类、添加域名，点击「应用屏蔽」生效（覆盖所有浏览器，含隐身窗口）" />
+                <StackPanel Grid.Row="0" Spacing="4">
+                    <TextBlock Text="屏蔽" FontSize="26" FontWeight="SemiBold"
+                               Foreground="{StaticResource BrushTextPrimary}" />
+                    <TextBlock FontSize="13" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="勾选分类、添加域名，点击「应用屏蔽」生效（覆盖所有浏览器，含隐身窗口）" />
+                </StackPanel>
 
                 <!-- 操作区（置顶，保证任何窗口高度下可见） -->
                 <StackPanel Grid.Row="1" Margin="0,18,0,0" Spacing="10">
@@ -81,7 +84,7 @@
 
                 <!-- 每日限额 -->
                 <StackPanel Grid.Row="4" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="每日限额（某站点今日最多用多久，超限提醒）" FontSize="13"
+                    <TextBlock Text="每日限额（某站点今日最多用多久，超限提醒）" FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBox x:Name="LimitDomainBox" PlaceholderText="域名，如 bilibili.com"
@@ -98,7 +101,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="180,*,120" Margin="0,2">
-                                    <TextBlock Text="{Binding Text}" FontSize="12"
+                                    <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap"
                                                Foreground="{StaticResource BrushTextPrimary}" />
                                     <Button Grid.Column="2" Content="删除" Tag="{Binding Domain}"
                                             Click="DeleteLimit_Click" FontSize="11" Padding="10,2"
@@ -114,7 +117,7 @@
 
                 <!-- 临时放行 -->
                 <StackPanel Grid.Row="5" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="临时放行（查资料时放行某站 10 分钟，到期自动恢复屏蔽）" FontSize="13"
+                    <TextBlock Text="临时放行（查资料时放行某站 10 分钟，到期自动恢复屏蔽）" FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBox x:Name="AllowDomainBox" PlaceholderText="域名，如 bilibili.com"
@@ -128,13 +131,13 @@
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 BorderBrush="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
-                    <TextBlock x:Name="AllowStatus" FontSize="11"
+                    <TextBlock x:Name="AllowStatus" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}" />
                 </StackPanel>
 
                 <!-- 桌面应用拦截 -->
                 <StackPanel Grid.Row="6" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="桌面应用（勾选分类后，打开命中 App 将按下方方式拦截）" FontSize="13"
+                    <TextBlock Text="桌面应用（勾选分类后，打开命中 App 将按下方方式拦截）" FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBox x:Name="AppBox" PlaceholderText="进程名，如 Douyin（可带 .exe）"
@@ -161,15 +164,15 @@
                             <ComboBoxItem Content="自动最小化（推荐）" />
                             <ComboBoxItem Content="结束进程（更强）" />
                         </ComboBox>
-                        <TextBlock FontSize="11" VerticalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextSecondary}"
-                                   Text="专注中会持续拦截（每 2 秒一次），非专注每 10 秒一次；结束进程更硬，但可能造成未保存内容丢失。" />
                     </StackPanel>
+                    <TextBlock FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="专注中会持续拦截（每 2 秒一次），非专注每 10 秒一次；结束进程更硬，但可能造成未保存内容丢失。" />
                     <ItemsControl x:Name="AppList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="180,120,80" Margin="0,2">
-                                    <TextBlock Text="{Binding Text}" FontSize="12"
+                                    <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap"
                                                Foreground="{StaticResource BrushTextPrimary}" />
                                     <TextBlock Grid.Column="1" Text="{Binding Category}" FontSize="11"
                                                Foreground="{StaticResource BrushTextSecondary}" />
