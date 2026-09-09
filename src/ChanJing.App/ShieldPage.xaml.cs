@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security;
 using ChanJing.Core.Services;
 using Microsoft.UI.Xaml;
@@ -13,6 +14,47 @@ public sealed partial class ShieldPage : Page
 {
     private readonly BlocklistService _blocklist = AppServices.Blocklist;
     private readonly DailyLimitService _limits = AppServices.DailyLimits;
+
+    /// <summary>以管理员身份重启本程序并执行指定屏蔽动作（apply/remove/cleanup）。</summary>
+    private static void RelaunchElevated(string arg)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = Environment.ProcessPath!,
+            UseShellExecute = true,
+            Verb = "runas",
+            Arguments = arg
+        };
+        Process.Start(psi);
+    }
+
+    /// <summary>权限不足时询问是否提权重启执行。</summary>
+    private async Task<bool> AskElevateAsync(string action, string label)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "需要管理员权限",
+            Content = $"「{label}」需要写入系统 hosts 文件，需要管理员权限。\n\n是否以管理员身份重启禅净并自动执行？",
+            PrimaryButtonText = "以管理员身份重启",
+            CloseButtonText = "取消",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot
+        };
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return false;
+        try
+        {
+            RelaunchElevated(action);
+            App.LogAction("提权重启", action);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.Elevate", ex);
+            StatusText.Text = "未能以管理员身份启动：可能取消了授权。请右键「以管理员身份运行」本程序后重试。";
+            return false;
+        }
+    }
 
     public ShieldPage()
     {
@@ -241,7 +283,7 @@ public sealed partial class ShieldPage : Page
 
     // ---------- 应用 / 撤销 / 清理 ----------
 
-    private void Apply_Click(object sender, RoutedEventArgs e)
+    private async void Apply_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -251,8 +293,15 @@ public sealed partial class ShieldPage : Page
         }
         catch (UnauthorizedAccessException)
         {
-            StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再应用屏蔽。";
             App.LogAction("应用屏蔽", "需要管理员权限(UnauthorizedAccess)");
+            if (await AskElevateAsync("--apply-shield", "应用屏蔽"))
+            {
+                App.Current.Exit();
+            }
+            else
+            {
+                StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再应用屏蔽。";
+            }
         }
         catch (Exception ex)
         {
@@ -261,7 +310,7 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    private void Remove_Click(object sender, RoutedEventArgs e)
+    private async void Remove_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -271,8 +320,15 @@ public sealed partial class ShieldPage : Page
         }
         catch (UnauthorizedAccessException)
         {
-            StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再撤销屏蔽。";
             App.LogAction("撤销屏蔽", "需要管理员权限(UnauthorizedAccess)");
+            if (await AskElevateAsync("--remove-shield", "撤销屏蔽"))
+            {
+                App.Current.Exit();
+            }
+            else
+            {
+                StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再撤销屏蔽。";
+            }
         }
         catch (Exception ex)
         {
@@ -281,7 +337,7 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    private void CleanUp_Click(object sender, RoutedEventArgs e)
+    private async void CleanUp_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -291,8 +347,15 @@ public sealed partial class ShieldPage : Page
         }
         catch (UnauthorizedAccessException)
         {
-            StatusText.Text = "需要管理员权限清理残留：请以管理员身份运行后重试。";
             App.LogAction("清理标记段", "需要管理员权限(UnauthorizedAccess)");
+            if (await AskElevateAsync("--cleanup", "清理残留"))
+            {
+                App.Current.Exit();
+            }
+            else
+            {
+                StatusText.Text = "需要管理员权限清理残留：请以管理员身份运行后重试。";
+            }
         }
         catch (Exception ex)
         {

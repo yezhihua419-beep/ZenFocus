@@ -46,6 +46,56 @@ public partial class App : Application
         _window = new MainWindow();
         _window.Activate();
         LogAction("应用启动");
+
+        // 提权重启后的自动执行：--apply-shield / --remove-shield / --cleanup
+        var cmd = Environment.GetCommandLineArgs();
+        if (cmd.Contains("--apply-shield")) { RunElevatedAction("apply", "屏蔽已应用。"); }
+        else if (cmd.Contains("--remove-shield")) { RunElevatedAction("remove", "屏蔽已撤销。"); }
+        else if (cmd.Contains("--cleanup")) { RunElevatedAction("cleanup", "已清理禅净的 hosts 标记段。"); }
+    }
+
+    /// <summary>管理员权限下执行屏蔽动作并提示结果（提权重启后的入口）。</summary>
+    private async void RunElevatedAction(string action, string successMessage)
+    {
+        try
+        {
+            switch (action)
+            {
+                case "apply":
+                    AppServices.Blocklist.Apply();
+                    break;
+                default:
+                    AppServices.Blocklist.Remove();
+                    break;
+            }
+            LogAction("提权执行", $"{action} 成功");
+            if (_window?.Content?.XamlRoot is { } root)
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "禅净",
+                    Content = successMessage,
+                    CloseButtonText = "好",
+                    XamlRoot = root
+                };
+                await dialog.ShowAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogCrash("ElevatedAction", ex);
+            if (_window?.Content?.XamlRoot is { } root)
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "操作失败",
+                    Content = $"未能完成操作：{ex.Message}",
+                    CloseButtonText = "好",
+                    XamlRoot = root
+                };
+                await dialog.ShowAsync();
+            }
+        }
     }
 
     private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

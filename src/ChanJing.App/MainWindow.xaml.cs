@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Windowing;
+using Windows.Graphics;
 
 namespace ChanJing_App;
 
@@ -19,6 +20,7 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.SetIcon("Assets/AppIcon.ico");
+        AppWindow.Resize(new SizeInt32(1000, 760));
 
         Nav.SelectedItem = Nav.MenuItems[0];
         ContentFrame.Navigate(typeof(MainPage));
