@@ -161,9 +161,11 @@ public sealed partial class MainWindow : Window
                 var mode = AppServices.Blocklist.GetAppBlockMode();
                 if (mode == "kill")
                 {
-                    // 杀进程放后台线程，不阻塞 UI；杀完后调度回 UI 弹气泡
+                    // 先弹提示给3秒保存时间，然后后台杀进程
+                    _tray.ShowBalloon($"「{processName}」属于{category}，3秒后将强制结束，请尽快保存未保存内容。", "禅净 · 桌面应用拦截");
                     _ = Task.Run(() =>
                     {
+                        Thread.Sleep(3000); // 给用户3秒保存时间
                         var killed = 0;
                         var failed = 0;
                         var procs = System.Diagnostics.Process.GetProcessesByName(processName);
@@ -180,14 +182,9 @@ public sealed partial class MainWindow : Window
                                 App.LogAction("结束进程失败", $"{proc.ProcessName} PID={proc.Id} {killEx.GetType().Name}: {killEx.Message}");
                             }
                         }
-                        // 杀完后等 500ms 验证是否真的没了
                         Thread.Sleep(500);
                         var remaining = System.Diagnostics.Process.GetProcessesByName(processName).Length;
                         App.LogAction("结束进程结果", $"{processName} 找到{procs.Length}个 杀掉{killed}个 失败{failed}个 残留{remaining}个");
-                        DispatcherQueue.TryEnqueue(() =>
-                        {
-                            _tray.ShowBalloon($"「{processName}」属于{category}，已结束{killed}个进程{(remaining > 0 ? $"（残留{remaining}个）" : "")}。", "禅净 · 桌面应用拦截");
-                        });
                     });
                 }
                 else

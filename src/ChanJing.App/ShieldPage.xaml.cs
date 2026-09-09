@@ -436,12 +436,39 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    private void AppMode_Changed(object sender, SelectionChangedEventArgs e)
+    private async void AppMode_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (_isLoading || !IsLoaded) return; // OnLoaded刷新期间或页面已卸载（Environment.Exit时ComboBox重置）不保存，避免覆盖用户设置
+        if (_isLoading || !IsLoaded) return;
         try
         {
-            var mode = AppModeBox.SelectedIndex == 1 ? "kill" : "minimize";
+            var isKill = AppModeBox.SelectedIndex == 1;
+            if (isKill)
+            {
+                // 切换到结束进程模式时弹确认（仅第一次，确认后存在数据库）
+                var confirmed = AppServices.Db.GetSetting("kill_mode_confirmed") == "true";
+                if (!confirmed)
+                {
+                    var dialog = new ContentDialog
+                    {
+                        Title = "结束进程模式",
+                        Content = "「结束进程」会强制关闭被拦截的应用，未保存的内容可能丢失。\n\n确定使用此模式吗？",
+                        PrimaryButtonText = "确定使用",
+                        CloseButtonText = "取消",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = XamlRoot
+                    };
+                    var result = await dialog.ShowAsync();
+                    if (result != ContentDialogResult.Primary)
+                    {
+                        _isLoading = true;
+                        AppModeBox.SelectedIndex = 0;
+                        _isLoading = false;
+                        return;
+                    }
+                    AppServices.Db.SetSetting("kill_mode_confirmed", "true");
+                }
+            }
+            var mode = isKill ? "kill" : "minimize";
             _blocklist.SetAppBlockMode(mode);
             App.LogAction("设置桌面应用拦截方式", mode);
         }
