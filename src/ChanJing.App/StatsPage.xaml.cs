@@ -45,6 +45,7 @@ public sealed partial class StatsPage : Page
         StreakDays.Text = CalcStreak().ToString();
 
         DrawWeekChart();
+        DrawHourlyChart();
         DrawMonthHeatmap();
         LoadUsage();
     }
@@ -107,6 +108,80 @@ public sealed partial class StatsPage : Page
             };
             Grid.SetColumn(label, i);
             WeekLabels.Children.Add(label);
+        }
+    }
+
+    // ---------- 今日 24 小时时间轴 ----------
+
+    private void DrawHourlyChart()
+    {
+        HourlyChart.Children.Clear();
+        HourlyChart.ColumnDefinitions.Clear();
+        HourlyLabels.Children.Clear();
+        HourlyLabels.ColumnDefinitions.Clear();
+
+        var today = DateTime.Today;
+        var sessions = _db.GetSessions(today, today.AddDays(1));
+
+        // 按小时分组计算专注分钟数
+        var hourly = new int[24];
+        foreach (var session in sessions)
+        {
+            // 简化：按会话开始时间的小时分配（实际应该按时段拆分，但MVP先用开始时间）
+            var hour = session.StartedAt.Hour;
+            if (hour >= 0 && hour < 24)
+            {
+                hourly[hour] += session.ActualMinutes;
+            }
+        }
+
+        // 如果当前有进行中的会话，也计入当前小时
+        if (AppServices.Engine.IsRunning && !AppServices.Engine.IsPaused)
+        {
+            var currentHour = DateTime.Now.Hour;
+            hourly[currentHour] += (int)Math.Round(AppServices.Engine.Elapsed.TotalMinutes);
+        }
+
+        var max = Math.Max(1, hourly.Max());
+        var barBrush = GetBrush("BrushState");
+        var labelBrush = GetBrush("BrushTextSecondary");
+        var currentHourBrush = new SolidColorBrush(Color.FromArgb(200, 122, 114, 101));
+
+        for (var h = 0; h < 24; h++)
+        {
+            var col = new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) };
+            HourlyChart.ColumnDefinitions.Add(col);
+            HourlyLabels.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var height = hourly[h] == 0 ? 2 : Math.Max(4, (int)(hourly[h] * 80.0 / max));
+            var isCurrentHour = h == DateTime.Now.Hour;
+            var bar = new Border
+            {
+                Height = height,
+                CornerRadius = new CornerRadius(2),
+                Background = isCurrentHour ? currentHourBrush : barBrush,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Margin = new Thickness(1, 0, 1, 0),
+                Opacity = isCurrentHour ? 1.0 : 0.7
+            };
+            ToolTipService.SetToolTip(bar, $"{h:00}:00 - {hourly[h]} 分钟");
+            Grid.SetColumn(bar, h);
+            HourlyChart.Children.Add(bar);
+
+            // 只显示 0、6、12、18、23 的标签，避免拥挤
+            if (h == 0 || h == 6 || h == 12 || h == 18 || h == 23)
+            {
+                var label = new TextBlock
+                {
+                    Text = $"{h:00}",
+                    FontSize = 10,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Foreground = labelBrush
+                };
+                Grid.SetColumn(label, h);
+                HourlyLabels.Children.Add(label);
+            }
         }
     }
 

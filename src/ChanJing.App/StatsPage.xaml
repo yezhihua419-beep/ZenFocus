@@ -17,6 +17,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <!-- 标题 -->
@@ -61,15 +62,23 @@
                     <Grid x:Name="WeekLabels" Height="18" />
                 </StackPanel>
 
-                <!-- 本月热力 -->
+                <!-- 今日 24 小时时间轴 -->
                 <StackPanel Grid.Row="3" Margin="0,20,0,0" Spacing="0">
+                    <TextBlock Text="今日 24 小时专注分布" FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}" />
+                    <Grid x:Name="HourlyChart" Height="90" Margin="0,10,0,0" />
+                    <Grid x:Name="HourlyLabels" Height="16" />
+                </StackPanel>
+
+                <!-- 本月热力 -->
+                <StackPanel Grid.Row="4" Margin="0,20,0,0" Spacing="0">
                     <TextBlock Text="本月专注热力" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <Grid x:Name="MonthChart" Margin="0,10,0,0" HorizontalAlignment="Left" />
                 </StackPanel>
 
                 <!-- 今日使用分布 -->
-                <StackPanel Grid.Row="4" Margin="0,20,0,0" Spacing="0">
+                <StackPanel Grid.Row="5" Margin="0,20,0,0" Spacing="0">
                     <TextBlock Text="今日使用分布" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <ItemsControl x:Name="UsageList" Margin="0,8,0,0">
