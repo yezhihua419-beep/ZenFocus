@@ -137,9 +137,10 @@
                                Foreground="{StaticResource BrushTextSecondary}"
                                Text="自动最小化：温和拦截，可手动切回（专注中 2 秒冷却）。结束进程：强制关闭应用，未保存内容可能丢失。" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                        <ToggleSwitch x:Name="FocusOnlyCommSwitch" Header="沟通工具仅专注中屏蔽"
-                                      IsOn="False" Toggled="FocusOnlyComm_Toggled"
-                                      MinWidth="280" />
+                        <TextBlock Text="沟通工具仅专注中屏蔽" VerticalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextPrimary}" FontSize="13" />
+                        <ToggleSwitch x:Name="FocusOnlyCommSwitch"
+                                      IsOn="False" Toggled="FocusOnlyComm_Toggled" />
                     </StackPanel>
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
