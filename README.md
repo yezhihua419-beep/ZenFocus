@@ -18,11 +18,12 @@
 |---|---|---|
 | 屏蔽体系 | 国内分类名单（短视频/视频娱乐/社交/资讯/购物 5 类 17 站）+ 自定义域名 + 每日限额（分钟/天）+ 临时放行 10 分钟 + 一键清理残留 | ✅ 完整可用 |
 | 屏蔽能力 | hosts 标记段管理（不碰其他条目，写入前备份）+ 权限不足引导管理员运行 + 品牌词标题匹配（抖音/哔哩哔哩等中文标题） | ✅ |
+| **桌面应用拦截** | **国内应用名单（抖音/快手/B站/虎牙/斗鱼/爱奇艺/优酷/淘宝/京东/拼多多）+ 自定义 App + 两种拦截方式（自动最小化 / 结束进程）+ 专注中持续拦截（2秒冷却）+ 进程预扫描（无需等待窗口激活）** | ✅ v0.2.0 |
 | 专注引擎 | 正计时 + 今日一愿 + 呼吸引导 + 暂停/继续（临时离开）+ 破功 3 秒冷却 + 即时反馈（进步框架） | ✅ |
 | 专注联动 | 专注中打开被屏蔽站 → 自动记分心 + 托盘提醒（每会话每域名一次） | ✅ |
 | 统计 | 今日定心/专注分钟/连续天数 + 近 7 天柱状 + 本月热力 + 今日使用分布 + 分享卡片（PNG） | ✅ |
 | 限额提醒 | 每日限额超限 → 托盘气泡（按域名每日去重） | ✅ |
-| 系统集成 | 托盘常驻（关窗最小化）+ 前台窗口采集（仅进程名+标题）+ SQLite 本地存储 | ✅ |
+| 系统集成 | 托盘常驻（关窗/最小化均到托盘）+ 前台窗口采集（仅进程名+标题）+ SQLite 本地存储 | ✅ |
 | 商业位 | 免费版限 3 个屏蔽目标 + 激活占位（待接支付） | ✅ 预留 |
 | 移动联动 | 局域网 Web 伴侣页（手机看统计/远程控制，零云端） | ⏳ V2 规划 |
 
@@ -56,11 +57,35 @@
 ## 路线图
 
 - ✅ **W1** MVP 完成：屏蔽 + 专注 + 统计 + 限额 + 联动 + 抗焦虑全套（checkpoint v0.1.0）
+- ✅ **W1.5** 桌面应用拦截 + 提权重启稳定性 + 设置持久化修复（checkpoint v0.2.0）
 - ⏳ **W1 收尾** 10 个真实网站自测 → 种子内测 10-20 人
-- ⏳ **W3-W4** 免费版上线（微软商店）+ 局域网伴侣页
+- ⏳ **W3-W4** 免费版上线（官网直装为主，商店版作轻量体验版）+ 局域网伴侣页
 - **M2** V1.1：今日时间线 + 场景化规则 + 白噪音
 - **M3** 内容营销启动 + 早鸟价 ¥68
 - **M6** 复盘止损（月入 ≥¥1000 加码，<¥1000 降级副业）
+
+## 更新日志
+
+### v0.2.0（2026-09-09）
+
+**桌面应用拦截**
+- 国内应用预设名单（抖音/快手/B站/虎牙/斗鱼/爱奇艺/优酷/淘宝/京东/拼多多）
+- 自定义 App 添加
+- 两种拦截方式：自动最小化（温和可绕过）/ 结束进程（强制）
+- 专注中持续拦截（2秒冷却，最小化后切回再拦），非专注 10 秒冷却
+- 进程预扫描（后台轮询枚举进程，无需等待窗口激活即拦截）
+- kill 模式杀所有同名进程（抖音多进程+守护进程场景），后台线程执行不阻塞 UI
+
+**稳定性修复**
+- 提权重启后两个进程都没了：普通进程 `Exit()` 异步 + Mutex 释放慢 → 改为启动管理员进程成功后主动 `ReleaseMutex` + `Environment.Exit(0)`
+- 设置不持久化（拦截方式变回老设置）：`Environment.Exit(0)` 时页面销毁 ComboBox 重置触发保存覆盖用户设置 → `AppMode_Changed` 加 `!IsLoaded` 检查
+- 托盘图标不显示：`RegisterClass`/`Shell_NotifyIcon` 缺 `CharSet.Unicode` → 调用 ANSI 版类名封送错乱 → 1407 ERROR_CANNOT_FIND_WNDCLASS
+- 屏蔽页内容叠加：`RowDefinitions` 只 6 行但桌面应用区用了 `Grid.Row="6"` → 渲染到 Row 0 与标题重叠
+- 最小化按钮也到托盘（之前只处理关闭按钮）
+
+**测试**
+- 单元测试 33/33 通过（含 AppBlockMode 跨实例持久化回归测试）
+- 日志仅 DEBUG 构建启用，Release 禁用（`#if DEBUG`）
 
 ## 目录结构
 
@@ -69,25 +94,29 @@ chanjing/
 ├── src/
 │   ├── ChanJing.App/      # WinUI 3 桌面应用（界面/托盘/窗口采集）
 │   └── ChanJing.Core/     # 核心逻辑（屏蔽/限额/专注/统计/SQLite）
-├── tests/                 # 单元测试（32/32 通过）
+├── tests/                 # 单元测试（33/33 通过）
 └── README.md
 ```
 
 ## 开发命令
 
 ```powershell
-# 构建（App 项目，必须带 Platform）
+# 构建前必须先杀 ChanJing.App 进程（否则 dll 被锁导致 MSB3027 静默失败）
+Get-Process ChanJing.App -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# 构建（App 项目，必须带 Platform=x64，勿用 sln）
 dotnet build src/ChanJing.App/ChanJing.App.csproj -p:Platform=x64
 
-# 测试
+# 测试（后台运行，无需 GUI）
 dotnet test tests/ChanJing.Tests/ChanJing.Tests.csproj
 
 # 冒烟（构建后的可执行文件）
-src\ChanJing.App\bin\Debug\net8.0-windows10.0.26100.0\win-x64\ChanJing.App.exe
+src\ChanJing.App\bin\x64\Debug\net8.0-windows10.0.26100.0\win-x64\ChanJing.App.exe
 ```
 
 > 注：构建请勿用 `dotnet build ChanJing.sln`（WinUI 需显式 Platform）；产物目录以
-> `bin\Debug\net8.0-windows10.0.26100.0\win-x64\` 为准，`bin\x64` 为旧目录勿用。
+> `bin\x64\Debug\net8.0-windows10.0.26100.0\win-x64\` 为准。
+> 管理员权限进程普通 Stop-Process 杀不掉（Access denied），需 `taskkill /PID <id> /F` 弹 UAC。
 
 ## 隐私承诺
 
@@ -95,3 +124,4 @@ src\ChanJing.App\bin\Debug\net8.0-windows10.0.26100.0\win-x64\ChanJing.App.exe
 - 前台窗口仅采集进程名 + 窗口标题（用于分心匹配与统计），无键盘记录
 - 无账号、无云端、无遥测
 - 数据明文存储于本机，README 明示位置（隐私优先，不藏不传）
+- 调试日志（`actions.log`/`crash.log`）仅 DEBUG 构建启用，Release 构建完全禁用（`#if DEBUG`）
