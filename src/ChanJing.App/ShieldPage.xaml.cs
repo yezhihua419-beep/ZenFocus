@@ -3,7 +3,6 @@ using System.Security;
 using ChanJing.Core.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 
 namespace ChanJing_App;
 
@@ -62,12 +61,11 @@ public sealed partial class ShieldPage : Page
     public ShieldPage()
     {
         InitializeComponent();
+        Loaded += OnLoaded;
     }
 
-    /// <summary>每次导航到本页时刷新全部 UI（比 OnLoaded 更可靠，缓存恢复时也触发）。</summary>
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        base.OnNavigatedTo(e);
         RefreshAll();
     }
 
@@ -78,6 +76,7 @@ public sealed partial class ShieldPage : Page
             CategoryPanel.Children.Clear();
             var enabled = _blocklist.GetEnabledCategories();
             var activated = _blocklist.IsActivated();
+            var blockMode = _blocklist.GetAppBlockMode();
 
             foreach (var category in BlocklistService.DefaultCategories.Keys)
             {
@@ -98,13 +97,10 @@ public sealed partial class ShieldPage : Page
             RefreshLimits();
             RefreshAllowStatus();
             RefreshApps();
-            // 延迟到下一帧设置，确保 ComboBox 项已初始化
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                AppModeBox.SelectedIndex = _blocklist.GetAppBlockMode() == "kill" ? 1 : 0;
-            });
+            // OnLoaded 触发时 ComboBox 已初始化完成，直接设置即可
+            AppModeBox.SelectedIndex = blockMode == "kill" ? 1 : 0;
             RefreshStatus();
-            App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count} 拦截方式={_blocklist.GetAppBlockMode()}");
+            App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count} 拦截方式={blockMode} UI设置={(blockMode == "kill" ? 1 : 0)}");
         }
         catch (Exception ex)
         {

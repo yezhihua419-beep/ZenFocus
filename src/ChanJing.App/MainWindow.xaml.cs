@@ -165,8 +165,31 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                _tray.ShowBalloon($"「{processName}」属于{category}，已自动最小化。", "禅净 · 桌面应用拦截");
-                App.LogAction("拦截桌面应用", $"{processName}({category})");
+                var mode = AppServices.Blocklist.GetAppBlockMode();
+                if (mode == "kill")
+                {
+                    // 杀所有同名进程（抖音有多个进程+守护进程，只杀前台窗口的进程不够）
+                    var killed = 0;
+                    foreach (var proc in System.Diagnostics.Process.GetProcessesByName(processName))
+                    {
+                        try
+                        {
+                            proc.Kill();
+                            killed++;
+                        }
+                        catch (Exception killEx)
+                        {
+                            App.LogAction("结束进程失败", $"{proc.ProcessName} PID={proc.Id} {killEx.Message}");
+                        }
+                    }
+                    App.LogAction("结束进程", $"{processName} 杀掉{killed}个进程");
+                    _tray.ShowBalloon($"「{processName}」属于{category}，已结束{killed}个进程。", "禅净 · 桌面应用拦截");
+                }
+                else
+                {
+                    _tray.ShowBalloon($"「{processName}」属于{category}，已自动最小化。", "禅净 · 桌面应用拦截");
+                }
+                App.LogAction("拦截桌面应用", $"{processName}({category}) 方式={mode}");
             }
             catch (Exception ex)
             {
