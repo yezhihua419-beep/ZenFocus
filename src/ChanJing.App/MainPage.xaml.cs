@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using ChanJing.Core.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -240,12 +240,12 @@ public sealed partial class MainPage : Page
                 await none.ShowAsync();
                 return;
             }
-            AppServices.Blocklist.AddTempAllow(domain, 10);
+            AppServices.Blocklist.AddTempAllow(domain, 5);
             App.LogAction("快捷放行", $"{domain} 10分钟");
             var ok = new ContentDialog
             {
                 Title = "已放行",
-                Content = $"{domain} 已临时放行 10 分钟，期间可正常访问。",
+                Content = $"{domain} 已临时放行 5 分钟，期间可正常访问。",
                 CloseButtonText = "好",
                 XamlRoot = XamlRoot
             };

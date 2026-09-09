@@ -87,7 +87,7 @@
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="20,10" CornerRadius="24" FontSize="13" />
                     </StackPanel>
-                    <Button Content="临时放行当前网站 10 分钟" Click="AllowCurrent_Click"
+                    <Button Content="临时放行当前网站 5 分钟" Click="AllowCurrent_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,6" CornerRadius="18" FontSize="12" HorizontalAlignment="Center" />
