@@ -12,6 +12,7 @@ public sealed class BlocklistService
     public const string SettingKeyActivated = "activated";
     public const string SettingKeyCustomApps = "custom_apps";
     public const string SettingKeyAppBlockMode = "app_block_mode";
+    public const string SettingKeyFocusOnlyCommunication = "focus_only_communication";
 
     /// <summary>免费版最多可配置的屏蔽目标数（分类 + 自定义域名项）。</summary>
     public const int FreeTargetLimit = 3;
@@ -188,6 +189,12 @@ public sealed class BlocklistService
     {
         _db.SetSetting(SettingKeyAppBlockMode, mode == "kill" ? "kill" : "minimize");
     }
+
+    /// <summary>沟通工具是否仅在专注中屏蔽（默认false=全局屏蔽）。</summary>
+    public bool IsFocusOnlyCommunication() => _db.GetSetting(SettingKeyFocusOnlyCommunication) == "true";
+
+    /// <summary>设置沟通工具是否仅在专注中屏蔽。</summary>
+    public void SetFocusOnlyCommunication(bool value) => _db.SetSetting(SettingKeyFocusOnlyCommunication, value ? "true" : "false");
 
     /// <summary>是否已激活（买断/订阅）。V1 为占位，支付上线后接入。</summary>
     public bool IsActivated() => _db.GetSetting(SettingKeyActivated) == "true";

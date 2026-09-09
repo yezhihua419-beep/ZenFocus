@@ -103,6 +103,7 @@ public sealed partial class ShieldPage : Page
             RefreshAllowStatus();
             RefreshApps();
             AppModeBox.SelectedIndex = blockMode == "kill" ? 1 : 0;
+            FocusOnlyCommSwitch.IsOn = _blocklist.IsFocusOnlyCommunication();
             RefreshStatus();
             App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count} 拦截方式={blockMode} UI设置={(blockMode == "kill" ? 1 : 0)}");
         }
@@ -436,6 +437,20 @@ public sealed partial class ShieldPage : Page
         }
     }
 
+    private void FocusOnlyComm_Toggled(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_isLoading) return;
+            _blocklist.SetFocusOnlyCommunication(FocusOnlyCommSwitch.IsOn);
+            App.LogAction("设置沟通工具仅专注中屏蔽", FocusOnlyCommSwitch.IsOn.ToString());
+            RefreshStatus();
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.FocusOnlyComm", ex);
+        }
+    }
     private async void AppMode_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (_isLoading || !IsLoaded) return;

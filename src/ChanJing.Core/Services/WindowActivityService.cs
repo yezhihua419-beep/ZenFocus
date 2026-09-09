@@ -165,15 +165,23 @@ public sealed class WindowActivityService : IDisposable
                 var cat = _blocklist.MatchBlockedApp(info.ProcessName);
                 if (cat is not null)
                 {
-                    lock (_lock)
+                    // 沟通工具且开启"仅专注中屏蔽"时，非专注状态不拦截
+                    if (cat == "沟通工具" && _blocklist.IsFocusOnlyCommunication() && !_engine.IsRunning)
                     {
-                        var cooldown = _engine.IsRunning ? 2 : 10;
-                        var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
-                        if (DateTime.UtcNow - last > TimeSpan.FromSeconds(cooldown))
+                        // 非专注中，跳过沟通工具拦截
+                    }
+                    else
+                    {
+                        lock (_lock)
                         {
-                            _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
-                            ShowWindow(info.Hwnd, SW_MINIMIZE);
-                            AppBlocked?.Invoke(info.ProcessName, cat);
+                            var cooldown = _engine.IsRunning ? 2 : 10;
+                            var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
+                            if (DateTime.UtcNow - last > TimeSpan.FromSeconds(cooldown))
+                            {
+                                _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
+                                ShowWindow(info.Hwnd, SW_MINIMIZE);
+                                AppBlocked?.Invoke(info.ProcessName, cat);
+                            }
                         }
                     }
                 }

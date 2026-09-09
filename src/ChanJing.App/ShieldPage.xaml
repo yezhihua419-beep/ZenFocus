@@ -137,6 +137,14 @@
                                Foreground="{StaticResource BrushTextSecondary}"
                                Text="自动最小化：温和拦截，可手动切回（专注中 2 秒冷却）。结束进程：强制关闭应用，未保存内容可能丢失。" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                        <ToggleSwitch x:Name="FocusOnlyCommSwitch" Header="沟通工具仅专注中屏蔽"
+                                      IsOn="False" Toggled="FocusOnlyComm_Toggled"
+                                      MinWidth="280" />
+                    </StackPanel>
+                    <TextBlock FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="开启后，微信/钉钉/QQ等沟通工具仅在专注模式下被拦截，非专注时间可正常使用。" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
                         <TextBox x:Name="AppBox" PlaceholderText="进程名如 Douyin" Width="200" />
                         <ComboBox x:Name="AppCategoryBox" Width="120">
                             <ComboBoxItem Content="短视频" IsSelected="True" />
