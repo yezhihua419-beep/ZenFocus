@@ -165,7 +165,10 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Process}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                                        <TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Process}" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" />
+                                    </StackPanel>
                                     <Button Grid.Column="2" Content="移除" Tag="{Binding Process}"
                                             Click="RemoveApp_Click" FontSize="11" Padding="10,2" />
                                 </Grid>
