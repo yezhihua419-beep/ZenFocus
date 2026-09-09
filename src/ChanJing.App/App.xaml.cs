@@ -65,9 +65,10 @@ public partial class App : Application
         e.SetObserved();
     }
 
-    /// <summary>崩溃日志：%LOCALAPPDATA%\ChanJing\crash.log（本地明文，方便排查）。</summary>
+    /// <summary>崩溃日志：%LOCALAPPDATA%\ChanJing\crash.log（仅 DEBUG 构建启用，Release 为空实现）。</summary>
     public static void LogCrash(string source, Exception? ex)
     {
+#if DEBUG
         try
         {
             var dir = System.IO.Path.Combine(
@@ -82,12 +83,13 @@ public partial class App : Application
         {
             // 日志失败不再抛
         }
+#endif
     }
 
-    /// <summary>操作流水日志：%LOCALAPPDATA%\ChanJing\actions.log。
-    /// 记录用户可感知的关键操作（页面切换/按钮/屏蔽结果），用于不崩溃时的复盘。</summary>
+    /// <summary>操作流水日志：%LOCALAPPDATA%\ChanJing\actions.log（仅 DEBUG 构建启用，Release 为空实现）。</summary>
     public static void LogAction(string action, string? detail = null)
     {
+#if DEBUG
         try
         {
             var dir = System.IO.Path.Combine(
@@ -101,5 +103,6 @@ public partial class App : Application
         {
             // 日志失败不再抛
         }
+#endif
     }
 }
