@@ -25,11 +25,30 @@
                                Foreground="{StaticResource BrushTextSecondary}" />
                 </StackPanel>
 
-                <!-- 空闲态：今日一愿 + 开始专注 -->
+                <!-- 空闲态：场景选择 + 今日一愿 + 开始专注 -->
                 <StackPanel x:Name="IdlePanel" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Spacing="18" MaxWidth="440" MinWidth="280">
+                            Spacing="14" MaxWidth="440" MinWidth="280">
                     <TextBlock Text="今日一愿" FontSize="13" HorizontalAlignment="Center"
                                Foreground="{StaticResource BrushTextSecondary}" />
+                    <!-- 场景快捷选择 -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                        <Button Content="工作" Tag="work" Click="Scene_Click"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="14,4" CornerRadius="14" FontSize="12" />
+                        <Button Content="写作" Tag="write" Click="Scene_Click"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="14,4" CornerRadius="14" FontSize="12" />
+                        <Button Content="学习" Tag="study" Click="Scene_Click"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="14,4" CornerRadius="14" FontSize="12" />
+                        <Button Content="会议" Tag="meeting" Click="Scene_Click"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="14,4" CornerRadius="14" FontSize="12" />
+                    </StackPanel>
                     <TextBox x:Name="WishBox" PlaceholderText="此刻，你最想完成的一件事…" FontSize="15"
                              HorizontalAlignment="Stretch" Padding="14,10" TextWrapping="Wrap"
                              Background="{StaticResource BrushPanel}"

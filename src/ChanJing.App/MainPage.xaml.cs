@@ -17,6 +17,7 @@ public sealed partial class MainPage : Page
     private readonly DispatcherTimer _timer;
     private readonly DispatcherTimer _breathTimer;
     private string? _pendingWish;
+    private int _pendingMinutes = 25;
     private bool _breathing;
 
     public MainPage()
@@ -109,6 +110,33 @@ public sealed partial class MainPage : Page
         }
     }
 
+
+    /// <summary>场景快捷选择：自动填充愿望和预设时长。</summary>
+    private void Scene_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var tag = (sender as Button)?.Tag?.ToString();
+            var (wish, minutes) = tag switch
+            {
+                "work" => ("完成今日工作任务", 50),
+                "write" => ("专注写作，心无旁骛", 45),
+                "study" => ("深度学习，理解透彻", 25),
+                "meeting" => ("专注会议，高效沟通", 30),
+                _ => ("", 25)
+            };
+            if (!string.IsNullOrEmpty(wish))
+            {
+                WishBox.Text = wish;
+            }
+            _pendingMinutes = minutes;
+            App.LogAction("选择场景", tag + " " + minutes + "分钟");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainPage.Scene", ex);
+        }
+    }
     private void StartBreathing()
     {
         _breathing = true;
@@ -141,7 +169,7 @@ public sealed partial class MainPage : Page
         if (!_breathing) return;
         _breathing = false;
         _breathTimer.Stop();
-        _engine.Start(_pendingWish);
+        _engine.Start(_pendingWish, _pendingMinutes);
         App.LogAction("进入专注");
         EnterFocusView();
     }
