@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Windowing;
@@ -13,6 +14,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly TrayIconService _tray;
     private bool _exiting;
+    private DispatcherTimer? _diagTimer;
 
     private const int SW_RESTORE = 9;
 
@@ -21,6 +23,12 @@ public sealed partial class MainWindow : Window
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
     public MainWindow()
     {
@@ -36,6 +44,12 @@ public sealed partial class MainWindow : Window
 
         // 前台窗口采集常驻（进程名 + 标题哈希，本地存储）。
         AppServices.Activity.Start();
+        App.LogAction("诊断", $"WindowActivityService.IsRunning={AppServices.Activity.IsRunning}");
+
+        // 诊断定时器：每10秒记录前台窗口+拦截匹配状态，排查拦截不生效问题
+        _diagTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+        _diagTimer.Tick += (_, _) => LogDiagnostics();
+        _diagTimer.Start();
 
         _tray = new TrayIconService(ShowMain, ExitApp);
         _tray.Show("禅净 — 先管住手，再看清时间");
@@ -167,6 +181,38 @@ public sealed partial class MainWindow : Window
         if (_exiting) return;
         args.Cancel = true;
         AppWindow.Hide();
+    }
+
+    /// <summary>诊断日志：记录前台窗口进程名、IsApplied状态、MatchBlockedApp匹配结果，排查拦截不生效问题。</summary>
+    private void LogDiagnostics()
+    {
+        try
+        {
+            var hwnd = GetForegroundWindow();
+            uint procId = 0;
+            GetWindowThreadProcessId(hwnd, out procId);
+            string? foregroundProc = null;
+            try
+            {
+                foregroundProc = System.Diagnostics.Process.GetProcessById((int)procId).ProcessName;
+            }
+            catch { }
+
+            var isApplied = AppServices.Blocklist.IsApplied();
+            var matchedCat = foregroundProc is not null
+                ? AppServices.Blocklist.MatchBlockedApp(foregroundProc)
+                : null;
+            var enabledCats = string.Join(",", AppServices.Blocklist.GetEnabledCategories());
+            var blockMode = AppServices.Blocklist.GetAppBlockMode();
+
+            App.LogAction("诊断",
+                $"前台={foregroundProc ?? "null"} IsApplied={isApplied} 匹配分类={matchedCat ?? "无"} " +
+                $"已选分类=[{enabledCats}] 拦截方式={blockMode} ActivityRunning={AppServices.Activity.IsRunning}");
+        }
+        catch (Exception ex)
+        {
+            App.LogAction("诊断异常", ex.Message);
+        }
     }
 
     private void ShowMain()
