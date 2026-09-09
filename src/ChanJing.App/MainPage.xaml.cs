@@ -50,41 +50,24 @@ public sealed partial class MainPage : Page
         }
     }
 
-    /// <summary>首启引导：告诉新用户屏蔽功能在哪，并给权限/杀软预防针。</summary>
+    /// <summary>首启3步引导：专注 → 屏蔽 → 统计与托盘。</summary>
     private async void ShowFirstRunGuideIfNeeded()
     {
         try
         {
             if (_db.GetSetting("onboarded") is not null) return;
             _db.SetSetting("onboarded", "true");
-
-            var dialog = new ContentDialog
-            {
-                Title = "欢迎使用禅净",
-                Content = "先管住手，再看清时间。\n\n① 到「屏蔽」页勾选分类 →「应用屏蔽」，浏览器将打不开这些网站（含隐身窗口）；首次会请求管理员权限，个别杀软可能弹窗，属正常。\n② 屏蔽只拦浏览器网页；桌面 App（抖音客户端等）需在屏蔽页「桌面应用」区单独配置。\n③ 点窗口 ✕ 是最小化到托盘，想彻底退出请右键托盘图标选「退出」。",
-                PrimaryButtonText = "去设置屏蔽",
-                CloseButtonText = "稍后再说",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary && Frame is not null)
-            {
-                App.LogAction("首启引导", "去设置屏蔽");
-                Frame.Navigate(typeof(ShieldPage));
-            }
-            else
-            {
-                App.LogAction("首启引导", "稍后再说");
-            }
+            var step1 = new ContentDialog { Title = "欢迎使用禅净 · 1/3", Content = "先管住手，再看清时间。\n\n【专注】\n在首页写下「今日一愿」→ 点「开始专注」→ 3秒呼吸引导后进入正计时（不显示剩余时间，减少焦虑）。\n\n支持场景快捷选择：工作50分钟 / 写作45分钟 / 学习25分钟 / 会议30分钟。", PrimaryButtonText = "下一步", XamlRoot = XamlRoot };
+            await step1.ShowAsync();
+            var step2 = new ContentDialog { Title = "欢迎使用禅净 · 2/3", Content = "【屏蔽】\n到「屏蔽」页勾选分类 → 点底部「应用屏蔽」，浏览器将打不开这些网站（含隐身窗口）。\n\n首次会请求管理员权限，个别杀软可能弹窗，属正常。\n\n桌面 App（抖音客户端等）需在「桌面应用拦截」区单独配置，支持自动最小化或结束进程。", PrimaryButtonText = "下一步", XamlRoot = XamlRoot };
+            await step2.ShowAsync();
+            var step3 = new ContentDialog { Title = "欢迎使用禅净 · 3/3", Content = "【统计与托盘】\n「统计」页查看今日专注次数、分钟数、连续天数、24小时分布、分心来源。\n\n点窗口 ✕ 或 — 是最小化到托盘（不退出），想彻底退出请右键托盘图标选「退出」。\n\n托盘菜单可快速开始/暂停专注、查看今日分钟、打开屏蔽设置。", PrimaryButtonText = "去设置屏蔽", CloseButtonText = "开始使用", DefaultButton = ContentDialogButton.Primary, XamlRoot = XamlRoot };
+            var result = await step3.ShowAsync();
+            if (result == ContentDialogResult.Primary && Frame is not null) { App.LogAction("首启引导", "去设置屏蔽"); Frame.Navigate(typeof(ShieldPage)); }
+            else { App.LogAction("首启引导", "开始使用"); }
         }
-        catch (Exception ex)
-        {
-            App.LogCrash("MainPage.FirstRunGuide", ex);
-        }
+        catch (Exception ex) { App.LogCrash("MainPage.FirstRunGuide", ex); }
     }
-
     private void OnTick(object? sender, object e)
     {
         TimerText.Text = FormatElapsed(_engine.Elapsed);
