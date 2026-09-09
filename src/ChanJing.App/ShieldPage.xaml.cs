@@ -438,7 +438,7 @@ public sealed partial class ShieldPage : Page
 
     private void AppMode_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (_isLoading) return; // OnLoaded刷新或页面销毁时ComboBox重置，不保存，避免覆盖用户设置
+        if (_isLoading || !IsLoaded) return; // OnLoaded刷新期间或页面已卸载（Environment.Exit时ComboBox重置）不保存，避免覆盖用户设置
         try
         {
             var mode = AppModeBox.SelectedIndex == 1 ? "kill" : "minimize";
