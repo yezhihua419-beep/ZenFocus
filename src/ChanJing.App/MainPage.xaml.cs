@@ -1,7 +1,9 @@
 ﻿using System.Globalization;
 using ChanJing.Core.Services;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 
 namespace ChanJing_App;
@@ -13,6 +15,7 @@ namespace ChanJing_App;
 public sealed partial class MainPage : Page
 {
     private readonly FocusEngine _engine = AppServices.Engine;
+    private readonly BlocklistService _blocklist = AppServices.Blocklist;
     private readonly AppDatabase _db = AppServices.Db;
     private readonly DispatcherTimer _timer;
     private readonly DispatcherTimer _breathTimer;
@@ -94,26 +97,54 @@ public sealed partial class MainPage : Page
     }
 
 
-    /// <summary>场景快捷选择：自动填充愿望和预设时长。</summary>
+    /// <summary>场景预设：愿望 + 时长 + 屏蔽分类。点场景按钮一键应用，无需去屏蔽页手动设置。</summary>
+    private static readonly IReadOnlyDictionary<string, (string Wish, int Minutes, string[] Categories)> ScenePresets =
+        new Dictionary<string, (string, int, string[])>
+        {
+            ["work"] = ("完成今日工作任务", 50, new[] { "短视频", "视频娱乐", "购物" }),
+            ["write"] = ("专注写作，心无旁骛", 45, new[] { "短视频", "视频娱乐", "社交", "购物", "资讯" }),
+            ["study"] = ("深度学习，理解透彻", 25, new[] { "短视频", "视频娱乐", "社交", "购物", "资讯" }),
+            ["meeting"] = ("专注会议，高效沟通", 30, new[] { "短视频", "视频娱乐" }),
+        };
+
+    /// <summary>当前选中的场景标签，用于UI高亮和专注界面显示。</summary>
+    private string? _currentSceneTag;
+
+    /// <summary>场景快捷选择：自动填充愿望、预设时长、应用该场景的屏蔽配置。</summary>
     private void Scene_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             var tag = (sender as Button)?.Tag?.ToString();
-            var (wish, minutes) = tag switch
+            if (string.IsNullOrEmpty(tag) || !ScenePresets.TryGetValue(tag, out var preset))
             {
-                "work" => ("完成今日工作任务", 50),
-                "write" => ("专注写作，心无旁骛", 45),
-                "study" => ("深度学习，理解透彻", 25),
-                "meeting" => ("专注会议，高效沟通", 30),
-                _ => ("", 25)
-            };
-            if (!string.IsNullOrEmpty(wish))
-            {
-                WishBox.Text = wish;
+                App.LogAction("选择场景", "未知场景: " + tag);
+                return;
             }
-            _pendingMinutes = minutes;
-            App.LogAction("选择场景", tag + " " + minutes + "分钟");
+
+            _currentSceneTag = tag;
+            WishBox.Text = preset.Wish;
+            _pendingMinutes = preset.Minutes;
+
+            // 更新时长显示（用户可见）
+            SessionHint.Text = $"{preset.Minutes} 分钟定心 · 正计时 · 心无旁骛";
+
+            // 一键应用该场景的屏蔽分类（桌面应用拦截实时生效；网站屏蔽需点"应用屏蔽"写hosts）
+            _blocklist.SetEnabledCategories(preset.Categories);
+
+            // 更新场景按钮高亮状态
+            foreach (var child in ScenePanel.Children)
+            {
+                if (child is Button btn)
+                {
+                    var isActive = btn.Tag?.ToString() == tag;
+                    btn.Background = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : new SolidColorBrush(Colors.Transparent);
+                    btn.Foreground = isActive ? new SolidColorBrush(Colors.White) : (Brush)Application.Current.Resources["BrushTextSecondary"];
+                    btn.BorderBrush = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : (Brush)Application.Current.Resources["BrushTextSecondary"];
+                }
+            }
+
+            App.LogAction("选择场景", $"{tag} {preset.Minutes}分钟 屏蔽=[{string.Join("/", preset.Categories)}]");
         }
         catch (Exception ex)
         {

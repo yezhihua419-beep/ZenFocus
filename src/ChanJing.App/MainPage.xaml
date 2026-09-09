@@ -31,7 +31,7 @@
                     <TextBlock Text="今日一愿" FontSize="13" HorizontalAlignment="Center"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <!-- 场景快捷选择 -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                    <StackPanel x:Name="ScenePanel" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
                         <Button Content="工作" Tag="work" Click="Scene_Click"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
