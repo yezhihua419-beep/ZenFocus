@@ -32,6 +32,7 @@ public sealed partial class MainWindow : Window
         _tray.Show("禅净 — 先管住手，再看清时间");
 
         AppServices.Activity.LimitExceeded += OnLimitExceeded;
+        AppServices.Activity.LimitBlocked += OnLimitBlocked;
         AppServices.Activity.DistractionDetected += OnDistractionDetected;
         AppServices.Activity.AppBlocked += OnAppBlocked;
         AppWindow.Closing += OnClosing;
@@ -77,6 +78,23 @@ public sealed partial class MainWindow : Window
             catch (Exception ex)
             {
                 App.LogCrash("MainWindow.LimitBalloon", ex);
+            }
+        });
+    }
+
+    /// <summary>每日限额超限强制最小化（后台线程，调度回 UI 弹托盘气泡）。</summary>
+    private void OnLimitBlocked(string domain)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                _tray.ShowBalloon($"{domain} 已达今日上限，窗口已自动最小化。明天再会。", "禅净 · 限额阻断");
+                App.LogAction("限额强制阻断", domain);
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.LimitBlockBalloon", ex);
             }
         });
     }

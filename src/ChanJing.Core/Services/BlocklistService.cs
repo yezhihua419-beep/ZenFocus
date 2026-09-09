@@ -41,6 +41,26 @@ public sealed class BlocklistService
             ["购物"] = new[] { "taobao", "jd", "pinduoduo" }
         };
 
+    /// <summary>桌面应用预设中文显示名（进程名 → 中文名）。未知进程显示原名。</summary>
+    private static readonly IReadOnlyDictionary<string, string> AppDisplayNames =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["douyin"] = "抖音",
+            ["kwai"] = "快手",
+            ["bilibili"] = "哔哩哔哩",
+            ["huya"] = "虎牙",
+            ["douyu"] = "斗鱼",
+            ["iqiyi"] = "爱奇艺",
+            ["youku"] = "优酷",
+            ["taobao"] = "淘宝",
+            ["jd"] = "京东",
+            ["pinduoduo"] = "拼多多"
+        };
+
+    /// <summary>进程名 → 中文显示名（仅预设应用有映射，未知返回原名）。</summary>
+    public static string GetAppDisplayName(string processName) =>
+        AppDisplayNames.TryGetValue(processName, out var name) ? name : processName;
+
     /// <summary>桌面应用进程名是否命中已启用分类（预设 + 用户自定义）。返回命中分类名，未命中返回 null。</summary>
     public string? MatchBlockedApp(string processName)
     {

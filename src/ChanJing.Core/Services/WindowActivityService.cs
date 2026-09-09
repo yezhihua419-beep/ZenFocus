@@ -28,11 +28,15 @@ public sealed class WindowActivityService : IDisposable
     private readonly Dictionary<string, int> _buffer = new();
     private readonly HashSet<string> _notifiedLimits = new();
     private readonly Dictionary<string, DateTime> _lastAppBlockedAt = new();
+    private readonly Dictionary<string, DateTime> _lastLimitBlockedAt = new();
     private string? _notifiedDistractionKey;
     private DateTime _notifiedDay = DateTime.Today;
 
     /// <summary>某域名达当日上限时触发（后台线程）。</summary>
     public event Action<string>? LimitExceeded;
+
+    /// <summary>每日限额超限后前台窗口被强制最小化（域名）。</summary>
+    public event Action<string>? LimitBlocked;
 
     /// <summary>专注中被屏蔽站点分心时触发（后台线程）。</summary>
     public event Action<string>? DistractionDetected;
@@ -93,12 +97,29 @@ public sealed class WindowActivityService : IDisposable
             }
 
             // 每日限额：匹配标题 → 累计 → 超限（每日只提醒一次）
+            // 超限后强制阻断：前台（浏览器）窗口最小化 + 提醒，5 秒冷却（用户切回再被拦）
             foreach (var domain in _dailyLimits.MatchDomains(info.TitleText))
             {
                 _dailyLimits.AddUsage(domain, TickSeconds);
-                if (_dailyLimits.IsExceeded(domain) && _notifiedLimits.Add(domain))
+                if (_dailyLimits.IsExceeded(domain))
                 {
-                    LimitExceeded?.Invoke(domain);
+                    if (_notifiedLimits.Add(domain))
+                    {
+                        LimitExceeded?.Invoke(domain);
+                    }
+                    if (info.Hwnd != IntPtr.Zero)
+                    {
+                        lock (_lock)
+                        {
+                            var last = _lastLimitBlockedAt.GetValueOrDefault(domain);
+                            if (DateTime.UtcNow - last > TimeSpan.FromSeconds(5))
+                            {
+                                _lastLimitBlockedAt[domain] = DateTime.UtcNow;
+                                ShowWindow(info.Hwnd, SW_MINIMIZE);
+                                LimitBlocked?.Invoke(domain);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -183,6 +204,15 @@ public sealed class WindowActivityService : IDisposable
                 // 落库失败静默，下轮重新采集
             }
         }
+    }
+
+    /// <summary>当前前台窗口标题命中的第一个屏蔽域名（供专注页快捷放行）。未命中返回 null。</summary>
+    public string? GetCurrentBlockedDomain()
+    {
+        var info = GetForegroundInfo();
+        if (info.TitleText is null) return null;
+        var hits = _blocklist.MatchBlockedDomains(info.TitleText);
+        return hits.Count > 0 ? hits[0] : null;
     }
 
     /// <summary>前台窗口信息。ProcessName 为 null 表示无前台窗口（如锁屏）。</summary>

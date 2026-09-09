@@ -22,6 +22,10 @@ namespace ChanJing_App;
 public partial class App : Application
 {
     private Window? _window;
+    private System.Threading.Mutex? _mutex;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -43,6 +47,15 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        // 单实例：防双开并发写 hosts / 限额计时冲突
+        _mutex = new System.Threading.Mutex(true, @"Local\ChanJing.App.SingleInstance", out var createdNew);
+        if (!createdNew)
+        {
+            MessageBox(IntPtr.Zero, "禅净已在运行，可在右下角托盘找到它。", "禅净", 0x40);
+            Exit();
+            return;
+        }
+
         _window = new MainWindow();
         _window.Activate();
         LogAction("应用启动");

@@ -372,7 +372,7 @@ public sealed partial class ShieldPage : Page
     private void RefreshApps()
     {
         var items = _blocklist.GetActiveApps()
-            .Select(a => new AppItem(a.Process, a.Category, $"{a.Process}"))
+            .Select(a => new AppItem(a.Process, a.Category, BlocklistService.GetAppDisplayName(a.Process)))
             .ToList();
         AppList.ItemsSource = items;
     }

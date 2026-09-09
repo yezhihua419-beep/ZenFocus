@@ -60,7 +60,7 @@ public sealed partial class MainPage : Page
             var dialog = new ContentDialog
             {
                 Title = "欢迎使用禅净",
-                Content = "先管住手，再看清时间。\n\n下一步：到「屏蔽」页勾选要屏蔽的分类（短视频、B 站…），点击「应用屏蔽」——之后所有浏览器都打不开这些网站，包括隐身窗口。\n\n首次应用屏蔽会请求管理员权限，个别杀毒软件可能弹窗，属正常现象。",
+                Content = "先管住手，再看清时间。\n\n① 到「屏蔽」页勾选分类 →「应用屏蔽」，浏览器将打不开这些网站（含隐身窗口）；首次会请求管理员权限，个别杀软可能弹窗，属正常。\n② 屏蔽只拦浏览器网页；桌面 App（抖音客户端等）需在屏蔽页「桌面应用」区单独配置。\n③ 点窗口 ✕ 是最小化到托盘，想彻底退出请右键托盘图标选「退出」。",
                 PrimaryButtonText = "去设置屏蔽",
                 CloseButtonText = "稍后再说",
                 DefaultButton = ContentDialogButton.Primary,
@@ -219,6 +219,41 @@ public sealed partial class MainPage : Page
         catch (Exception ex)
         {
             App.LogCrash("MainPage.PauseToggle", ex);
+        }
+    }
+
+    /// <summary>快捷放行：当前前台网站放行 10 分钟（无需切到屏蔽页）。</summary>
+    private async void AllowCurrent_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var domain = AppServices.Activity.GetCurrentBlockedDomain();
+            if (domain is null)
+            {
+                var none = new ContentDialog
+                {
+                    Title = "没有可放行的网站",
+                    Content = "当前前台没有正在被屏蔽的网站。先打开那个网站（如 bilibili.com），再点此按钮。",
+                    CloseButtonText = "知道了",
+                    XamlRoot = XamlRoot
+                };
+                await none.ShowAsync();
+                return;
+            }
+            AppServices.Blocklist.AddTempAllow(domain, 10);
+            App.LogAction("快捷放行", $"{domain} 10分钟");
+            var ok = new ContentDialog
+            {
+                Title = "已放行",
+                Content = $"{domain} 已临时放行 10 分钟，期间可正常访问。",
+                CloseButtonText = "好",
+                XamlRoot = XamlRoot
+            };
+            await ok.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainPage.AllowCurrent", ex);
         }
     }
 
