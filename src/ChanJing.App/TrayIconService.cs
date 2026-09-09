@@ -50,10 +50,12 @@ public sealed class TrayIconService : IDisposable
             hInstance = hInstance,
             lpszClassName = "ChanJingTrayWindow"
         };
-        _ = RegisterClass(ref wc);
+        var reg = RegisterClass(ref wc);
+        App.LogAction("托盘窗口类", $"RegisterClass={reg} err={Marshal.GetLastWin32Error()}");
 
         _hwnd = CreateWindowEx(0, "ChanJingTrayWindow", "禅净托盘", 0, 0, 0, 0, 0,
             IntPtr.Zero, IntPtr.Zero, hInstance, IntPtr.Zero);
+        App.LogAction("托盘窗口", $"CreateWindowEx={_hwnd} err={Marshal.GetLastWin32Error()}");
 
         // IDI_APPLICATION 占位，后续换品牌图标。
         _icon = LoadIcon(IntPtr.Zero, new IntPtr(32512));
@@ -69,7 +71,15 @@ public sealed class TrayIconService : IDisposable
         };
         nid.szTip = tooltip.Length > MAX_TIP_LENGTH ? tooltip[..MAX_TIP_LENGTH] : tooltip;
         _nid = nid;
-        _ = Shell_NotifyIcon(NIM_ADD, ref _nid);
+        var added = Shell_NotifyIcon(NIM_ADD, ref _nid);
+        App.LogAction("托盘图标", $"NIM_ADD={added} hwnd={_hwnd} hIcon={_icon}");
+        if (!added)
+        {
+            // 重试一次（Explorer 偶发未就绪）
+            _ = Shell_NotifyIcon(NIM_DELETE, ref _nid);
+            _ = Shell_NotifyIcon(NIM_ADD, ref _nid);
+            App.LogAction("托盘图标", $"NIM_ADD 重试后={Shell_NotifyIcon(NIM_ADD, ref _nid)}");
+        }
     }
 
     /// <summary>托盘气泡通知（如每日限额提醒）。</summary>
@@ -182,10 +192,10 @@ public sealed class TrayIconService : IDisposable
         public int Y;
     }
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern ushort RegisterClass(ref WNDCLASS lpWndClass);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern IntPtr CreateWindowEx(uint dwExStyle, string lpClassName, string lpWindowName,
         uint dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
 
@@ -201,7 +211,7 @@ public sealed class TrayIconService : IDisposable
     [DllImport("user32.dll")]
     private static extern bool DestroyIcon(IntPtr hIcon);
 
-    [DllImport("shell32.dll")]
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool Shell_NotifyIcon(uint dwMessage, ref NOTIFYICONDATA lpData);
 
     [DllImport("user32.dll")]
