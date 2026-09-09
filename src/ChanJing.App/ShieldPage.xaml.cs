@@ -89,6 +89,7 @@ public sealed partial class ShieldPage : Page
             RefreshLimits();
             RefreshAllowStatus();
             RefreshApps();
+            AppModeBox.SelectedIndex = _blocklist.GetAppBlockMode() == "kill" ? 1 : 0;
             RefreshStatus();
             App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count}");
         }
@@ -415,6 +416,20 @@ public sealed partial class ShieldPage : Page
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.RemoveApp", ex);
+        }
+    }
+
+    private void AppMode_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            var mode = AppModeBox.SelectedIndex == 1 ? "kill" : "minimize";
+            _blocklist.SetAppBlockMode(mode);
+            App.LogAction("设置桌面应用拦截方式", mode);
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.AppMode", ex);
         }
     }
 

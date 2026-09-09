@@ -11,6 +11,7 @@ public sealed class BlocklistService
     public const string SettingKeyTempAllow = "temp_allow";
     public const string SettingKeyActivated = "activated";
     public const string SettingKeyCustomApps = "custom_apps";
+    public const string SettingKeyAppBlockMode = "app_block_mode";
 
     /// <summary>免费版最多可配置的屏蔽目标数（分类 + 自定义域名项）。</summary>
     public const int FreeTargetLimit = 3;
@@ -146,6 +147,15 @@ public sealed class BlocklistService
             .ToList();
         _db.SetSetting(SettingKeyCustomApps,
             string.Join(";", remaining.Select(a => $"{a.Process}|{a.Category}")));
+    }
+
+    /// <summary>桌面应用拦截方式：minimize=自动最小化（默认）/ kill=结束进程。</summary>
+    public string GetAppBlockMode() => _db.GetSetting(SettingKeyAppBlockMode) ?? "minimize";
+
+    /// <summary>设置桌面应用拦截方式。</summary>
+    public void SetAppBlockMode(string mode)
+    {
+        _db.SetSetting(SettingKeyAppBlockMode, mode == "kill" ? "kill" : "minimize");
     }
 
     /// <summary>是否已激活（买断/订阅）。V1 为占位，支付上线后接入。</summary>

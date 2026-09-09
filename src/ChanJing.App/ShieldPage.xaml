@@ -134,7 +134,7 @@
 
                 <!-- 桌面应用拦截 -->
                 <StackPanel Grid.Row="6" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="桌面应用（勾选分类后，以下 App 打开会被自动最小化 + 提醒）" FontSize="13"
+                    <TextBlock Text="桌面应用（勾选分类后，打开命中 App 将按下方方式拦截）" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBox x:Name="AppBox" PlaceholderText="进程名，如 Douyin（可带 .exe）"
@@ -151,6 +151,19 @@
                         </ComboBox>
                         <Button Content="添加拦截" Click="AddApp_Click"
                                 Background="{StaticResource BrushState}" Foreground="White" Padding="18,8" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="拦截方式：" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <ComboBox x:Name="AppModeBox" Width="150" SelectedIndex="0"
+                                  SelectionChanged="AppMode_Changed"
+                                  Background="{StaticResource BrushPanel}">
+                            <ComboBoxItem Content="自动最小化（推荐）" />
+                            <ComboBoxItem Content="结束进程（更强）" />
+                        </ComboBox>
+                        <TextBlock FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Text="专注中会持续拦截（每 2 秒一次），非专注每 10 秒一次；结束进程更硬，但可能造成未保存内容丢失。" />
                     </StackPanel>
                     <ItemsControl x:Name="AppList">
                         <ItemsControl.ItemTemplate>
@@ -172,7 +185,7 @@
                     </ItemsControl>
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名。" />
+                               Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名（如抖音是 Douyin）。结束进程模式请先确认该应用无未保存内容。" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>
