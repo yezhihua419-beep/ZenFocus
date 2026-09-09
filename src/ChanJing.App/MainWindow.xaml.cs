@@ -14,6 +14,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly TrayIconService _tray;
     private bool _exiting;
+    private FrictionOverlay? _frictionOverlay;
 
     private const int SW_RESTORE = 9;
 
@@ -189,7 +190,29 @@ public sealed partial class MainWindow : Window
                 }
                 else
                 {
-                    _tray.ShowBalloon($"「{processName}」属于{category}，已自动最小化。", "禅净 · 桌面应用拦截");
+                    // 专注中：显示摩擦式拦截全屏遮罩（5秒冷静期，one sec科学背书减少57%分心）
+                    // 非专注中：只弹托盘气泡，不打断用户
+                    if (AppServices.Engine.IsRunning && _frictionOverlay is null)
+                    {
+                        _frictionOverlay = new FrictionOverlay(processName, category);
+                        _frictionOverlay.ContinueFocus += (_, _) =>
+                        {
+                            _frictionOverlay = null;
+                            App.LogAction("摩擦拦截结果", $"{processName} 用户选择继续专注");
+                        };
+                        _frictionOverlay.GiveIn += (_, _) =>
+                        {
+                            _frictionOverlay = null;
+                            // 用户选择分心：临时放行该应用5分钟
+                            AppServices.Blocklist.AddTempAllow(processName, 5);
+                            App.LogAction("摩擦拦截结果", $"{processName} 用户选择分心，临时放行5分钟");
+                        };
+                        _frictionOverlay.Closed += (_, _) => { _frictionOverlay = null; };
+                    }
+                    else if (!AppServices.Engine.IsRunning)
+                    {
+                        _tray.ShowBalloon($"「{processName}」属于{category}，已自动最小化。", "禅净 · 桌面应用拦截");
+                    }
                 }
                 App.LogAction("拦截桌面应用", $"{processName}({category}) 方式={mode}");
             }
