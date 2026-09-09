@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:ChanJing_App"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    NavigationCacheMode="Disabled"
     mc:Ignorable="d">
 
     <Grid Background="{StaticResource BrushBackground}">
