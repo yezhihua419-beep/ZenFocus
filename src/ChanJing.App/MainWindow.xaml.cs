@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Windowing;
@@ -6,12 +7,20 @@ using Windows.Graphics;
 namespace ChanJing_App;
 
 /// <summary>
-/// 主窗口：左侧导航（禅定/屏蔽），关闭按钮最小化到托盘。
+/// 主窗口：左侧导航（禅定/屏蔽），关闭按钮和最小化按钮均最小化到托盘。
 /// </summary>
 public sealed partial class MainWindow : Window
 {
     private readonly TrayIconService _tray;
     private bool _exiting;
+
+    private const int SW_RESTORE = 9;
+
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
     public MainWindow()
     {
@@ -36,6 +45,25 @@ public sealed partial class MainWindow : Window
         AppServices.Activity.DistractionDetected += OnDistractionDetected;
         AppServices.Activity.AppBlocked += OnAppBlocked;
         AppWindow.Closing += OnClosing;
+        AppWindow.Changed += OnAppWindowChanged;
+    }
+
+    /// <summary>窗口状态变化：最小化时隐藏窗口（任务栏图标消失），只留托盘图标。</summary>
+    private void OnAppWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
+    {
+        try
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            if (IsIconic(hWnd))
+            {
+                sender.Hide();
+                App.LogAction("最小化到托盘");
+            }
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainWindow.WindowState", ex);
+        }
     }
 
     private void Nav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -144,6 +172,9 @@ public sealed partial class MainWindow : Window
     private void ShowMain()
     {
         AppWindow.Show();
+        // 从最小化/隐藏状态恢复窗口
+        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        ShowWindow(hWnd, SW_RESTORE);
         Activate();
     }
 
