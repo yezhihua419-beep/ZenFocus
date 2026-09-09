@@ -27,6 +27,7 @@ public sealed class WindowActivityService : IDisposable
     private int _tickCount;
     private readonly Dictionary<string, int> _buffer = new();
     private readonly HashSet<string> _notifiedLimits = new();
+    private readonly Dictionary<string, DateTime> _lastAppBlockedAt = new();
     private string? _notifiedDistractionKey;
     private DateTime _notifiedDay = DateTime.Today;
 
@@ -35,6 +36,9 @@ public sealed class WindowActivityService : IDisposable
 
     /// <summary>专注中被屏蔽站点分心时触发（后台线程）。</summary>
     public event Action<string>? DistractionDetected;
+
+    /// <summary>屏蔽生效时前台命中分心桌面应用（进程名, 分类）→ 已自动最小化（后台线程）。</summary>
+    public event Action<string, string>? AppBlocked;
 
     public WindowActivityService(AppDatabase db, DailyLimitService dailyLimits,
         FocusEngine engine, BlocklistService blocklist)
@@ -110,6 +114,25 @@ public sealed class WindowActivityService : IDisposable
                     DistractionDetected?.Invoke(domain);
                 }
             }
+
+            // 桌面应用拦截：屏蔽已生效时，前台命中分心 App → 最小化 + 提醒（每进程 10 秒冷却）
+            if (_blocklist.IsApplied() && info.Hwnd != IntPtr.Zero)
+            {
+                var cat = _blocklist.MatchBlockedApp(info.ProcessName);
+                if (cat is not null)
+                {
+                    lock (_lock)
+                    {
+                        var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
+                        if (DateTime.UtcNow - last > TimeSpan.FromSeconds(10))
+                        {
+                            _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
+                            ShowWindow(info.Hwnd, SW_MINIMIZE);
+                            AppBlocked?.Invoke(info.ProcessName, cat);
+                        }
+                    }
+                }
+            }
         }
         catch
         {
@@ -168,7 +191,7 @@ public sealed class WindowActivityService : IDisposable
         var title = new StringBuilder(512);
         _ = GetWindowText(hwnd, title, title.Capacity);
         var text = title.ToString();
-        return new WindowInfo(processName, text.Length > 0 ? HashTitle(text) : null, text);
+        return new WindowInfo(processName, text.Length > 0 ? HashTitle(text) : null, text, hwnd);
     }
 
     /// <summary>标题 SHA256 哈希，取前 16 位十六进制（防还原）。</summary>
@@ -178,7 +201,7 @@ public sealed class WindowActivityService : IDisposable
         return Convert.ToHexString(bytes)[..16];
     }
 
-    private readonly record struct WindowInfo(string? ProcessName, string? TitleHash, string? TitleText);
+    private readonly record struct WindowInfo(string? ProcessName, string? TitleHash, string? TitleText, IntPtr Hwnd);
 
     public void Dispose()
     {
@@ -198,4 +221,9 @@ public sealed class WindowActivityService : IDisposable
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int maxCount);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    private const int SW_MINIMIZE = 6;
 }

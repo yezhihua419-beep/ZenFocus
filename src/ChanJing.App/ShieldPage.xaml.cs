@@ -88,6 +88,7 @@ public sealed partial class ShieldPage : Page
             RefreshCustomDomains();
             RefreshLimits();
             RefreshAllowStatus();
+            RefreshApps();
             RefreshStatus();
             App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count}");
         }
@@ -139,6 +140,7 @@ public sealed partial class ShieldPage : Page
         var list = enabled.ToList();
         _blocklist.SetEnabledCategories(list);
         App.LogAction("勾选分类", string.Join("+", list));
+        RefreshApps();
         LimitHint.Visibility = _blocklist.IsActivated() ? Visibility.Collapsed : Visibility.Visible;
         RefreshStatus();
     }
@@ -363,6 +365,60 @@ public sealed partial class ShieldPage : Page
             StatusText.Text = $"清理失败：{ex.Message}。";
         }
     }
+
+    // ---------- 桌面应用拦截 ----------
+
+    private void RefreshApps()
+    {
+        var items = _blocklist.GetActiveApps()
+            .Select(a => new AppItem(a.Process, a.Category, $"{a.Process}"))
+            .ToList();
+        AppList.ItemsSource = items;
+    }
+
+    private void AddApp_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var proc = AppBox.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(proc))
+            {
+                StatusText.Text = "请输入进程名，如 Douyin。";
+                return;
+            }
+            var category = (AppCategoryBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "短视频";
+            _blocklist.AddCustomApp(proc, category);
+            AppBox.Text = string.Empty;
+            RefreshApps();
+            RefreshStatus();
+            App.LogAction("添加桌面应用拦截", $"{proc}({category})");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.AddApp", ex);
+            StatusText.Text = $"添加失败：{ex.Message}";
+        }
+    }
+
+    private void RemoveApp_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is Button { Tag: string proc })
+            {
+                _blocklist.RemoveCustomApp(proc);
+                RefreshApps();
+                RefreshStatus();
+                App.LogAction("移除桌面应用拦截", proc);
+            }
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.RemoveApp", ex);
+        }
+    }
+
+    private sealed record AppItem(string Process, string Category, string Text);
 
     private void RefreshStatus(string? overrideText = null)
     {

@@ -10,6 +10,7 @@ public sealed class BlocklistService
     public const string SettingKeyCustomDomains = "custom_domains";
     public const string SettingKeyTempAllow = "temp_allow";
     public const string SettingKeyActivated = "activated";
+    public const string SettingKeyCustomApps = "custom_apps";
 
     /// <summary>免费版最多可配置的屏蔽目标数（分类 + 自定义域名项）。</summary>
     public const int FreeTargetLimit = 3;
@@ -28,6 +29,124 @@ public sealed class BlocklistService
             ["资讯"] = new[] { "toutiao.com", "sohu.com" },
             ["购物"] = new[] { "taobao.com", "tmall.com", "jd.com", "pinduoduo.com" }
         };
+
+    /// <summary>桌面应用拦截预设：分类 → 进程名（不含 .exe，匹配忽略大小写）。
+    /// 只收录有独立桌面客户端的常见分心应用；用户可自行添加更多。</summary>
+    public static IReadOnlyDictionary<string, string[]> DefaultAppCategories { get; } =
+        new Dictionary<string, string[]>
+        {
+            ["短视频"] = new[] { "douyin", "kwai" },
+            ["视频娱乐"] = new[] { "bilibili", "huya", "douyu", "iqiyi", "youku" },
+            ["购物"] = new[] { "taobao", "jd", "pinduoduo" }
+        };
+
+    /// <summary>桌面应用进程名是否命中已启用分类（预设 + 用户自定义）。返回命中分类名，未命中返回 null。</summary>
+    public string? MatchBlockedApp(string processName)
+    {
+        if (string.IsNullOrWhiteSpace(processName)) return null;
+        var enabled = GetEnabledCategories().ToHashSet(StringComparer.Ordinal);
+        if (enabled.Count == 0) return null;
+
+        foreach (var kv in DefaultAppCategories)
+        {
+            if (enabled.Contains(kv.Key) &&
+                kv.Value.Any(p => string.Equals(p, processName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return kv.Key;
+            }
+        }
+        foreach (var (proc, cat) in GetCustomApps())
+        {
+            if (enabled.Contains(cat) &&
+                string.Equals(proc, processName, StringComparison.OrdinalIgnoreCase))
+            {
+                return cat;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>当前应拦截的桌面应用进程名集合（启用分类的预设 + 自定义）。</summary>
+    public IReadOnlyList<string> GetActiveAppProcesses()
+    {
+        var enabled = GetEnabledCategories().ToHashSet(StringComparer.Ordinal);
+        if (enabled.Count == 0) return Array.Empty<string>();
+
+        var result = new List<string>();
+        foreach (var kv in DefaultAppCategories)
+        {
+            if (enabled.Contains(kv.Key)) result.AddRange(kv.Value);
+        }
+        result.AddRange(GetCustomApps().Where(a => enabled.Contains(a.Category)).Select(a => a.Process));
+        return result.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>当前应拦截的桌面应用（进程名, 分类），供 UI 展示。</summary>
+    public IReadOnlyList<(string Process, string Category)> GetActiveApps()
+    {
+        var enabled = GetEnabledCategories().ToHashSet(StringComparer.Ordinal);
+        if (enabled.Count == 0) return Array.Empty<(string, string)>();
+
+        var result = new List<(string Process, string Category)>();
+        foreach (var kv in DefaultAppCategories)
+        {
+            if (enabled.Contains(kv.Key))
+            {
+                foreach (var proc in kv.Value) result.Add((proc, kv.Key));
+            }
+        }
+        result.AddRange(GetCustomApps().Where(a => enabled.Contains(a.Category)));
+        return result
+            .GroupBy(a => a.Process, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToList();
+    }
+
+    /// <summary>用户自定义桌面应用（进程名, 分类）。</summary>
+    public IReadOnlyList<(string Process, string Category)> GetCustomApps()
+    {
+        var raw = _db.GetSetting(SettingKeyCustomApps);
+        var result = new List<(string, string)>();
+        if (string.IsNullOrWhiteSpace(raw)) return result;
+        foreach (var item in raw.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = item.Split('|');
+            if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[0]))
+            {
+                result.Add((parts[0].Trim(), parts[1].Trim()));
+            }
+        }
+        return result;
+    }
+
+    /// <summary>添加自定义桌面应用（进程名不含 .exe；同进程同分类去重）。</summary>
+    public void AddCustomApp(string processName, string category)
+    {
+        var proc = processName.Trim();
+        if (proc.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        {
+            proc = proc[..^4];
+        }
+        proc = proc.Trim();
+        if (string.IsNullOrWhiteSpace(proc)) return;
+
+        var current = GetCustomApps()
+            .Where(a => !(string.Equals(a.Process, proc, StringComparison.OrdinalIgnoreCase) && a.Category == category))
+            .ToList();
+        current.Add((proc, category));
+        _db.SetSetting(SettingKeyCustomApps,
+            string.Join(";", current.Select(a => $"{a.Process}|{a.Category}")));
+    }
+
+    /// <summary>删除自定义桌面应用（按进程名，忽略分类）。</summary>
+    public void RemoveCustomApp(string processName)
+    {
+        var remaining = GetCustomApps()
+            .Where(a => !string.Equals(a.Process, processName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        _db.SetSetting(SettingKeyCustomApps,
+            string.Join(";", remaining.Select(a => $"{a.Process}|{a.Category}")));
+    }
 
     /// <summary>是否已激活（买断/订阅）。V1 为占位，支付上线后接入。</summary>
     public bool IsActivated() => _db.GetSetting(SettingKeyActivated) == "true";

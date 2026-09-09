@@ -33,6 +33,7 @@ public sealed partial class MainWindow : Window
 
         AppServices.Activity.LimitExceeded += OnLimitExceeded;
         AppServices.Activity.DistractionDetected += OnDistractionDetected;
+        AppServices.Activity.AppBlocked += OnAppBlocked;
         AppWindow.Closing += OnClosing;
     }
 
@@ -93,6 +94,23 @@ public sealed partial class MainWindow : Window
             catch (Exception ex)
             {
                 App.LogCrash("MainWindow.DistractionBalloon", ex);
+            }
+        });
+    }
+
+    /// <summary>屏蔽生效时命中分心桌面应用（后台线程，调度回 UI 弹托盘气泡）。</summary>
+    private void OnAppBlocked(string processName, string category)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                _tray.ShowBalloon($"「{processName}」属于{category}，已自动最小化。", "禅净 · 桌面应用拦截");
+                App.LogAction("拦截桌面应用", $"{processName}({category})");
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.AppBlocked", ex);
             }
         });
     }

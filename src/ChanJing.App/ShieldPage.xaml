@@ -131,6 +131,49 @@
                     <TextBlock x:Name="AllowStatus" FontSize="11"
                                Foreground="{StaticResource BrushTextSecondary}" />
                 </StackPanel>
+
+                <!-- 桌面应用拦截 -->
+                <StackPanel Grid.Row="6" Margin="0,18,0,0" Spacing="8">
+                    <TextBlock Text="桌面应用（勾选分类后，以下 App 打开会被自动最小化 + 提醒）" FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBox x:Name="AppBox" PlaceholderText="进程名，如 Douyin（可带 .exe）"
+                                 Width="220" Padding="12,8"
+                                 Background="{StaticResource BrushPanel}"
+                                 BorderBrush="{StaticResource BrushTextSecondary}" />
+                        <ComboBox x:Name="AppCategoryBox" Width="120" SelectedIndex="0"
+                                  Background="{StaticResource BrushPanel}">
+                            <ComboBoxItem Content="短视频" />
+                            <ComboBoxItem Content="视频娱乐" />
+                            <ComboBoxItem Content="社交" />
+                            <ComboBoxItem Content="资讯" />
+                            <ComboBoxItem Content="购物" />
+                        </ComboBox>
+                        <Button Content="添加拦截" Click="AddApp_Click"
+                                Background="{StaticResource BrushState}" Foreground="White" Padding="18,8" />
+                    </StackPanel>
+                    <ItemsControl x:Name="AppList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="180,120,80" Margin="0,2">
+                                    <TextBlock Text="{Binding Text}" FontSize="12"
+                                               Foreground="{StaticResource BrushTextPrimary}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Category}" FontSize="11"
+                                               Foreground="{StaticResource BrushTextSecondary}" />
+                                    <Button Grid.Column="2" Content="移除" Tag="{Binding Process}"
+                                            Click="RemoveApp_Click" FontSize="11" Padding="10,2"
+                                            Background="Transparent"
+                                            Foreground="{StaticResource BrushWarning}"
+                                            BorderBrush="{StaticResource BrushTextSecondary}"
+                                            HorizontalAlignment="Left" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名。" />
+                </StackPanel>
             </Grid>
         </ScrollViewer>
     </Grid>
