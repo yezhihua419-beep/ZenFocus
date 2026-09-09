@@ -22,21 +22,29 @@ public sealed class TrayIconService : IDisposable
     private const uint WM_COMMAND = 0x0111;
     private const int ID_OPEN = 1;
     private const int ID_EXIT = 2;
+    private const int ID_TOGGLE_FOCUS = 3;
+    private const int ID_TOGGLE_SHIELD = 4;
     private const int MAX_TIP_LENGTH = 127;
+    private const uint MF_SEPARATOR = 0x00000800;
+    private const uint MF_GRAYED = 0x00000001;
 
     private readonly Action _onOpen;
     private readonly Action _onExit;
+    private readonly Action? _onToggleFocus;
+    private readonly Action? _onToggleShield;
     private IntPtr _hwnd;
     private IntPtr _icon;
     private NOTIFYICONDATA _nid;
-    private WndProcDelegate? _wndProcDelegate; // 持有委托防止被 GC 回收
+    private WndProcDelegate? _wndProcDelegate;
 
     private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-    public TrayIconService(Action onOpen, Action onExit)
+    public TrayIconService(Action onOpen, Action onExit, Action? onToggleFocus = null, Action? onToggleShield = null)
     {
         _onOpen = onOpen;
         _onExit = onExit;
+        _onToggleFocus = onToggleFocus;
+        _onToggleShield = onToggleShield;
     }
 
     public void Show(string tooltip)
@@ -114,6 +122,8 @@ public sealed class TrayIconService : IDisposable
             var id = wParam.ToInt32() & 0xFFFF;
             if (id == ID_OPEN) _onOpen();
             else if (id == ID_EXIT) _onExit();
+            else if (id == ID_TOGGLE_FOCUS) _onToggleFocus?.Invoke();
+            else if (id == ID_TOGGLE_SHIELD) _onToggleShield?.Invoke();
             return IntPtr.Zero;
         }
 
@@ -123,6 +133,25 @@ public sealed class TrayIconService : IDisposable
     private void ShowMenu()
     {
         var menu = CreatePopupMenu();
+
+        // 标题（不可点击）
+        _ = AppendMenu(menu, MF_GRAYED, 0, "禅净");
+        _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
+
+        // 专注状态
+        var isFocusing = AppServices.Engine.IsRunning;
+        var todayMinutes = AppServices.Engine.GetTodayTotalMinutes();
+        _ = AppendMenu(menu, MF_GRAYED, 0, isFocusing ? $"专注中 · 今日 {todayMinutes} 分钟" : $"空闲 · 今日 {todayMinutes} 分钟");
+        _ = AppendMenu(menu, 0, ID_TOGGLE_FOCUS, isFocusing ? "暂停专注" : "开始专注");
+        _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
+
+        // 屏蔽状态
+        var isShieldOn = AppServices.Blocklist.IsApplied();
+        _ = AppendMenu(menu, MF_GRAYED, 0, isShieldOn ? "屏蔽：已开启" : "屏蔽：已关闭");
+        _ = AppendMenu(menu, 0, ID_TOGGLE_SHIELD, isShieldOn ? "关闭屏蔽" : "开启屏蔽");
+        _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
+
+        // 打开/退出
         _ = AppendMenu(menu, 0, ID_OPEN, "打开禅净");
         _ = AppendMenu(menu, 0, ID_EXIT, "退出");
 

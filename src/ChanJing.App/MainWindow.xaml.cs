@@ -45,7 +45,7 @@ public sealed partial class MainWindow : Window
         // 前台窗口采集常驻（进程名 + 标题哈希，本地存储）。
         AppServices.Activity.Start();
 
-        _tray = new TrayIconService(ShowMain, ExitApp);
+        _tray = new TrayIconService(ShowMain, ExitApp, ToggleFocus, ToggleShield);
         _tray.Show("禅净 — 先管住手，再看清时间");
 
         AppServices.Activity.LimitExceeded += OnLimitExceeded;
@@ -219,6 +219,58 @@ public sealed partial class MainWindow : Window
             catch (Exception ex)
             {
                 App.LogCrash("MainWindow.AppBlocked", ex);
+            }
+        });
+    }
+
+    /// <summary>托盘菜单：快速开始/暂停专注。</summary>
+    private void ToggleFocus()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                if (AppServices.Engine.IsRunning)
+                {
+                    if (AppServices.Engine.IsPaused)
+                    {
+                        AppServices.Engine.Resume();
+                        App.LogAction("托盘快捷操作", "恢复专注");
+                    }
+                    else
+                    {
+                        AppServices.Engine.Pause();
+                        App.LogAction("托盘快捷操作", "暂停专注");
+                    }
+                }
+                else
+                {
+                    AppServices.Engine.Start("专注", 25);
+                    App.LogAction("托盘快捷操作", "开始专注25分钟");
+                }
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.ToggleFocus", ex);
+            }
+        });
+    }
+
+    /// <summary>托盘菜单：快速开启/关闭屏蔽（打开主窗口导航到屏蔽页）。</summary>
+    private void ToggleShield()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                ShowMain();
+                // 导航到屏蔽页
+                ContentFrame.Navigate(typeof(ShieldPage));
+                App.LogAction("托盘快捷操作", "打开屏蔽设置");
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.ToggleShield", ex);
             }
         });
     }

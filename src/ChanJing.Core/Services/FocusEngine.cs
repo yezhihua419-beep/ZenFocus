@@ -99,6 +99,18 @@ public sealed class FocusEngine
         return done;
     }
 
+    /// <summary>今日已完成专注总分钟数（含当前进行中的会话）。</summary>
+    public int GetTodayTotalMinutes()
+    {
+        var sessions = _db.GetSessions(DateTime.Today, DateTime.Today.AddDays(1));
+        var total = sessions.Sum(s => s.ActualMinutes);
+        if (IsRunning && !IsPaused)
+        {
+            total += (int)Math.Round(Elapsed.TotalMinutes);
+        }
+        return total;
+    }
+
     /// <summary>
     /// 生成专注后即时反馈（1-2 句人话，进步框架，不审判）。
     /// 纯规则模板，不需要 AI。
