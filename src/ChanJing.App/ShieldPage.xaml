@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ChanJing_App.ShieldPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,10 +9,14 @@
     mc:Ignorable="d">
 
     <Grid Background="{StaticResource BrushBackground}">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
-            <Grid Padding="48,24,48,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
+            <Grid Padding="48,24,48,16">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -27,88 +31,67 @@
                                Foreground="{StaticResource BrushTextPrimary}" />
                     <TextBlock FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="勾选分类、添加域名，点击「应用屏蔽」生效（覆盖所有浏览器，含隐身窗口）" />
-                </StackPanel>
-
-                <!-- 操作区（置顶，保证任何窗口高度下可见） -->
-                <StackPanel Grid.Row="1" Margin="0,18,0,0" Spacing="10">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
-                        <Button x:Name="ApplyButton" Content="应用屏蔽" Click="Apply_Click"
-                                Background="{StaticResource BrushState}" Foreground="White"
-                                Padding="32,10" CornerRadius="24" />
-                        <Button Content="撤销屏蔽" Click="Remove_Click"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="32,10" CornerRadius="24" />
-                        <Button Content="清理残留" Click="CleanUp_Click"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="32,10" CornerRadius="24" />
-                    </StackPanel>
-                    <TextBlock x:Name="StatusText" FontSize="13" HorizontalAlignment="Center"
-                               Foreground="{StaticResource BrushState}" TextWrapping="Wrap" />
-                    <TextBlock FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}"
-                               Text="说明：屏蔽通过 hosts 生效，仅管理禅净自己的配置段。写入需要管理员权限；若提示失败，请右键以管理员身份重新运行本程序。" />
+                               Text="勾选分类、添加域名，点击底部「应用屏蔽」生效（覆盖所有浏览器，含隐身窗口）" />
                 </StackPanel>
 
                 <!-- 分类名单 -->
-                <StackPanel Grid.Row="2" Margin="0,18,0,0" Spacing="8">
-                    <StackPanel x:Name="CategoryPanel" Spacing="8" />
-                    <TextBlock x:Name="LimitHint" FontSize="11" Visibility="Collapsed"
-                               Foreground="{StaticResource BrushWarning}"
-                               Text="免费版最多 3 个屏蔽目标（分类 + 自定义域名）。" />
+                <StackPanel Grid.Row="1" Margin="0,20,0,0" Spacing="8">
+                    <TextBlock Text="网站分类" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource BrushTextPrimary}" />
+                    <StackPanel x:Name="CategoryPanel" Orientation="Horizontal">
+                    </StackPanel>
+                    <TextBlock x:Name="LimitHint" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushWarn}"
+                               Text="免费版最多启用 3 个屏蔽目标（分类+自定义域名合计），升级后无限制。" />
                 </StackPanel>
 
                 <!-- 自定义域名 -->
-                <StackPanel Grid.Row="3" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="自定义域名" FontSize="13"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBox x:Name="DomainBox" PlaceholderText="如 example.com，可多个逗号分隔"
-                                 Width="300" Padding="12,8"
-                                 Background="{StaticResource BrushPanel}"
-                                 BorderBrush="{StaticResource BrushTextSecondary}" />
-                        <Button Content="添加" Click="AddDomain_Click"
-                                Background="{StaticResource BrushState}" Foreground="White" Padding="18,8" />
+                <StackPanel Grid.Row="2" Margin="0,20,0,0" Spacing="8">
+                    <TextBlock Text="自定义域名" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource BrushTextPrimary}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="DomainBox" PlaceholderText="如 example.com（不含 http://）"
+                                 Width="280" />
+                        <Button Content="添加" Click="AddDomain_Click" Padding="16,8" />
                     </StackPanel>
                     <ItemsControl x:Name="DomainList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding}" FontSize="12" Margin="0,2"
-                                           Foreground="{StaticResource BrushTextSecondary}" />
+                                <TextBlock Text="{Binding}" Margin="0,2" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
 
                 <!-- 每日限额 -->
-                <StackPanel Grid.Row="4" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="每日限额（某站点今日最多用多久，超限提醒）" FontSize="13" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBox x:Name="LimitDomainBox" PlaceholderText="域名，如 bilibili.com"
-                                 Width="220" Padding="12,8"
-                                 Background="{StaticResource BrushPanel}"
-                                 BorderBrush="{StaticResource BrushTextSecondary}" />
-                        <NumberBox x:Name="LimitMinutesBox" Value="30" Minimum="1" Maximum="1440"
-                                   SmallChange="5" LargeChange="30" Width="110" SpinButtonPlacementMode="Compact"
-                                   Header="分钟/天" />
-                        <Button Content="添加限额" Click="AddLimit_Click"
-                                Background="{StaticResource BrushState}" Foreground="White" Padding="18,8" />
+                <StackPanel Grid.Row="3" Margin="0,20,0,0" Spacing="8">
+                    <TextBlock Text="每日限额" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource BrushTextPrimary}" />
+                    <TextBlock FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="设定某域名每日最多使用分钟数，超限后自动最小化浏览器窗口（按域名每日去重提醒）。" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="LimitDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
+                        <NumberBox x:Name="LimitMinutesBox" Header="分钟/天" Minimum="5" Maximum="1440"
+                                   Value="30" SmallChange="5" LargeChange="30" Width="110" SpinButtonPlacementMode="Compact" />
+                        <Button Content="添加限额" Click="AddLimit_Click" Padding="16,8" VerticalAlignment="Bottom" />
                     </StackPanel>
                     <ItemsControl x:Name="LimitList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="180,*,120" Margin="0,2">
-                                    <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap"
-                                               Foreground="{StaticResource BrushTextPrimary}" />
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Domain}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+                                        <TextBlock Text="{Binding Minutes}" />
+                                        <TextBlock Text=" 分钟/天" Foreground="{StaticResource BrushTextSecondary}" />
+                                    </StackPanel>
                                     <Button Grid.Column="2" Content="删除" Tag="{Binding Domain}"
-                                            Click="DeleteLimit_Click" FontSize="11" Padding="10,2"
-                                            Background="Transparent"
-                                            Foreground="{StaticResource BrushWarning}"
-                                            BorderBrush="{StaticResource BrushTextSecondary}"
-                                            HorizontalAlignment="Left" />
+                                            Click="DeleteLimit_Click" FontSize="11" Padding="10,2" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -116,90 +99,96 @@
                 </StackPanel>
 
                 <!-- 临时放行 -->
-                <StackPanel Grid.Row="5" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="临时放行（查资料时放行某站 10 分钟，到期自动恢复屏蔽）" FontSize="13" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBox x:Name="AllowDomainBox" PlaceholderText="域名，如 bilibili.com"
-                                 Width="220" Padding="12,8"
-                                 Background="{StaticResource BrushPanel}"
-                                 BorderBrush="{StaticResource BrushTextSecondary}" />
-                        <Button Content="放行 10 分钟" Click="AddAllow_Click"
-                                Background="{StaticResource BrushPanel}" Padding="18,8" />
-                        <Button Content="清除全部放行" Click="ClearAllow_Click"
-                                Background="Transparent" Padding="14,8"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                BorderBrush="{StaticResource BrushTextSecondary}" />
+                <StackPanel Grid.Row="4" Margin="0,20,0,0" Spacing="8">
+                    <TextBlock Text="临时放行" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource BrushTextPrimary}" />
+                    <TextBlock FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="临时放行某域名 10 分钟，到期自动恢复屏蔽。适合查资料时短暂放行。" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="AllowDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
+                        <Button Content="放行 10 分钟" Click="AddAllow_Click" Padding="16,8" />
+                        <Button Content="清除全部放行" Click="ClearAllow_Click" Padding="16,8" />
                     </StackPanel>
-                    <TextBlock x:Name="AllowStatus" FontSize="11" TextWrapping="Wrap"
+                    <ItemsControl x:Name="AllowList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Margin="0,2"
+                                           Foreground="{StaticResource BrushTextSecondary}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="AllowStatus" FontSize="12" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}" />
                 </StackPanel>
 
                 <!-- 桌面应用拦截 -->
-                <StackPanel Grid.Row="6" Margin="0,18,0,0" Spacing="8">
-                    <TextBlock Text="桌面应用（勾选分类后，打开命中 App 将按下方方式拦截）" FontSize="13" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBox x:Name="AppBox" PlaceholderText="进程名，如 Douyin（可带 .exe）"
-                                 Width="220" Padding="12,8"
-                                 Background="{StaticResource BrushPanel}"
-                                 BorderBrush="{StaticResource BrushTextSecondary}" />
-                        <ComboBox x:Name="AppCategoryBox" Width="120" SelectedIndex="0"
-                                  Background="{StaticResource BrushPanel}">
-                            <ComboBoxItem Content="短视频" />
+                <StackPanel Grid.Row="5" Margin="0,20,0,0" Spacing="8">
+                    <TextBlock Text="桌面应用拦截" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource BrushTextPrimary}" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="拦截方式" VerticalAlignment="Center" />
+                        <ComboBox x:Name="AppModeBox" Width="160" SelectionChanged="AppMode_Changed">
+                            <ComboBoxItem Content="自动最小化" Tag="minimize" />
+                            <ComboBoxItem Content="结束进程" Tag="kill" />
+                        </ComboBox>
+                    </StackPanel>
+                    <TextBlock FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="自动最小化：温和拦截，可手动切回（专注中 2 秒冷却）。结束进程：强制关闭应用，未保存内容可能丢失。" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                        <TextBox x:Name="AppBox" PlaceholderText="进程名如 Douyin" Width="200" />
+                        <ComboBox x:Name="AppCategoryBox" Width="120">
+                            <ComboBoxItem Content="短视频" IsSelected="True" />
                             <ComboBoxItem Content="视频娱乐" />
                             <ComboBoxItem Content="社交" />
                             <ComboBoxItem Content="资讯" />
                             <ComboBoxItem Content="购物" />
                         </ComboBox>
-                        <Button Content="添加拦截" Click="AddApp_Click"
-                                Background="{StaticResource BrushState}" Foreground="White" Padding="18,8" />
+                        <Button Content="添加拦截" Click="AddApp_Click" Padding="16,8" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <TextBlock Text="拦截方式：" FontSize="12" VerticalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextSecondary}" />
-                        <ComboBox x:Name="AppModeBox" Width="150" SelectedIndex="0"
-                                  SelectionChanged="AppMode_Changed"
-                                  Background="{StaticResource BrushPanel}">
-                            <ComboBoxItem Content="自动最小化（推荐）" />
-                            <ComboBoxItem Content="结束进程（更强）" />
-                        </ComboBox>
-                    </StackPanel>
-                    <TextBlock FontSize="11" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}"
-                               Text="专注中会持续拦截（每 2 秒一次），非专注每 10 秒一次；结束进程更硬，但可能造成未保存内容丢失。" />
                     <ItemsControl x:Name="AppList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="180,120,80" Margin="0,2">
-                                    <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap"
-                                               Foreground="{StaticResource BrushTextPrimary}" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Category}" FontSize="11"
-                                               Foreground="{StaticResource BrushTextSecondary}" />
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Process}" VerticalAlignment="Center" />
                                     <Button Grid.Column="2" Content="移除" Tag="{Binding Process}"
-                                            Click="RemoveApp_Click" FontSize="11" Padding="10,2"
-                                            Background="Transparent"
-                                            Foreground="{StaticResource BrushWarning}"
-                                            BorderBrush="{StaticResource BrushTextSecondary}"
-                                            HorizontalAlignment="Left" />
+                                            Click="RemoveApp_Click" FontSize="11" Padding="10,2" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名（如抖音是 Douyin）。结束进程模式请先确认该应用无未保存内容。" />
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,8,0,0">
-                        <Button Content="应用屏蔽" Click="Apply_Click"
-                                Background="{StaticResource BrushState}" Foreground="White"
-                                Padding="32,10" CornerRadius="24" />
-                        <Button Content="撤销屏蔽" Click="Remove_Click"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="32,10" CornerRadius="24" />
-                    </StackPanel>
+                               Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名（如抖音是 Douyin）。" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>
+
+        <!-- 固定底部操作栏 -->
+        <Border Grid.Row="1" Background="{StaticResource BrushCard}"
+                BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0">
+            <StackPanel Padding="48,12" Spacing="6">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
+                    <Button x:Name="ApplyButton" Content="应用屏蔽" Click="Apply_Click"
+                            Background="{StaticResource BrushState}" Foreground="White"
+                            Padding="32,10" CornerRadius="24" />
+                    <Button Content="撤销屏蔽" Click="Remove_Click"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="32,10" CornerRadius="24" />
+                    <Button Content="清理残留" Click="CleanUp_Click"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="32,10" CornerRadius="24" />
+                </StackPanel>
+                <TextBlock x:Name="StatusText" FontSize="12" HorizontalAlignment="Center"
+                           Foreground="{StaticResource BrushState}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
     </Grid>
 </Page>
