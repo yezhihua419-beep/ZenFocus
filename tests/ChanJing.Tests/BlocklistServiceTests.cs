@@ -130,8 +130,12 @@ public class BlocklistServiceTests : IDisposable
     {
         Assert.False(_service.IsActivated());
 
-        // 未激活：第 4 个目标超限
+        // 未激活：分类不限制，4个分类不超限
         _service.SetEnabledCategories(new[] { "短视频", "社交", "资讯", "购物" });
+        Assert.False(_service.IsOverFreeLimit());
+
+        // 未激活：自定义域名限3个，第4个超限
+        _service.SetCustomDomains(new[] { "a.com", "b.com", "c.com", "d.com" });
         Assert.True(_service.IsOverFreeLimit());
 
         // 激活后不再受限

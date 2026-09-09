@@ -199,9 +199,9 @@ public sealed class BlocklistService
     /// <summary>是否已激活（买断/订阅）。V1 为占位，支付上线后接入。</summary>
     public bool IsActivated() => _db.GetSetting(SettingKeyActivated) == "true";
 
-    /// <summary>免费版是否达到目标数上限（分类数 + 自定义域名项数）。</summary>
+    /// <summary>免费版自定义域名是否达到上限（分类不限制，仅自定义域名限3个）。</summary>
     public bool IsOverFreeLimit(int extra = 0) =>
-        !IsActivated() && GetEnabledCategories().Count + GetCustomDomains().Count + extra > FreeTargetLimit;
+        !IsActivated() && GetCustomDomains().Count + extra > FreeTargetLimit;
 
     // ---------- 分类 ----------
 

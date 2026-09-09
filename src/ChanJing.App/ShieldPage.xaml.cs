@@ -118,18 +118,12 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    // ---------- 分类（免费版目标数限制） ----------
+    // ---------- 分类（免费版全开放，不限制数量） ----------
 
     private void OnCategoryChecked(object sender, RoutedEventArgs e)
     {
         try
         {
-            if (!_blocklist.IsActivated() && CountTargets() > BlocklistService.FreeTargetLimit)
-            {
-                ((CheckBox)sender).IsChecked = false; // 触发 Unchecked 保存
-                ShowLimitHint();
-                return;
-            }
             SaveCategories();
         }
         catch (Exception ex)
@@ -164,15 +158,14 @@ public sealed partial class ShieldPage : Page
         RefreshStatus();
     }
 
-    /// <summary>当前屏蔽目标数（启用分类 + 自定义域名项）。</summary>
-    private int CountTargets() =>
-        CategoryPanel.Children.OfType<CheckBox>().Count(c => c.IsChecked == true) +
+    /// <summary>当前自定义域名数（分类不限制，仅自定义域名限3个）。</summary>
+    private int CountCustomDomains() =>
         _blocklist.GetCustomDomains().Count;
 
     private void ShowLimitHint()
     {
         LimitHint.Visibility = Visibility.Visible;
-        StatusText.Text = $"免费版最多 {BlocklistService.FreeTargetLimit} 个屏蔽目标，激活后不限。";
+        StatusText.Text = $"免费版自定义域名最多 {BlocklistService.FreeTargetLimit} 个，激活后不限。分类屏蔽全开放。";
     }
 
     // ---------- 自定义域名 ----------
@@ -184,7 +177,7 @@ public sealed partial class ShieldPage : Page
             var input = DomainBox.Text;
             if (string.IsNullOrWhiteSpace(input)) return;
 
-            if (!_blocklist.IsActivated() && CountTargets() + 1 > BlocklistService.FreeTargetLimit)
+            if (!_blocklist.IsActivated() && CountCustomDomains() + 1 > BlocklistService.FreeTargetLimit)
             {
                 ShowLimitHint();
                 return;

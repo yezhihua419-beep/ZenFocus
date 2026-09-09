@@ -49,7 +49,7 @@
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="14,4" CornerRadius="14" FontSize="12" />
                     </StackPanel>
-                    <TextBlock Text="右键场景按钮可自定义时长、屏蔽和愿望" FontSize="11" HorizontalAlignment="Center"
+                    <TextBlock Text="右键场景按钮可自定义时长、屏蔽和愿望（付费）" FontSize="11" HorizontalAlignment="Center"
                                Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" />
                     <TextBox x:Name="WishBox" PlaceholderText="此刻，你最想完成的一件事…" FontSize="15"
                              HorizontalAlignment="Stretch" Padding="14,10" TextWrapping="Wrap"

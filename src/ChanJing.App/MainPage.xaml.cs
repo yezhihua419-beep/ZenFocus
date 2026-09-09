@@ -200,18 +200,64 @@ public sealed partial class MainPage : Page
         }
     }
 
-    /// <summary>长按场景按钮：弹出自定义配置小窗。</summary>
+    /// <summary>长按场景按钮：付费版弹出自定义配置小窗，免费版提示升级。</summary>
     private void Scene_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         try
         {
             var tag = (sender as Button)?.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            if (!_blocklist.IsActivated())
+            {
+                _ = ShowSceneUpgradeHint(tag);
+                return;
+            }
+
             _ = ShowSceneConfigDialog(tag);
         }
         catch (Exception ex)
         {
             App.LogCrash("MainPage.Scene_RightTapped", ex);
+        }
+    }
+
+    /// <summary>免费版长按场景按钮时的升级提示。</summary>
+    private async Task ShowSceneUpgradeHint(string tag)
+    {
+        var sceneName = tag switch
+        {
+            "work" => "工作",
+            "write" => "写作",
+            "study" => "学习",
+            "meeting" => "会议",
+            _ => tag
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = $"自定义「{sceneName}」场景",
+            Content = new StackPanel
+            {
+                Spacing = 8,
+                Children =
+                {
+                    new TextBlock { Text = "场景自定义为付费功能", FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = "免费版可使用4个预设场景（一键应用愿望+时长+屏蔽）。", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "升级后可自定义每个场景的时长、屏蔽分类和愿望文案。", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "¥68 买断，永久使用。", Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
+                }
+            },
+            PrimaryButtonText = "了解升级",
+            CloseButtonText = "取消",
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            App.LogAction("场景自定义升级提示", $"{tag} 用户点击了解升级");
+            // TODO: 跳转到升级页面（支付上线后接入）
         }
     }
 
