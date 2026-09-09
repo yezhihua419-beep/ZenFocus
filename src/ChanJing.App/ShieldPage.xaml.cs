@@ -3,6 +3,7 @@ using System.Security;
 using ChanJing.Core.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace ChanJing_App;
 
@@ -60,10 +61,16 @@ public sealed partial class ShieldPage : Page
     public ShieldPage()
     {
         InitializeComponent();
-        Loaded += OnLoaded;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    /// <summary>每次导航到本页时刷新全部 UI（比 OnLoaded 更可靠，缓存恢复时也触发）。</summary>
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        RefreshAll();
+    }
+
+    private void RefreshAll()
     {
         try
         {
@@ -90,13 +97,17 @@ public sealed partial class ShieldPage : Page
             RefreshLimits();
             RefreshAllowStatus();
             RefreshApps();
-            AppModeBox.SelectedIndex = _blocklist.GetAppBlockMode() == "kill" ? 1 : 0;
+            // 延迟到下一帧设置，确保 ComboBox 项已初始化
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                AppModeBox.SelectedIndex = _blocklist.GetAppBlockMode() == "kill" ? 1 : 0;
+            });
             RefreshStatus();
-            App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count}");
+            App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count} 拦截方式={_blocklist.GetAppBlockMode()}");
         }
         catch (Exception ex)
         {
-            App.LogCrash("ShieldPage.OnLoaded", ex);
+            App.LogCrash("ShieldPage.RefreshAll", ex);
             StatusText.Text = $"页面加载异常：{ex.Message}";
         }
     }

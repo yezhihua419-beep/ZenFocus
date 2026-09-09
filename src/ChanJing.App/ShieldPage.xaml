@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:ChanJing_App"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    NavigationCacheMode="Disabled"
     mc:Ignorable="d">
 
     <Grid Background="{StaticResource BrushBackground}">
@@ -189,6 +190,15 @@
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
                                Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名（如抖音是 Douyin）。结束进程模式请先确认该应用无未保存内容。" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,8,0,0">
+                        <Button Content="应用屏蔽" Click="Apply_Click"
+                                Background="{StaticResource BrushState}" Foreground="White"
+                                Padding="32,10" CornerRadius="24" />
+                        <Button Content="撤销屏蔽" Click="Remove_Click"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="32,10" CornerRadius="24" />
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </ScrollViewer>
