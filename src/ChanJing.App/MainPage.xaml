@@ -32,23 +32,25 @@
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <!-- 场景快捷选择 -->
                     <StackPanel x:Name="ScenePanel" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                        <Button Content="工作" Tag="work" Click="Scene_Click"
+                        <Button Content="工作" Tag="work" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="14,4" CornerRadius="14" FontSize="12" />
-                        <Button Content="写作" Tag="write" Click="Scene_Click"
+                        <Button Content="写作" Tag="write" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="14,4" CornerRadius="14" FontSize="12" />
-                        <Button Content="学习" Tag="study" Click="Scene_Click"
+                        <Button Content="学习" Tag="study" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="14,4" CornerRadius="14" FontSize="12" />
-                        <Button Content="会议" Tag="meeting" Click="Scene_Click"
+                        <Button Content="会议" Tag="meeting" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="14,4" CornerRadius="14" FontSize="12" />
                     </StackPanel>
+                    <TextBlock Text="右键场景按钮可自定义时长、屏蔽和愿望" FontSize="11" HorizontalAlignment="Center"
+                               Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" />
                     <TextBox x:Name="WishBox" PlaceholderText="此刻，你最想完成的一件事…" FontSize="15"
                              HorizontalAlignment="Stretch" Padding="14,10" TextWrapping="Wrap"
                              Background="{StaticResource BrushPanel}"

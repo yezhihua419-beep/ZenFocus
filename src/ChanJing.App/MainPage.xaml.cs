@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Input;
 
 namespace ChanJing_App;
 
@@ -110,6 +111,52 @@ public sealed partial class MainPage : Page
     /// <summary>当前选中的场景标签，用于UI高亮和专注界面显示。</summary>
     private string? _currentSceneTag;
 
+    /// <summary>场景配置记录：愿望+时长+屏蔽分类。</summary>
+    private record SceneConfig(string Wish, int Minutes, string[] Categories);
+
+    /// <summary>读取场景配置：优先用户自定义，没有则用预设默认值。</summary>
+    private SceneConfig GetSceneConfig(string tag)
+    {
+        if (ScenePresets.TryGetValue(tag, out var preset))
+        {
+            var raw = _db.GetSetting("scene_config_" + tag);
+            if (!string.IsNullOrEmpty(raw))
+            {
+                try
+                {
+                    using var json = System.Text.Json.JsonDocument.Parse(raw);
+                    var wish = json.RootElement.TryGetProperty("wish", out var w) ? w.GetString() ?? preset.Wish : preset.Wish;
+                    var minutes = json.RootElement.TryGetProperty("minutes", out var m) ? m.GetInt32() : preset.Minutes;
+                    var categories = json.RootElement.TryGetProperty("categories", out var c)
+                        ? c.EnumerateArray().Select(x => x.GetString()).Where(s => !string.IsNullOrEmpty(s)).ToArray()
+                        : preset.Categories;
+                    return new SceneConfig(wish, minutes, categories!);
+                }
+                catch { /* JSON解析失败，回退预设 */ }
+            }
+            return new SceneConfig(preset.Wish, preset.Minutes, preset.Categories);
+        }
+        return new SceneConfig("", 25, Array.Empty<string>());
+    }
+
+    /// <summary>保存场景自定义配置到本地数据库。</summary>
+    private void SaveSceneConfig(string tag, SceneConfig config)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            wish = config.Wish,
+            minutes = config.Minutes,
+            categories = config.Categories
+        });
+        _db.SetSetting("scene_config_" + tag, json);
+    }
+
+    /// <summary>重置场景配置为预设默认值（删除用户自定义）。</summary>
+    private void ResetSceneConfig(string tag)
+    {
+        _db.SetSetting("scene_config_" + tag, "");
+    }
+
     /// <summary>场景快捷选择：自动填充愿望、预设时长、应用该场景的屏蔽配置。</summary>
     private void Scene_Click(object sender, RoutedEventArgs e)
     {
@@ -123,14 +170,15 @@ public sealed partial class MainPage : Page
             }
 
             _currentSceneTag = tag;
-            WishBox.Text = preset.Wish;
-            _pendingMinutes = preset.Minutes;
+            var config = GetSceneConfig(tag);
+            WishBox.Text = config.Wish;
+            _pendingMinutes = config.Minutes;
 
             // 更新时长显示（用户可见）
-            SessionHint.Text = $"{preset.Minutes} 分钟定心 · 正计时 · 心无旁骛";
+            SessionHint.Text = $"{config.Minutes} 分钟定心 · 正计时 · 心无旁骛";
 
             // 一键应用该场景的屏蔽分类（桌面应用拦截实时生效；网站屏蔽需点"应用屏蔽"写hosts）
-            _blocklist.SetEnabledCategories(preset.Categories);
+            _blocklist.SetEnabledCategories(config.Categories);
 
             // 更新场景按钮高亮状态
             foreach (var child in ScenePanel.Children)
@@ -144,11 +192,118 @@ public sealed partial class MainPage : Page
                 }
             }
 
-            App.LogAction("选择场景", $"{tag} {preset.Minutes}分钟 屏蔽=[{string.Join("/", preset.Categories)}]");
+            App.LogAction("选择场景", $"{tag} {config.Minutes}分钟 屏蔽=[{string.Join("/", config.Categories)}]");
         }
         catch (Exception ex)
         {
             App.LogCrash("MainPage.Scene", ex);
+        }
+    }
+
+    /// <summary>长按场景按钮：弹出自定义配置小窗。</summary>
+    private void Scene_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        try
+        {
+            var tag = (sender as Button)?.Tag?.ToString();
+            if (string.IsNullOrEmpty(tag)) return;
+            _ = ShowSceneConfigDialog(tag);
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainPage.Scene_RightTapped", ex);
+        }
+    }
+
+    /// <summary>显示场景自定义配置对话框：时长+屏蔽分类+愿望文案。</summary>
+    private async Task ShowSceneConfigDialog(string tag)
+    {
+        var config = GetSceneConfig(tag);
+        var sceneName = tag switch
+        {
+            "work" => "工作",
+            "write" => "写作",
+            "study" => "学习",
+            "meeting" => "会议",
+            _ => tag
+        };
+
+        var minutesCombo = new ComboBox
+        {
+            Header = "专注时长（分钟）",
+            Items = { 15, 25, 30, 45, 50, 60, 90 },
+            SelectedItem = config.Minutes
+        };
+
+        var allCategories = new[] { "短视频", "视频娱乐", "社交", "购物", "资讯", "沟通工具" };
+        var categoryPanel = new StackPanel { Spacing = 6 };
+        var categoryCheckboxes = new List<CheckBox>();
+        foreach (var cat in allCategories)
+        {
+            var cb = new CheckBox
+            {
+                Content = cat,
+                IsChecked = config.Categories.Contains(cat)
+            };
+            categoryCheckboxes.Add(cb);
+            categoryPanel.Children.Add(cb);
+        }
+
+        var wishBox = new TextBox
+        {
+            Header = "愿望文案",
+            Text = config.Wish,
+            PlaceholderText = "此刻，你最想完成的一件事…"
+        };
+
+        var content = new StackPanel { Spacing = 16, MaxWidth = 360 };
+        content.Children.Add(minutesCombo);
+        content.Children.Add(new TextBlock { Text = "屏蔽分类", Foreground = (Brush)Application.Current.Resources["BrushTextSecondary"], FontSize = 12 });
+        content.Children.Add(categoryPanel);
+        content.Children.Add(wishBox);
+
+        var dialog = new ContentDialog
+        {
+            Title = $"自定义「{sceneName}」场景",
+            Content = content,
+            PrimaryButtonText = "保存",
+            SecondaryButtonText = "重置默认",
+            CloseButtonText = "取消",
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            var selectedMinutes = (int)(minutesCombo.SelectedItem ?? 25);
+            var selectedCategories = categoryCheckboxes.Where(cb => cb.IsChecked == true)
+                .Select(cb => cb.Content.ToString()!).ToArray();
+            var newWish = wishBox.Text.Trim();
+            var newConfig = new SceneConfig(newWish, selectedMinutes, selectedCategories);
+            SaveSceneConfig(tag, newConfig);
+            App.LogAction("自定义场景", $"{tag} {selectedMinutes}分钟 屏蔽=[{string.Join("/", selectedCategories)}]");
+
+            if (_currentSceneTag == tag)
+            {
+                WishBox.Text = newWish;
+                _pendingMinutes = selectedMinutes;
+                SessionHint.Text = $"{selectedMinutes} 分钟定心 · 正计时 · 心无旁骛";
+                _blocklist.SetEnabledCategories(selectedCategories);
+            }
+        }
+        else if (result == ContentDialogResult.Secondary)
+        {
+            ResetSceneConfig(tag);
+            App.LogAction("重置场景", tag);
+
+            if (_currentSceneTag == tag)
+            {
+                var preset = GetSceneConfig(tag);
+                WishBox.Text = preset.Wish;
+                _pendingMinutes = preset.Minutes;
+                SessionHint.Text = $"{preset.Minutes} 分钟定心 · 正计时 · 心无旁骛";
+                _blocklist.SetEnabledCategories(preset.Categories);
+            }
         }
     }
     private void StartBreathing()
