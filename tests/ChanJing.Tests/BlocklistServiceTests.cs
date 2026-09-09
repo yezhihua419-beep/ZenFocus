@@ -49,6 +49,23 @@ public class BlocklistServiceTests : IDisposable
     }
 
     [Fact]
+    public void AppBlockMode_PersistsAcrossInstances_RegressionForKillModeLost()
+    {
+        // 回归测试：设置 kill 后，新建实例（模拟提权重启/进程重启）读取应为 kill，
+        // 不应被页面销毁时 ComboBox 重置的 minimize 覆盖。
+        _service.SetAppBlockMode("kill");
+        Assert.Equal("kill", _service.GetAppBlockMode());
+
+        var reloaded = new BlocklistService(_db);
+        Assert.Equal("kill", reloaded.GetAppBlockMode());
+
+        // 再验证 minimize 也能正确持久化
+        reloaded.SetAppBlockMode("minimize");
+        var reloaded2 = new BlocklistService(_db);
+        Assert.Equal("minimize", reloaded2.GetAppBlockMode());
+    }
+
+    [Fact]
     public void ActiveDomains_CombineCategoriesAndCustom()
     {
         _service.SetEnabledCategories(new[] { "短视频" });
