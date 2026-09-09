@@ -17,7 +17,8 @@ public sealed partial class ShieldPage : Page
     private bool _isLoading; // OnLoaded刷新期间不触发SelectionChanged保存，避免页面销毁时ComboBox重置覆盖用户设置
 
     /// <summary>以管理员身份重启本程序并执行指定屏蔽动作（apply/remove/cleanup）。
-    /// 同时传递 --db-path 确保管理员进程读写同一个数据库，避免设置"丢失"。</summary>
+    /// 同时传递 --db-path 确保管理员进程读写同一个数据库。
+    /// 启动成功后主动释放单实例Mutex并强制退出，避免管理员进程因获取不到锁而"已在运行"退出。</summary>
     private static void RelaunchElevated(string arg)
     {
         var psi = new ProcessStartInfo
@@ -28,7 +29,9 @@ public sealed partial class ShieldPage : Page
             WorkingDirectory = AppContext.BaseDirectory,
             Arguments = $"{arg} --db-path=\"{AppServices.DbPath}\""
         };
-        Process.Start(psi);
+        Process.Start(psi); // UAC取消会抛异常，由调用方catch；走到这里说明管理员进程已启动
+        (App.Current as App)?.ReleaseSingleInstanceMutex();
+        Environment.Exit(0); // 强制立即退出，不等待WinUI异步Exit完成
     }
 
     /// <summary>权限不足时询问是否提权重启执行。</summary>

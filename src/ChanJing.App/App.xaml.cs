@@ -24,6 +24,12 @@ public partial class App : Application
     private Window? _window;
     private System.Threading.Mutex? _mutex;
 
+    /// <summary>提权重启时主动释放单实例锁（仅在管理员进程已启动成功后调用，UAC取消不会走到这里）。</summary>
+    public void ReleaseSingleInstanceMutex()
+    {
+        try { _mutex?.ReleaseMutex(); } catch { }
+    }
+
     [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
     private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 
