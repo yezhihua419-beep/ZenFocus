@@ -43,6 +43,7 @@ public sealed partial class StatsPage : Page
         TodayCount.Text = sessions.Count.ToString();
         TodayMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString();
         StreakDays.Text = CalcStreak().ToString();
+        DistractionCount.Text = sessions.Sum(s => s.DistractionCount).ToString();
 
         DrawWeekChart();
         DrawHourlyChart();
@@ -262,13 +263,22 @@ public sealed partial class StatsPage : Page
     {
         var usage = _db.GetUsageByDay(DateTime.Today.ToString("yyyy-MM-dd"));
         var items = usage
-            .Select(kv => new UsageItem(kv.Key, kv.Value, 1, string.Empty))
+            .Select(kv =>
+            {
+                var isDistraction = AppServices.Blocklist.MatchBlockedApp(kv.Key) is not null;
+                return new UsageItem(
+                    isDistraction ? $"{kv.Key}（分心）" : kv.Key,
+                    kv.Value,
+                    1,
+                    string.Empty,
+                    isDistraction);
+            })
             .OrderByDescending(x => x.Value)
             .Take(8)
             .ToList();
         var max = items.Count > 0 ? items.Select(x => x.Value).Max() : 1;
         UsageList.ItemsSource = items
-            .Select(i => new UsageItem(i.Name, i.Value, max, $"{i.Value / 60} 分"))
+            .Select(i => new UsageItem(i.Name, i.Value, max, $"{i.Value / 60} 分", i.IsDistraction))
             .ToList();
     }
 
@@ -359,5 +369,10 @@ public sealed partial class StatsPage : Page
 
     private static Brush? GetBrush(string key) => App.Current.Resources[key] as Brush;
 
-    private sealed record UsageItem(string Name, long Value, long Max, string Text);
+    private sealed record UsageItem(string Name, long Value, long Max, string Text, bool IsDistraction = false)
+    {
+        public Brush NameBrush => IsDistraction
+            ? new SolidColorBrush(Color.FromArgb(255, 234, 102, 104))
+            : (Brush)App.Current.Resources["BrushTextPrimary"];
+    }
 }

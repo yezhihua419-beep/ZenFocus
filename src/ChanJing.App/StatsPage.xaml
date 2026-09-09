@@ -47,6 +47,12 @@
                         <TextBlock Text="连续定心（天）" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
+                    <StackPanel Spacing="2" MinWidth="80">
+                        <TextBlock x:Name="DistractionCount" FontSize="22" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="#EA6668" />
+                        <TextBlock Text="今日分心（次）" FontSize="12" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                    </StackPanel>
                     <Button Content="生成今日卡片" Click="ShareCard_Click"
                             VerticalAlignment="Center"
                             Background="{StaticResource BrushPanel}"
@@ -86,7 +92,7 @@
                             <DataTemplate>
                                 <Grid ColumnDefinitions="130,*,70" Margin="0,5">
                                     <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis"
-                                               Foreground="{StaticResource BrushTextPrimary}" />
+                                               Foreground="{Binding NameBrush}" />
                                     <ProgressBar Grid.Column="1" Maximum="{Binding Max}" Value="{Binding Value}"
                                                  Height="8" VerticalAlignment="Center"
                                                  Foreground="{StaticResource BrushState}"
