@@ -15,7 +15,8 @@ public sealed partial class ShieldPage : Page
     private readonly BlocklistService _blocklist = AppServices.Blocklist;
     private readonly DailyLimitService _limits = AppServices.DailyLimits;
 
-    /// <summary>以管理员身份重启本程序并执行指定屏蔽动作（apply/remove/cleanup）。</summary>
+    /// <summary>以管理员身份重启本程序并执行指定屏蔽动作（apply/remove/cleanup）。
+    /// 同时传递 --db-path 确保管理员进程读写同一个数据库，避免设置"丢失"。</summary>
     private static void RelaunchElevated(string arg)
     {
         var psi = new ProcessStartInfo
@@ -23,7 +24,7 @@ public sealed partial class ShieldPage : Page
             FileName = Environment.ProcessPath!,
             UseShellExecute = true,
             Verb = "runas",
-            Arguments = arg
+            Arguments = $"{arg} --db-path=\"{AppServices.DbPath}\""
         };
         Process.Start(psi);
     }
