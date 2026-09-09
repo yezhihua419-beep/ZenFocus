@@ -22,47 +22,70 @@ public sealed partial class ShieldPage : Page
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        CategoryPanel.Children.Clear();
-        var enabled = _blocklist.GetEnabledCategories();
-        var activated = _blocklist.IsActivated();
-
-        foreach (var category in BlocklistService.DefaultCategories.Keys)
+        try
         {
-            var checkBox = new CheckBox
-            {
-                Content = category,
-                IsChecked = enabled.Contains(category),
-                Tag = category,
-                FontSize = 14
-            };
-            checkBox.Checked += OnCategoryChecked;
-            checkBox.Unchecked += OnCategoryChanged;
-            CategoryPanel.Children.Add(checkBox);
-        }
+            CategoryPanel.Children.Clear();
+            var enabled = _blocklist.GetEnabledCategories();
+            var activated = _blocklist.IsActivated();
 
-        LimitHint.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
-        RefreshCustomDomains();
-        RefreshLimits();
-        RefreshAllowStatus();
-        RefreshStatus();
+            foreach (var category in BlocklistService.DefaultCategories.Keys)
+            {
+                var checkBox = new CheckBox
+                {
+                    Content = category,
+                    IsChecked = enabled.Contains(category),
+                    Tag = category,
+                    FontSize = 14
+                };
+                checkBox.Checked += OnCategoryChecked;
+                checkBox.Unchecked += OnCategoryChanged;
+                CategoryPanel.Children.Add(checkBox);
+            }
+
+            LimitHint.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
+            RefreshCustomDomains();
+            RefreshLimits();
+            RefreshAllowStatus();
+            RefreshStatus();
+            App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count}");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.OnLoaded", ex);
+            StatusText.Text = $"页面加载异常：{ex.Message}";
+        }
     }
 
     // ---------- 分类（免费版目标数限制） ----------
 
     private void OnCategoryChecked(object sender, RoutedEventArgs e)
     {
-        if (!_blocklist.IsActivated() && CountTargets() > BlocklistService.FreeTargetLimit)
+        try
         {
-            ((CheckBox)sender).IsChecked = false; // 触发 Unchecked 保存
-            ShowLimitHint();
-            return;
+            if (!_blocklist.IsActivated() && CountTargets() > BlocklistService.FreeTargetLimit)
+            {
+                ((CheckBox)sender).IsChecked = false; // 触发 Unchecked 保存
+                ShowLimitHint();
+                return;
+            }
+            SaveCategories();
         }
-        SaveCategories();
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.OnCategoryChecked", ex);
+        }
     }
 
     private void OnCategoryChanged(object sender, RoutedEventArgs e)
     {
-        SaveCategories();
+        try
+        {
+            SaveCategories();
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.OnCategoryChanged", ex);
+        }
     }
 
     private void SaveCategories()
@@ -71,7 +94,9 @@ public sealed partial class ShieldPage : Page
             .OfType<CheckBox>()
             .Where(c => c.IsChecked == true)
             .Select(c => (string)c.Tag);
-        _blocklist.SetEnabledCategories(enabled);
+        var list = enabled.ToList();
+        _blocklist.SetEnabledCategories(list);
+        App.LogAction("勾选分类", string.Join("+", list));
         LimitHint.Visibility = _blocklist.IsActivated() ? Visibility.Collapsed : Visibility.Visible;
         RefreshStatus();
     }
@@ -91,22 +116,31 @@ public sealed partial class ShieldPage : Page
 
     private void AddDomain_Click(object sender, RoutedEventArgs e)
     {
-        var input = DomainBox.Text;
-        if (string.IsNullOrWhiteSpace(input)) return;
-
-        if (!_blocklist.IsActivated() && CountTargets() + 1 > BlocklistService.FreeTargetLimit)
+        try
         {
-            ShowLimitHint();
-            return;
+            var input = DomainBox.Text;
+            if (string.IsNullOrWhiteSpace(input)) return;
+
+            if (!_blocklist.IsActivated() && CountTargets() + 1 > BlocklistService.FreeTargetLimit)
+            {
+                ShowLimitHint();
+                return;
+            }
+
+            var list = _blocklist.GetCustomDomains().ToList();
+            list.Add(input);
+            _blocklist.SetCustomDomains(list);
+
+            DomainBox.Text = string.Empty;
+            RefreshCustomDomains();
+            RefreshStatus();
+            App.LogAction("添加自定义域名", input);
         }
-
-        var list = _blocklist.GetCustomDomains().ToList();
-        list.Add(input);
-        _blocklist.SetCustomDomains(list);
-
-        DomainBox.Text = string.Empty;
-        RefreshCustomDomains();
-        RefreshStatus();
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.AddDomain", ex);
+            StatusText.Text = $"添加失败：{ex.Message}";
+        }
     }
 
     private void RefreshCustomDomains()
@@ -118,21 +152,38 @@ public sealed partial class ShieldPage : Page
 
     private void AddLimit_Click(object sender, RoutedEventArgs e)
     {
-        var domain = LimitDomainBox.Text;
-        if (string.IsNullOrWhiteSpace(domain)) return;
+        try
+        {
+            var domain = LimitDomainBox.Text;
+            if (string.IsNullOrWhiteSpace(domain)) return;
 
-        _limits.SetLimit(domain, (int)LimitMinutesBox.Value);
-        LimitDomainBox.Text = string.Empty;
-        RefreshLimits();
-        RefreshStatus();
+            _limits.SetLimit(domain, (int)LimitMinutesBox.Value);
+            LimitDomainBox.Text = string.Empty;
+            RefreshLimits();
+            RefreshStatus();
+            App.LogAction("添加限额", $"{domain}={(int)LimitMinutesBox.Value} 分钟/天");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.AddLimit", ex);
+            StatusText.Text = $"添加限额失败：{ex.Message}";
+        }
     }
 
     private void DeleteLimit_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: string domain })
+        try
         {
-            _limits.RemoveLimit(domain);
-            RefreshLimits();
+            if (sender is Button { Tag: string domain })
+            {
+                _limits.RemoveLimit(domain);
+                RefreshLimits();
+                App.LogAction("删除限额", domain);
+            }
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.DeleteLimit", ex);
         }
     }
 
@@ -148,20 +199,36 @@ public sealed partial class ShieldPage : Page
 
     private void AddAllow_Click(object sender, RoutedEventArgs e)
     {
-        var domain = AllowDomainBox.Text;
-        if (string.IsNullOrWhiteSpace(domain)) return;
+        try
+        {
+            var domain = AllowDomainBox.Text;
+            if (string.IsNullOrWhiteSpace(domain)) return;
 
-        _blocklist.AddTempAllow(domain, 10);
-        AllowDomainBox.Text = string.Empty;
-        RefreshAllowStatus();
-        RefreshStatus();
+            _blocklist.AddTempAllow(domain, 10);
+            AllowDomainBox.Text = string.Empty;
+            RefreshAllowStatus();
+            RefreshStatus();
+            App.LogAction("临时放行", $"{domain} 10分钟");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.AddAllow", ex);
+        }
     }
 
     private void ClearAllow_Click(object sender, RoutedEventArgs e)
     {
-        _blocklist.ClearTempAllows();
-        RefreshAllowStatus();
-        RefreshStatus();
+        try
+        {
+            _blocklist.ClearTempAllows();
+            RefreshAllowStatus();
+            RefreshStatus();
+            App.LogAction("清除全部放行");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.ClearAllow", ex);
+        }
     }
 
     private void RefreshAllowStatus()
@@ -180,14 +247,17 @@ public sealed partial class ShieldPage : Page
         {
             _blocklist.Apply();
             RefreshStatus("屏蔽已应用。");
+            App.LogAction("应用屏蔽", "成功");
         }
         catch (UnauthorizedAccessException)
         {
             StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再应用屏蔽。";
+            App.LogAction("应用屏蔽", "需要管理员权限(UnauthorizedAccess)");
         }
-        catch (Exception ex) when (ex is IOException or SecurityException)
+        catch (Exception ex)
         {
-            StatusText.Text = $"写入失败：{ex.Message}。请以管理员身份运行后重试。";
+            App.LogCrash("ShieldPage.Apply", ex);
+            StatusText.Text = $"应用失败：{ex.Message}。请以管理员身份运行后重试。";
         }
     }
 
@@ -197,14 +267,17 @@ public sealed partial class ShieldPage : Page
         {
             _blocklist.Remove();
             RefreshStatus("屏蔽已撤销。");
+            App.LogAction("撤销屏蔽", "成功");
         }
         catch (UnauthorizedAccessException)
         {
             StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再撤销屏蔽。";
+            App.LogAction("撤销屏蔽", "需要管理员权限(UnauthorizedAccess)");
         }
-        catch (Exception ex) when (ex is IOException or SecurityException)
+        catch (Exception ex)
         {
-            StatusText.Text = $"写入失败：{ex.Message}。请以管理员身份运行后重试。";
+            App.LogCrash("ShieldPage.Remove", ex);
+            StatusText.Text = $"撤销失败：{ex.Message}。请以管理员身份运行后重试。";
         }
     }
 
@@ -214,13 +287,16 @@ public sealed partial class ShieldPage : Page
         {
             _blocklist.Remove(); // 幂等：无标记段时无操作
             RefreshStatus("已检查并清理禅净的 hosts 标记段。");
+            App.LogAction("清理标记段", "成功");
         }
         catch (UnauthorizedAccessException)
         {
             StatusText.Text = "需要管理员权限清理残留：请以管理员身份运行后重试。";
+            App.LogAction("清理标记段", "需要管理员权限(UnauthorizedAccess)");
         }
-        catch (Exception ex) when (ex is IOException or SecurityException)
+        catch (Exception ex)
         {
+            App.LogCrash("ShieldPage.CleanUp", ex);
             StatusText.Text = $"清理失败：{ex.Message}。";
         }
     }

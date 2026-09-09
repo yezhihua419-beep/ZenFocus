@@ -201,7 +201,9 @@ public sealed partial class StatsPage : Page
 
     private async void ShareCard_Click(object sender, RoutedEventArgs e)
     {
-        var today = DateTime.Today;
+        try
+        {
+            var today = DateTime.Today;
         var sessions = _db.GetSessions(today, today.AddDays(1));
         ShareCount.Text = sessions.Count.ToString();
         ShareMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString();
@@ -225,6 +227,12 @@ public sealed partial class StatsPage : Page
         };
         await dialog.ShowAsync();
         ShareCard.Visibility = Visibility.Collapsed;
+        App.LogAction("生成分享卡片", $"定心 {ShareCount.Text} 次 / {ShareMinutes.Text} 分钟");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("StatsPage.ShareCard", ex);
+        }
     }
 
     private async Task SaveCardImageAsync()
@@ -259,6 +267,7 @@ public sealed partial class StatsPage : Page
                 XamlRoot = XamlRoot
             };
             await info.ShowAsync();
+            App.LogAction("保存分享卡片", path);
         }
         catch (Exception ex)
         {

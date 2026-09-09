@@ -36,20 +36,28 @@ public sealed partial class MainWindow : Window
 
     private void Nav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (args.SelectedItem is NavigationViewItem item)
+        try
         {
-            switch (item.Tag as string)
+            if (args.SelectedItem is NavigationViewItem item)
             {
-                case "shield":
-                    ContentFrame.Navigate(typeof(ShieldPage));
-                    break;
-                case "stats":
-                    ContentFrame.Navigate(typeof(StatsPage));
-                    break;
-                default:
-                    ContentFrame.Navigate(typeof(MainPage));
-                    break;
+                App.LogAction("导航", $"{(item.Tag as string)}");
+                switch (item.Tag as string)
+                {
+                    case "shield":
+                        ContentFrame.Navigate(typeof(ShieldPage));
+                        break;
+                    case "stats":
+                        ContentFrame.Navigate(typeof(StatsPage));
+                        break;
+                    default:
+                        ContentFrame.Navigate(typeof(MainPage));
+                        break;
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainWindow.Nav", ex);
         }
     }
 
@@ -58,7 +66,15 @@ public sealed partial class MainWindow : Window
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            _tray.ShowBalloon($"「{domain}」已达今日限额，休息一下吧。", "禅净 · 每日限额");
+            try
+            {
+                _tray.ShowBalloon($"「{domain}」已达今日限额，休息一下吧。", "禅净 · 每日限额");
+                App.LogAction("限额提醒", domain);
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.LimitBalloon", ex);
+            }
         });
     }
 
@@ -67,7 +83,15 @@ public sealed partial class MainWindow : Window
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            _tray.ShowBalloon($"你打开了「{domain}」。深呼吸，回到眼前的事。", "禅净 · 分心提醒");
+            try
+            {
+                _tray.ShowBalloon($"你打开了「{domain}」。深呼吸，回到眼前的事。", "禅净 · 分心提醒");
+                App.LogAction("分心提醒", domain);
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.DistractionBalloon", ex);
+            }
         });
     }
 

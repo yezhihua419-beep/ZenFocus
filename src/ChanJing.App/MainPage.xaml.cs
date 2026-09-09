@@ -31,37 +31,56 @@ public sealed partial class MainPage : Page
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        DateText.Text = DateTime.Today.ToString("M 月 d 日 dddd",
-            CultureInfo.GetCultureInfo("zh-CN"));
-        WishBox.Text = _db.GetSetting("today_wish") ?? string.Empty;
-        RefreshTodayStats();
+        try
+        {
+            DateText.Text = DateTime.Today.ToString("M 月 d 日 dddd",
+                CultureInfo.GetCultureInfo("zh-CN"));
+            WishBox.Text = _db.GetSetting("today_wish") ?? string.Empty;
+            RefreshTodayStats();
 
-        if (_engine.IsRunning) EnterFocusView();
-        else EnterIdleView();
+            if (_engine.IsRunning) EnterFocusView();
+            else EnterIdleView();
 
-        ShowFirstRunGuideIfNeeded();
+            ShowFirstRunGuideIfNeeded();
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainPage.OnLoaded", ex);
+        }
     }
 
     /// <summary>首启引导：告诉新用户屏蔽功能在哪，并给权限/杀软预防针。</summary>
     private async void ShowFirstRunGuideIfNeeded()
     {
-        if (_db.GetSetting("onboarded") is not null) return;
-        _db.SetSetting("onboarded", "true");
-
-        var dialog = new ContentDialog
+        try
         {
-            Title = "欢迎使用禅净",
-            Content = "先管住手，再看清时间。\n\n下一步：到「屏蔽」页勾选要屏蔽的分类（短视频、B 站…），点击「应用屏蔽」——之后所有浏览器都打不开这些网站，包括隐身窗口。\n\n首次应用屏蔽会请求管理员权限，个别杀毒软件可能弹窗，属正常现象。",
-            PrimaryButtonText = "去设置屏蔽",
-            CloseButtonText = "稍后再说",
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = XamlRoot
-        };
+            if (_db.GetSetting("onboarded") is not null) return;
+            _db.SetSetting("onboarded", "true");
 
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary && Frame is not null)
+            var dialog = new ContentDialog
+            {
+                Title = "欢迎使用禅净",
+                Content = "先管住手，再看清时间。\n\n下一步：到「屏蔽」页勾选要屏蔽的分类（短视频、B 站…），点击「应用屏蔽」——之后所有浏览器都打不开这些网站，包括隐身窗口。\n\n首次应用屏蔽会请求管理员权限，个别杀毒软件可能弹窗，属正常现象。",
+                PrimaryButtonText = "去设置屏蔽",
+                CloseButtonText = "稍后再说",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary && Frame is not null)
+            {
+                App.LogAction("首启引导", "去设置屏蔽");
+                Frame.Navigate(typeof(ShieldPage));
+            }
+            else
+            {
+                App.LogAction("首启引导", "稍后再说");
+            }
+        }
+        catch (Exception ex)
         {
-            Frame.Navigate(typeof(ShieldPage));
+            App.LogCrash("MainPage.FirstRunGuide", ex);
         }
     }
 
@@ -74,12 +93,20 @@ public sealed partial class MainPage : Page
 
     private void StartButton_Click(object sender, RoutedEventArgs e)
     {
-        _pendingWish = WishBox.Text?.Trim();
-        if (!string.IsNullOrEmpty(_pendingWish))
+        try
         {
-            _db.SetSetting("today_wish", _pendingWish);
+            _pendingWish = WishBox.Text?.Trim();
+            if (!string.IsNullOrEmpty(_pendingWish))
+            {
+                _db.SetSetting("today_wish", _pendingWish);
+            }
+            App.LogAction("开始专注", _pendingWish is { Length: > 0 } ? $"愿：{_pendingWish}" : "无愿");
+            StartBreathing();
         }
-        StartBreathing();
+        catch (Exception ex)
+        {
+            App.LogCrash("MainPage.Start", ex);
+        }
     }
 
     private void StartBreathing()
@@ -115,6 +142,7 @@ public sealed partial class MainPage : Page
         _breathing = false;
         _breathTimer.Stop();
         _engine.Start(_pendingWish);
+        App.LogAction("进入专注");
         EnterFocusView();
     }
 
@@ -154,91 +182,120 @@ public sealed partial class MainPage : Page
 
     private void Complete_Click(object sender, RoutedEventArgs e)
     {
-        var done = _engine.Finish(completed: true);
-        ShowFeedback(_engine.GenerateFeedback(done));
+        try
+        {
+            var done = _engine.Finish(completed: true);
+            App.LogAction("圆满结束", $"专注 {done.ActualMinutes} 分钟 分心 {done.DistractionCount} 次");
+            ShowFeedback(_engine.GenerateFeedback(done));
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainPage.Complete", ex);
+        }
     }
 
     /// <summary>临时离开：暂停计时，暂停期间不计入专注时长。</summary>
     private void PauseToggle_Click(object sender, RoutedEventArgs e)
     {
-        if (_engine.IsPaused)
+        try
         {
-            _engine.Resume();
-            PauseButton.Content = "临时离开";
-            PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextSecondary"];
-            TimerText.Text = FormatElapsed(_engine.Elapsed);
+            if (_engine.IsPaused)
+            {
+                _engine.Resume();
+                App.LogAction("继续专注");
+                PauseButton.Content = "临时离开";
+                PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextSecondary"];
+                TimerText.Text = FormatElapsed(_engine.Elapsed);
+            }
+            else
+            {
+                _engine.Pause();
+                App.LogAction("暂停专注");
+                PauseButton.Content = "继续专注";
+                PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushState"];
+                TimerText.Text = "已暂停";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _engine.Pause();
-            PauseButton.Content = "继续专注";
-            PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushState"];
-            TimerText.Text = "已暂停";
+            App.LogCrash("MainPage.PauseToggle", ex);
         }
     }
 
     /// <summary>摩擦式退出：破功前给 3 秒冷静期，按钮倒计时后才可结束。</summary>
     private async void Break_Click(object sender, RoutedEventArgs e)
     {
-        var remaining = 3;
-        var hint = new TextBlock
+        try
         {
-            Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？\n\n请等 3 秒再决定。",
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = 14,
-            Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextPrimary"]
-        };
-        var endButton = new Button
-        {
-            Content = $"结束（{remaining}）",
-            IsEnabled = false,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Padding = new Thickness(32, 10, 32, 10),
-            Background = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushWarning"],
-            Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
-            CornerRadius = new CornerRadius(24)
-        };
-        var panel = new StackPanel { Spacing = 14 };
-        panel.Children.Add(hint);
-        panel.Children.Add(endButton);
+            var remaining = 3;
+            var hint = new TextBlock
+            {
+                Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？\n\n请等 3 秒再决定。",
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 14,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextPrimary"]
+            };
+            var endButton = new Button
+            {
+                Content = $"结束（{remaining}）",
+                IsEnabled = false,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Padding = new Thickness(32, 10, 32, 10),
+                Background = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushWarning"],
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
+                CornerRadius = new CornerRadius(24)
+            };
+            var panel = new StackPanel { Spacing = 14 };
+            panel.Children.Add(hint);
+            panel.Children.Add(endButton);
 
-        var dialog = new ContentDialog
-        {
-            Title = "发生了什么？",
-            Content = panel,
-            PrimaryButtonText = "再定心一会儿",
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = XamlRoot
-        };
+            var dialog = new ContentDialog
+            {
+                Title = "发生了什么？",
+                Content = panel,
+                PrimaryButtonText = "再定心一会儿",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = XamlRoot
+            };
 
-        var cooldown = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        cooldown.Tick += (_, _) =>
-        {
-            remaining--;
-            if (remaining <= 0)
+            var cooldown = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            cooldown.Tick += (_, _) =>
+            {
+                remaining--;
+                if (remaining <= 0)
+                {
+                    cooldown.Stop();
+                    endButton.IsEnabled = true;
+                    endButton.Content = "结束";
+                    hint.Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？";
+                }
+                else
+                {
+                    endButton.Content = $"结束（{remaining}）";
+                }
+            };
+            cooldown.Start();
+            endButton.Click += (_, _) =>
             {
                 cooldown.Stop();
-                endButton.IsEnabled = true;
-                endButton.Content = "结束";
-                hint.Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？";
+                dialog.Hide(); // 返回 None → 破功
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.None) // 用户确认结束
+            {
+                App.LogAction("破功", $"专注 {_engine.Elapsed.TotalMinutes:0.#} 分钟");
+                var done = _engine.Finish(completed: false);
+                ShowFeedback(_engine.GenerateFeedback(done));
             }
             else
             {
-                endButton.Content = $"结束（{remaining}）";
+                App.LogAction("再定心", "破功对话框选择继续");
             }
-        };
-        cooldown.Start();
-        endButton.Click += (_, _) =>
+        }
+        catch (Exception ex)
         {
-            cooldown.Stop();
-            dialog.Hide(); // 返回 None → 破功
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.None) // 用户确认结束
-        {
-            var done = _engine.Finish(completed: false);
-            ShowFeedback(_engine.GenerateFeedback(done));
+            App.LogCrash("MainPage.Break", ex);
         }
     }
 

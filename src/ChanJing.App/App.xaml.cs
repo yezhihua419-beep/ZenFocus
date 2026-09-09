@@ -1,4 +1,4 @@
-﻿using Windows.ApplicationModel;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -22,7 +22,7 @@ namespace ChanJing_App;
 public partial class App : Application
 {
     private Window? _window;
-    
+
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -30,6 +30,11 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        // 全局异常兜底：任何 UI 线程/后台线程异常先落盘 crash.log，再决定是否放行。
+        // UI 线程异常若 Handled=false 会以 stowed exception 形式闪退，这里记录后放行。
+        UnhandledException += OnUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
     }
 
     /// <summary>
@@ -40,5 +45,61 @@ public partial class App : Application
     {
         _window = new MainWindow();
         _window.Activate();
+        LogAction("应用启动");
+    }
+
+    private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        LogCrash("UI", e.Exception);
+        e.Handled = true; // 记录后阻止闪退；状态不一致可重启恢复
+    }
+
+    private static void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+    {
+        LogCrash("AppDomain", e.ExceptionObject as Exception);
+    }
+
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        LogCrash("Task", e.Exception);
+        e.SetObserved();
+    }
+
+    /// <summary>崩溃日志：%LOCALAPPDATA%\ChanJing\crash.log（本地明文，方便排查）。</summary>
+    public static void LogCrash(string source, Exception? ex)
+    {
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ChanJing");
+            System.IO.Directory.CreateDirectory(dir);
+            var path = System.IO.Path.Combine(dir, "crash.log");
+            var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{source}] {ex}";
+            System.IO.File.AppendAllText(path, line + Environment.NewLine);
+            LogAction("异常", $"{source}: {ex?.GetType().Name}: {ex?.Message}");
+        }
+        catch
+        {
+            // 日志失败不再抛
+        }
+    }
+
+    /// <summary>操作流水日志：%LOCALAPPDATA%\ChanJing\actions.log。
+    /// 记录用户可感知的关键操作（页面切换/按钮/屏蔽结果），用于不崩溃时的复盘。</summary>
+    public static void LogAction(string action, string? detail = null)
+    {
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ChanJing");
+            System.IO.Directory.CreateDirectory(dir);
+            var path = System.IO.Path.Combine(dir, "actions.log");
+            var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {action}" + (detail is null ? "" : $" | {detail}");
+            System.IO.File.AppendAllText(path, line + Environment.NewLine);
+        }
+        catch
+        {
+            // 日志失败不再抛
+        }
     }
 }
