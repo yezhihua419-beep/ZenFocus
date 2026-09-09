@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Security;
 using ChanJing.Core.Services;
 using Microsoft.UI.Xaml;
@@ -494,4 +494,47 @@ public sealed partial class ShieldPage : Page
     }
 
     private sealed record LimitItem(string Domain, string Text, object Tag);
+
+    // ---------- 导入/导出配置 ----------
+
+    private async void ExportConfig_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var json = _blocklist.ExportConfig();
+            var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync("chanjing-config.json", Windows.Storage.CreationCollisionOption.GenerateUniqueName);
+            await Windows.Storage.FileIO.WriteTextAsync(file, json);
+            StatusText.Text = $"配置已导出到：{file.Path}";
+            App.LogAction("导出配置", file.Path);
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.ExportConfig", ex);
+            StatusText.Text = $"导出失败：{ex.Message}";
+        }
+    }
+
+    private async void ImportConfig_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.FileTypeFilter.Add(".json");
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            var file = await picker.PickSingleFileAsync();
+            if (file is null) return;
+
+            var json = await Windows.Storage.FileIO.ReadTextAsync(file);
+            _blocklist.ImportConfig(json);
+            RefreshAll();
+            StatusText.Text = "配置已导入，点击「应用屏蔽」生效。";
+            App.LogAction("导入配置", file.Path);
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.ImportConfig", ex);
+            StatusText.Text = $"导入失败：{ex.Message}";
+        }
+    }
 }

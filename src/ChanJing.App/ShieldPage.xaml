@@ -173,18 +173,22 @@
         <Border Grid.Row="1" Background="{StaticResource BrushCard}"
                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0">
             <StackPanel Padding="48,12" Spacing="6">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
                     <Button x:Name="ApplyButton" Content="应用屏蔽" Click="Apply_Click"
                             Background="{StaticResource BrushState}" Foreground="White"
-                            Padding="32,10" CornerRadius="24" />
+                            Padding="28,10" CornerRadius="24" />
                     <Button Content="撤销屏蔽" Click="Remove_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="32,10" CornerRadius="24" />
-                    <Button Content="清理残留" Click="CleanUp_Click"
+                            Padding="28,10" CornerRadius="24" />
+                    <Button Content="导出配置" Click="ExportConfig_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="32,10" CornerRadius="24" />
+                            Padding="20,10" CornerRadius="24" FontSize="12" />
+                    <Button Content="导入配置" Click="ImportConfig_Click"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="20,10" CornerRadius="24" FontSize="12" />
                 </StackPanel>
                 <TextBlock x:Name="StatusText" FontSize="12" HorizontalAlignment="Center"
                            Foreground="{StaticResource BrushState}" TextWrapping="Wrap" />

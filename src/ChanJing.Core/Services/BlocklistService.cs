@@ -1,4 +1,4 @@
-namespace ChanJing.Core.Services;
+﻿namespace ChanJing.Core.Services;
 
 /// <summary>
 /// 屏蔽名单服务：管理国内分类名单与自定义域名、临时放行、激活状态，
@@ -320,4 +320,22 @@ public sealed class BlocklistService
 
     /// <summary>屏蔽是否已生效。</summary>
     public bool IsApplied() => HostsBlocker.IsApplied();
+
+    // ---------- 导入/导出 ----------
+
+    public string ExportConfig()
+    {
+        var config = new { version = 1, exportedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), enabledCategories = GetEnabledCategories(), customDomains = GetCustomDomains(), customApps = GetCustomApps().Select(a => new { process = a.Process, category = a.Category }), appBlockMode = GetAppBlockMode() };
+        return System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void ImportConfig(string json)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        if (root.TryGetProperty("enabledCategories", out var cats)) SetEnabledCategories(cats.EnumerateArray().Select(c => c.GetString()!).Where(s => !string.IsNullOrEmpty(s)).ToList());
+        if (root.TryGetProperty("customDomains", out var domains)) { var domainList = domains.EnumerateArray().Select(d => d.GetString()!).Where(s => !string.IsNullOrEmpty(s)).ToList(); SetCustomDomains(domainList); }
+        if (root.TryGetProperty("customApps", out var apps)) { foreach (var a in GetCustomApps()) RemoveCustomApp(a.Process); foreach (var a in apps.EnumerateArray()) { var process = a.GetProperty("process").GetString(); var category = a.TryGetProperty("category", out var cat) ? cat.GetString() ?? "短视频" : "短视频"; if (!string.IsNullOrEmpty(process)) AddCustomApp(process, category); } }
+        if (root.TryGetProperty("appBlockMode", out var mode)) SetAppBlockMode(mode.GetString() ?? "minimize");
+    }
 }
