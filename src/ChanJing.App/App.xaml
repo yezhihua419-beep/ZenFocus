@@ -19,6 +19,8 @@
             <Color x:Key="TaiQing">#6E7F63</Color>
             <Color x:Key="JinShan">#A8842C</Color>
             <Color x:Key="ZheShi">#A0563B</Color>
+            <Color x:Key="CardColor">#FAF8F2</Color>
+            <Color x:Key="BorderColor">#D4CFC4</Color>
 
             <SolidColorBrush x:Key="BrushBackground" Color="{StaticResource XuanZhiWhite}" />
             <SolidColorBrush x:Key="BrushPanel" Color="{StaticResource SuJuan}" />
@@ -27,6 +29,8 @@
             <SolidColorBrush x:Key="BrushState" Color="{StaticResource TaiQing}" />
             <SolidColorBrush x:Key="BrushAccent" Color="{StaticResource JinShan}" />
             <SolidColorBrush x:Key="BrushWarning" Color="{StaticResource ZheShi}" />
+            <SolidColorBrush x:Key="BrushCard" Color="{StaticResource CardColor}" />
+            <SolidColorBrush x:Key="BrushBorder" Color="{StaticResource BorderColor}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
