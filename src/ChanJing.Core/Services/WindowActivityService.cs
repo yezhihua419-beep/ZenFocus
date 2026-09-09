@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -32,6 +32,23 @@ public sealed class WindowActivityService : IDisposable
     private readonly Dictionary<string, DateTime> _lastLimitBlockedAt = new();
     private string? _notifiedDistractionKey;
     private DateTime _notifiedDay = DateTime.Today;
+    private int _codingStreak;
+    private bool _codingNotified;
+
+    /// <summary>IDE/编辑器识别名单（进程名，不区分大小写）。覆盖 VS Code/JetBrains/AI编程工具/其他编辑器。</summary>
+    private static readonly HashSet<string> IdeProcessNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Code", "Cursor", "Windsurf", "Trae", "CodeGeeX", "MarsCode", "tongyi-lingma",
+        "idea64", "idea", "pycharm64", "pycharm", "webstorm64", "webstorm", "goland64", "goland",
+        "clion64", "clion", "rider64", "rider", "datagrip64", "datagrip", "phpstorm64", "phpstorm",
+        "rubymine64", "rubymine", "studio64", "studio", "devecostudio",
+        "sublime_text", "nvim", "vim", "emacs", "gedit", "notepad++", "Notepad++",
+        "Terminal", "wt", "WindowsTerminal", "powershell", "pwsh", "cmd",
+        "git-bash", "Git Bash", "GitHubDesktop", "GitHub Desktop", "SourceTree", "sourcetree",
+        "Docker Desktop", "docker", "Postman", "postman", "Insomnia", "insomnia",
+        "DBeaver", "dbeaver", "Navicat", "navicat", "TablePlus", "tableplus",
+        "Figma", "figma", "Sketch", "sketch", "Adobe XD", "XD",
+    };
 
     /// <summary>某域名达当日上限时触发（后台线程）。</summary>
     public event Action<string>? LimitExceeded;
@@ -44,6 +61,9 @@ public sealed class WindowActivityService : IDisposable
 
     /// <summary>屏蔽生效时前台命中分心桌面应用（进程名, 分类）→ 已自动最小化（后台线程）。</summary>
     public event Action<string, string>? AppBlocked;
+
+    /// <summary>检测到用户持续在 IDE/编辑器中编码（≥2分钟）时触发（后台线程）。同一次编码会话只触发一次。</summary>
+    public event Action<string>? CodingDetected;
 
     public WindowActivityService(AppDatabase db, DailyLimitService dailyLimits,
         FocusEngine engine, BlocklistService blocklist)
@@ -157,6 +177,23 @@ public sealed class WindowActivityService : IDisposable
                         }
                     }
                 }
+            }
+
+            // IDE/编辑器检测：持续在 IDE 前台 ≥2分钟（24个tick）→ 触发 CodingDetected 事件。
+            // 同一次编码会话只提醒一次；IDE 不再前台时重置计数器。
+            if (!_engine.IsRunning && IdeProcessNames.Contains(info.ProcessName))
+            {
+                _codingStreak++;
+                if (_codingStreak >= 24 && !_codingNotified)
+                {
+                    _codingNotified = true;
+                    CodingDetected?.Invoke(info.ProcessName);
+                }
+            }
+            else
+            {
+                _codingStreak = 0;
+                _codingNotified = false;
             }
         }
         catch

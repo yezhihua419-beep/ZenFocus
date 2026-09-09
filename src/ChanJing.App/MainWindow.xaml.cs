@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -52,6 +52,7 @@ public sealed partial class MainWindow : Window
         AppServices.Activity.LimitBlocked += OnLimitBlocked;
         AppServices.Activity.DistractionDetected += OnDistractionDetected;
         AppServices.Activity.AppBlocked += OnAppBlocked;
+        AppServices.Activity.CodingDetected += OnCodingDetected;
         AppWindow.Closing += OnClosing;
         AppWindow.Changed += OnAppWindowChanged;
     }
@@ -148,6 +149,23 @@ public sealed partial class MainWindow : Window
             catch (Exception ex)
             {
                 App.LogCrash("MainWindow.DistractionBalloon", ex);
+            }
+        });
+    }
+
+    /// <summary>检测到用户持续在 IDE/编辑器中编码（≥2分钟）→ 弹托盘提示建议开启专注。</summary>
+    private void OnCodingDetected(string processName)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                _tray.ShowBalloon($"检测到你在「{processName}」中持续编码2分钟了，建议开启专注模式，屏蔽分心应用。", "禅净 · 编码检测");
+                App.LogAction("编码检测提示", processName);
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.CodingBalloon", ex);
             }
         });
     }
