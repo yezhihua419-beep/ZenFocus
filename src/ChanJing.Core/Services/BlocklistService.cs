@@ -28,7 +28,8 @@ public sealed class BlocklistService
             ["视频娱乐"] = new[] { "bilibili.com", "douyu.com", "huya.com", "iqiyi.com", "youku.com" },
             ["社交"] = new[] { "weibo.com", "xiaohongshu.com", "tieba.baidu.com", "douban.com" },
             ["资讯"] = new[] { "toutiao.com", "sohu.com" },
-            ["购物"] = new[] { "taobao.com", "tmall.com", "jd.com", "pinduoduo.com" }
+            ["购物"] = new[] { "taobao.com", "tmall.com", "jd.com", "pinduoduo.com" },
+            ["沟通工具"] = new[] { "wx.qq.com", "web.wechat.com", "im.dingtalk.com", "dingtalk.com", "im.qq.com", "web.qq.com", "work.weixin.qq.com", "feishu.cn", "larkoffice.com", "web.telegram.org", "discord.com", "slack.com" }
         };
 
     /// <summary>桌面应用拦截预设：分类 → 进程名（不含 .exe，匹配忽略大小写）。
@@ -38,7 +39,8 @@ public sealed class BlocklistService
         {
             ["短视频"] = new[] { "douyin", "kwai" },
             ["视频娱乐"] = new[] { "bilibili", "huya", "douyu", "iqiyi", "youku" },
-            ["购物"] = new[] { "taobao", "jd", "pinduoduo" }
+            ["购物"] = new[] { "taobao", "jd", "pinduoduo" },
+            ["沟通工具"] = new[] { "WeChat", "DingTalk", "QQ", "WXWork", "Lark", "Feishu", "Telegram", "Discord", "slack", "WeChatApp", "DingTalkLauncher" }
         };
 
     /// <summary>桌面应用预设中文显示名（进程名 → 中文名）。未知进程显示原名。</summary>
@@ -54,7 +56,16 @@ public sealed class BlocklistService
             ["youku"] = "优酷",
             ["taobao"] = "淘宝",
             ["jd"] = "京东",
-            ["pinduoduo"] = "拼多多"
+            ["pinduoduo"] = "拼多多",
+            ["WeChat"] = "微信",
+            ["DingTalk"] = "钉钉",
+            ["QQ"] = "QQ",
+            ["WXWork"] = "企业微信",
+            ["Lark"] = "飞书",
+            ["Feishu"] = "飞书",
+            ["Telegram"] = "Telegram",
+            ["Discord"] = "Discord",
+            ["slack"] = "Slack"
         };
 
     /// <summary>进程名 → 中文显示名（仅预设应用有映射，未知返回原名）。</summary>

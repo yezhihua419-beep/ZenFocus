@@ -144,6 +144,7 @@
                             <ComboBoxItem Content="社交" />
                             <ComboBoxItem Content="资讯" />
                             <ComboBoxItem Content="购物" />
+                            <ComboBoxItem Content="沟通工具" />
                         </ComboBox>
                         <Button Content="添加拦截" Click="AddApp_Click" Padding="16,8" />
                     </StackPanel>
