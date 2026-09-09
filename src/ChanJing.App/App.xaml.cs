@@ -111,6 +111,22 @@ public partial class App : Application
         }
     }
 
+    /// <summary>提权重启前主动释放单实例 Mutex，避免管理员进程被"已在运行"拦截。</summary>
+    public void ReleaseMutexForRestart()
+    {
+        try
+        {
+            _mutex?.ReleaseMutex();
+            _mutex?.Dispose();
+            _mutex = null;
+            LogAction("释放单实例锁", "准备提权重启");
+        }
+        catch
+        {
+            // 释放失败忽略，进程退出时系统会回收
+        }
+    }
+
     private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         LogCrash("UI", e.Exception);
