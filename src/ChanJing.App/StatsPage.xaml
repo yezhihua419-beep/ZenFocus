@@ -27,7 +27,9 @@
                 </StackPanel>
 
                 <!-- 今日卡片 + 分享 -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="32" Margin="0,20,0,0"
+                <TextBlock x:Name="InsightText" Grid.Row="1" FontSize="13" TextWrapping="Wrap" Margin="0,12,0,0"
+                           Foreground="{StaticResource BrushState}" Text="今日已专注 0 分钟 · 每一次定心都是进步" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="32" Margin="0,12,0,0"
                             HorizontalAlignment="Left">
                     <StackPanel Spacing="2" MinWidth="80">
                         <TextBlock x:Name="TodayCount" FontSize="22" FontWeight="SemiBold"
@@ -61,12 +63,12 @@
                 </StackPanel>
 
                 <!-- 空状态引导：无记录时提示，并隐藏图表区 -->
-                <TextBlock x:Name="EmptyHint" Grid.Row="2" FontSize="13" TextWrapping="Wrap" Margin="0,26,0,0"
+                <TextBlock x:Name="EmptyHint" Grid.Row="3" FontSize="13" TextWrapping="Wrap" Margin="0,26,0,0"
                            Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
                            Text="还没有专注记录。回到「禅定」页点击开始专注，完成后这里会显示近 7 天、24 小时分布、本月热力和今日使用分布。" />
 
                 <!-- 近 7 天柱状 -->
-                <StackPanel x:Name="WeekSection" Grid.Row="2" Margin="0,26,0,0" Spacing="0">
+                <StackPanel x:Name="WeekSection" Grid.Row="3" Margin="0,26,0,0" Spacing="0">
                     <TextBlock Text="近 7 天专注（分钟）" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <Grid x:Name="WeekChart" Height="110" Margin="0,10,0,0" />
@@ -74,7 +76,7 @@
                 </StackPanel>
 
                 <!-- 今日 24 小时时间轴 -->
-                <StackPanel x:Name="HourSection" Grid.Row="3" Margin="0,20,0,0" Spacing="0">
+                <StackPanel x:Name="HourSection" Grid.Row="4" Margin="0,20,0,0" Spacing="0">
                     <TextBlock Text="今日 24 小时专注分布" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <Grid x:Name="HourlyChart" Height="90" Margin="0,10,0,0" />
@@ -82,14 +84,14 @@
                 </StackPanel>
 
                 <!-- 本月热力 -->
-                <StackPanel x:Name="MonthSection" Grid.Row="4" Margin="0,20,0,0" Spacing="0">
+                <StackPanel x:Name="MonthSection" Grid.Row="5" Margin="0,20,0,0" Spacing="0">
                     <TextBlock Text="本月专注热力" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <Grid x:Name="MonthChart" Margin="0,10,0,0" HorizontalAlignment="Left" />
                 </StackPanel>
 
                 <!-- 今日使用分布 -->
-                <StackPanel x:Name="UsageSection" Grid.Row="5" Margin="0,20,0,0" Spacing="0">
+                <StackPanel x:Name="UsageSection" Grid.Row="6" Margin="0,20,0,0" Spacing="0">
                     <TextBlock Text="今日使用分布" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <ItemsControl x:Name="UsageList" Margin="0,8,0,0">

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ChanJing_App.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -106,11 +106,11 @@
                             <Button Content="圆满结束" Click="Complete_Click"
                                     Background="{StaticResource BrushState}" Foreground="White"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button Content="提前结束" Click="Break_Click"
+                            <Button Content="放下" Click="Break_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button x:Name="PauseButton" Content="临时离开" Click="PauseToggle_Click"
+                            <Button x:Name="PauseButton" Content="暂离" Click="PauseToggle_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />

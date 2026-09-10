@@ -359,10 +359,20 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    private void Remove_Click(object sender, RoutedEventArgs e)
+    private async void Remove_Click(object sender, RoutedEventArgs e)
     {
         try
         {
+            var confirm = new ContentDialog
+            {
+                Title = "确认清除",
+                Content = "将清除所有已保存的屏蔽分类和自定义域名，此操作不可撤销。确定继续吗？",
+                PrimaryButtonText = "确定清除",
+                CloseButtonText = "取消",
+                XamlRoot = this.Content.XamlRoot
+            };
+            var result = await confirm.ShowAsync();
+            if (result != ContentDialogResult.Primary) return;
             _blocklist.Remove();
             RefreshStatus("配置已清除。");
             App.LogAction("清除屏蔽配置", "成功");

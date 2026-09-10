@@ -34,7 +34,7 @@
                                Visibility="Collapsed" />
                     <TextBlock FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="勾选分类、添加域名，点击底部「保存配置」，开始专注时自动生效（覆盖所有浏览器，含隐身窗口）" />
+                               Text="勾选分类、添加域名，点击底部「保存为场景配置」，开始专注或开启立即屏蔽后生效" />
                     <ToggleSwitch x:Name="ManualShieldSwitch" Header="立即屏蔽（不计时）" OffContent="关" OnContent="开"
                                   Toggled="ManualShield_Toggled" Margin="0,12,0,0" />
                     <TextBlock x:Name="ManualShieldHint" FontSize="12" TextWrapping="Wrap"
@@ -211,7 +211,7 @@
                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0">
             <StackPanel Padding="48,12" Spacing="6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
-                    <Button x:Name="ApplyButton" Content="保存配置" Click="Apply_Click"
+                    <Button x:Name="ApplyButton" Content="保存为场景配置" Click="Apply_Click"
                             Background="{StaticResource BrushState}" Foreground="White"
                             Padding="28,10" CornerRadius="24" />
                     <Button Content="清除配置" Click="Remove_Click"

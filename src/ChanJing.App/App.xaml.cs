@@ -111,22 +111,25 @@ public partial class App : Application
         {
             try
             {
-                if (AppServices.Blocklist.IsManualShieldActive())
+                // 写hosts异步执行，避免UAC提权等待阻塞UI线程（桌面App屏蔽由WindowActivityService同步立即执行）
+                if (!AppServices.Blocklist.IsManualShieldActive())
                 {
-                    LogAction("focus-start", "manual shield active, skip hosts write");
-                }
-                else
-                {
-                var domains = ChanJing.Core.Services.HostsBlocker.GetPreAppliedDomains();
-                if (domains.Count > 0)
-                {
-                    ChanJing.Core.Services.HostsBlocker.Apply(domains);
-                    LogAction("专注开始", $"自动应用网站屏蔽（{domains.Count}个域名）");
-                }
-                else
-                {
-                    LogAction("专注开始", "无预应用网站屏蔽配置");
-                }
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            var domains = ChanJing.Core.Services.HostsBlocker.GetPreAppliedDomains();
+                            if (domains.Count > 0)
+                            {
+                                ChanJing.Core.Services.HostsBlocker.Apply(domains);
+                                LogAction("专注开始", $"自动应用网站屏蔽（{domains.Count}个域名）");
+                            }
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            LogAction("专注开始", "网站屏蔽需要管理员权限，已跳过（桌面App屏蔽仍生效）");
+                        }
+                    });
                 }
 
                 // 方案B：开始专注时统一保存当前配置到场景（只对已自定义的场景自动记忆，避免消耗免费额度）

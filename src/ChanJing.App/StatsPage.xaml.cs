@@ -59,7 +59,11 @@ public sealed partial class StatsPage : Page
             var today = DateTime.Today;
             var sessions = _db.GetSessions(today, today.AddDays(1));
             TodayCount.Text = sessions.Count.ToString();
-            TodayMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString();
+            var totalMinutes = sessions.Sum(s => s.ActualMinutes);
+            TodayMinutes.Text = totalMinutes.ToString();
+            InsightText.Text = totalMinutes > 0
+                ? $"今日已专注 {totalMinutes} 分钟 · 完成 {sessions.Count} 次定心 · 继续保持"
+                : "今日还没有专注记录 · 回到「禅定」页开始第一次定心";
             StreakDays.Text = CalcStreak().ToString();
             DistractionCount.Text = sessions.Sum(s => s.DistractionCount).ToString();
 
