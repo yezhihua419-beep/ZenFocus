@@ -73,6 +73,17 @@ public partial class App : Application
         _window.Activate();
         LogAction("应用启动");
 
+        // 启动前台窗口活动追踪（记录应用使用时间+分心检测+桌面App拦截）
+        try
+        {
+            AppServices.Activity.Start();
+            LogAction("活动追踪启动");
+        }
+        catch (Exception ex)
+        {
+            LogCrash("活动追踪启动失败", ex);
+        }
+
         // 启动局域网伴侣服务（手机扫码查看统计+远程控制专注）
         try
         {
