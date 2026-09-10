@@ -377,8 +377,12 @@ public sealed partial class ShieldPage : Page
 
     private void RefreshApps()
     {
+        var customProcs = _blocklist.GetCustomApps()
+            .Select(a => a.Process)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var items = _blocklist.GetActiveApps()
-            .Select(a => new AppItem(a.Process, a.Category, BlocklistService.GetAppDisplayName(a.Process)))
+            .Select(a => new AppItem(a.Process, a.Category, BlocklistService.GetAppDisplayName(a.Process),
+                customProcs.Contains(a.Process) ? Visibility.Visible : Visibility.Collapsed))
             .ToList();
         AppList.ItemsSource = items;
     }
@@ -481,7 +485,7 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    private sealed record AppItem(string Process, string Category, string Text);
+    private sealed record AppItem(string Process, string Category, string Text, Visibility RemoveVis);
 
     private void RefreshStatus(string? overrideText = null)
     {

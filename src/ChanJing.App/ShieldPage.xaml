@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ChanJing_App.ShieldPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -101,6 +101,7 @@
                                         <TextBlock Text="{Binding Process}" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <Button Grid.Column="2" Content="移除" Tag="{Binding Process}"
+                                            Visibility="{Binding RemoveVis}"
                                             Click="RemoveApp_Click" FontSize="11" Padding="10,2" />
                                 </Grid>
                             </DataTemplate>
