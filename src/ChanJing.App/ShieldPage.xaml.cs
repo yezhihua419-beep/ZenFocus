@@ -297,57 +297,33 @@ public sealed partial class ShieldPage : Page
 
     // ---------- 应用 / 撤销 / 清理 ----------
 
-    private async void Apply_Click(object sender, RoutedEventArgs e)
+    private void Apply_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             _blocklist.Apply();
-            RefreshStatus("屏蔽已应用。");
-            App.LogAction("应用屏蔽", "成功");
-        }
-        catch (UnauthorizedAccessException)
-        {
-            App.LogAction("应用屏蔽", "需要管理员权限(UnauthorizedAccess)");
-            if (await AskElevateAsync("--apply-shield", "应用屏蔽"))
-            {
-                App.Current.Exit();
-            }
-            else
-            {
-                StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再应用屏蔽。";
-            }
+            RefreshStatus("配置已保存，开始专注时自动生效。");
+            App.LogAction("保存屏蔽配置", "成功");
         }
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.Apply", ex);
-            StatusText.Text = $"应用失败：{ex.Message}。请以管理员身份运行后重试。";
+            StatusText.Text = $"保存失败：{ex.Message}";
         }
     }
 
-    private async void Remove_Click(object sender, RoutedEventArgs e)
+    private void Remove_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             _blocklist.Remove();
-            RefreshStatus("屏蔽已撤销。");
-            App.LogAction("撤销屏蔽", "成功");
-        }
-        catch (UnauthorizedAccessException)
-        {
-            App.LogAction("撤销屏蔽", "需要管理员权限(UnauthorizedAccess)");
-            if (await AskElevateAsync("--remove-shield", "撤销屏蔽"))
-            {
-                App.Current.Exit();
-            }
-            else
-            {
-                StatusText.Text = "需要管理员权限：请右键「以管理员身份运行」本程序，再撤销屏蔽。";
-            }
+            RefreshStatus("配置已清除。");
+            App.LogAction("清除屏蔽配置", "成功");
         }
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.Remove", ex);
-            StatusText.Text = $"撤销失败：{ex.Message}。请以管理员身份运行后重试。";
+            StatusText.Text = $"清除失败：{ex.Message}";
         }
     }
 
@@ -498,7 +474,7 @@ public sealed partial class ShieldPage : Page
         var active = _blocklist.GetActiveDomains();
         StatusText.Text = _blocklist.IsApplied()
             ? $"屏蔽已生效（{active.Count} 个域名）"
-            : $"未生效（已选 {active.Count} 个域名，点击「应用屏蔽」）";
+            : $"未配置（已选 {active.Count} 个域名，点击「保存配置」）";
     }
 
     private sealed record LimitItem(string Domain, string Text, object Tag);
@@ -536,7 +512,7 @@ public sealed partial class ShieldPage : Page
             var json = await Windows.Storage.FileIO.ReadTextAsync(file);
             _blocklist.ImportConfig(json);
             RefreshAll();
-            StatusText.Text = "配置已导入，点击「应用屏蔽」生效。";
+            StatusText.Text = "配置已导入，点击「保存配置」，开始专注时自动生效。";
             App.LogAction("导入配置", file.Path);
         }
         catch (Exception ex)

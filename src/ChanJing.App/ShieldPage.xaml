@@ -31,7 +31,7 @@
                                Foreground="{StaticResource BrushTextPrimary}" />
                     <TextBlock FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="勾选分类、添加域名，点击底部「应用屏蔽」生效（覆盖所有浏览器，含隐身窗口）" />
+                               Text="勾选分类、添加域名，点击底部「保存配置」，开始专注时自动生效（覆盖所有浏览器，含隐身窗口）" />
                 </StackPanel>
 
                 <!-- 分类名单 -->
@@ -187,10 +187,10 @@
                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0">
             <StackPanel Padding="48,12" Spacing="6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
-                    <Button x:Name="ApplyButton" Content="应用屏蔽" Click="Apply_Click"
+                    <Button x:Name="ApplyButton" Content="保存配置" Click="Apply_Click"
                             Background="{StaticResource BrushState}" Foreground="White"
                             Padding="28,10" CornerRadius="24" />
-                    <Button Content="撤销屏蔽" Click="Remove_Click"
+                    <Button Content="清除配置" Click="Remove_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="28,10" CornerRadius="24" />

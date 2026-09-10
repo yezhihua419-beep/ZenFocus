@@ -65,7 +65,7 @@ public sealed partial class MainPage : Page
             _db.SetSetting("onboarded", "true");
             var step1 = new ContentDialog { Title = "欢迎使用禅净 · 1/3", Content = "先管住手，再看清时间。\n\n【专注】\n在首页写下「今日一愿」→ 点「开始专注」→ 3秒呼吸引导后进入正计时（不显示剩余时间，减少焦虑）。\n\n支持场景快捷选择：工作50分钟 / 写作45分钟 / 学习25分钟 / 会议30分钟。", PrimaryButtonText = "下一步", XamlRoot = XamlRoot };
             await step1.ShowAsync();
-            var step2 = new ContentDialog { Title = "欢迎使用禅净 · 2/3", Content = "【屏蔽】\n到「屏蔽」页勾选分类 → 点底部「应用屏蔽」，浏览器将打不开这些网站（含隐身窗口）。\n\n首次会请求管理员权限，个别杀软可能弹窗，属正常。\n\n桌面 App（抖音客户端等）需在「桌面应用拦截」区单独配置，支持自动最小化或结束进程。", PrimaryButtonText = "下一步", XamlRoot = XamlRoot };
+            var step2 = new ContentDialog { Title = "欢迎使用禅净 · 2/3", Content = "【屏蔽】\n到「屏蔽」页勾选分类 → 点底部「保存配置」，开始专注时浏览器将打不开这些网站（含隐身窗口）。\n\n网站屏蔽在专注开始时自动写入系统hosts，如需管理员权限会提示。\n\n桌面 App（抖音客户端等）需在「桌面应用拦截」区单独配置，支持自动最小化或结束进程。", PrimaryButtonText = "下一步", XamlRoot = XamlRoot };
             await step2.ShowAsync();
             var step3 = new ContentDialog { Title = "欢迎使用禅净 · 3/3", Content = "【统计与托盘】\n「统计」页查看今日专注次数、分钟数、连续天数、24小时分布、分心来源。\n\n点窗口 ✕ 或 — 是最小化到托盘（不退出），想彻底退出请右键托盘图标选「退出」。\n\n托盘菜单可快速开始/暂停专注、查看今日分钟、打开屏蔽设置。", PrimaryButtonText = "去设置屏蔽", CloseButtonText = "开始使用", DefaultButton = ContentDialogButton.Primary, XamlRoot = XamlRoot };
             var result = await step3.ShowAsync();
@@ -179,8 +179,9 @@ public sealed partial class MainPage : Page
             // 更新时长显示（用户可见）
             SessionHint.Text = $"{config.Minutes} 分钟定心 · 正计时 · 心无旁骛";
 
-            // 一键应用该场景的屏蔽分类（桌面应用拦截实时生效；网站屏蔽需点"应用屏蔽"写hosts）
+            // 一键应用该场景的屏蔽分类（专注开始时自动生效）
             _blocklist.SetEnabledCategories(config.Categories);
+            _blocklist.Apply();
 
             // 更新场景按钮高亮状态
             foreach (var child in ScenePanel.Children)

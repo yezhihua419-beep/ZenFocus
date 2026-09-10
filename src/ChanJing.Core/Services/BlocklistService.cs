@@ -327,17 +327,17 @@ public sealed class BlocklistService
     public void Apply()
     {
         RemoveExpiredTempAllows();
-        HostsBlocker.Apply(GetActiveDomains());
+        HostsBlocker.PreApply(GetActiveDomains());
     }
 
     /// <summary>撤销屏蔽（清空 hosts 标记段）。幂等。</summary>
     public void Remove()
     {
-        HostsBlocker.Remove();
+        HostsBlocker.ClearPreApply();
     }
 
     /// <summary>屏蔽是否已生效。</summary>
-    public bool IsApplied() => HostsBlocker.IsApplied();
+    public bool IsApplied() => HostsBlocker.IsPreApplied();
 
     // ---------- 导入/导出 ----------
 

@@ -96,6 +96,51 @@ public partial class App : Application
             LogCrash("伴侣服务启动失败", ex);
         }
 
+        // 屏蔽绑定专注：开始专注时把预应用配置同步到系统hosts，结束专注时清除系统hosts
+        AppServices.Engine.FocusStarted += () =>
+        {
+            try
+            {
+                var domains = ChanJing.Core.Services.HostsBlocker.GetPreAppliedDomains();
+                if (domains.Count > 0)
+                {
+                    ChanJing.Core.Services.HostsBlocker.Apply(domains);
+                    LogAction("专注开始", $"自动应用网站屏蔽（{domains.Count}个域名）");
+                }
+                else
+                {
+                    LogAction("专注开始", "无预应用网站屏蔽配置");
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                LogAction("专注开始", "网站屏蔽需要管理员权限，已跳过（桌面App屏蔽仍生效）");
+            }
+            catch (Exception ex)
+            {
+                LogCrash("专注开始-应用屏蔽失败", ex);
+            }
+        };
+        AppServices.Engine.FocusFinished += (completed) =>
+        {
+            try
+            {
+                if (ChanJing.Core.Services.HostsBlocker.IsApplied())
+                {
+                    ChanJing.Core.Services.HostsBlocker.Remove();
+                    LogAction("专注结束", completed ? "圆满结束，自动解除网站屏蔽" : "破功，自动解除网站屏蔽");
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                LogAction("专注结束", "解除网站屏蔽需要管理员权限，已跳过");
+            }
+            catch (Exception ex)
+            {
+                LogCrash("专注结束-解除屏蔽失败", ex);
+            }
+        };
+
         // 提权重启后的自动执行：--apply-shield / --remove-shield / --cleanup
         var cmd = Environment.GetCommandLineArgs();
         if (cmd.Contains("--apply-shield")) { RunElevatedAction("apply", "屏蔽已应用。"); }
@@ -111,10 +156,14 @@ public partial class App : Application
             switch (action)
             {
                 case "apply":
-                    AppServices.Blocklist.Apply();
+                    var domains = ChanJing.Core.Services.HostsBlocker.GetPreAppliedDomains();
+                    if (domains.Count > 0)
+                    {
+                        ChanJing.Core.Services.HostsBlocker.Apply(domains);
+                    }
                     break;
                 default:
-                    AppServices.Blocklist.Remove();
+                    ChanJing.Core.Services.HostsBlocker.Remove();
                     break;
             }
             LogAction("提权执行", $"{action} 成功");

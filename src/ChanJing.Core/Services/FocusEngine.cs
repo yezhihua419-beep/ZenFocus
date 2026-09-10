@@ -18,6 +18,12 @@ public sealed class FocusEngine
 
     public FocusEngine(AppDatabase db) => _db = db;
 
+    /// <summary>专注开始事件（屏蔽绑定专注：开始时应用屏蔽）。</summary>
+    public event Action? FocusStarted;
+
+    /// <summary>专注结束事件（屏蔽绑定专注：结束时解除屏蔽）。参数：是否完成。</summary>
+    public event Action<bool>? FocusFinished;
+
     /// <summary>当前进行中的会话；null 表示空闲。</summary>
     public FocusSession? Current { get; private set; }
 
@@ -52,6 +58,7 @@ public sealed class FocusEngine
         _pausedMs = 0;
         _pauseStartTicks = null;
         _distractionCount = 0;
+        FocusStarted?.Invoke();
     }
 
     /// <summary>暂停计时（如临时离开），暂停期间不计入专注时长。</summary>
@@ -96,6 +103,7 @@ public sealed class FocusEngine
         _db.SaveFocusSession(done);
         Current = null;
         _pauseStartTicks = null;
+        FocusFinished?.Invoke(completed);
         return done;
     }
 

@@ -21,11 +21,50 @@ public static class HostsBlocker
 
     public static string HostsPath => HostsPathOverride ?? DefaultHostsPath;
 
-    /// <summary>当前是否已应用屏蔽段。</summary>
+    /// <summary>预应用临时文件路径（屏蔽配置先存这里，专注开始后才同步到系统hosts）。</summary>
+    private static readonly string PreApplyPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "ChanJing", "hosts.pre");
+
+    /// <summary>当前是否已应用屏蔽段（系统hosts中）。</summary>
     public static bool IsApplied()
     {
         if (!File.Exists(HostsPath)) return false;
         return File.ReadAllText(HostsPath).Contains(BeginMarker, StringComparison.Ordinal);
+    }
+
+    /// <summary>是否已有预应用配置（临时文件中，专注开始后同步到系统hosts）。</summary>
+    public static bool IsPreApplied() => File.Exists(PreApplyPath);
+
+    /// <summary>预应用：把屏蔽配置存到临时文件，不写系统hosts（屏蔽页"应用屏蔽"调用）。</summary>
+    public static void PreApply(IEnumerable<string> domains)
+    {
+        var dir = Path.GetDirectoryName(PreApplyPath);
+        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+        var lines = new List<string>();
+        foreach (var domain in domains)
+        {
+            var d = domain.Trim().ToLowerInvariant();
+            if (string.IsNullOrWhiteSpace(d)) continue;
+            lines.Add(d);
+        }
+        File.WriteAllLines(PreApplyPath, lines, Encoding.UTF8);
+    }
+
+    /// <summary>从预应用临时文件读取域名列表。</summary>
+    public static List<string> GetPreAppliedDomains()
+    {
+        if (!File.Exists(PreApplyPath)) return new List<string>();
+        return File.ReadAllLines(PreApplyPath, Encoding.UTF8)
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .Select(l => l.Trim())
+            .ToList();
+    }
+
+    /// <summary>清除预应用临时文件。</summary>
+    public static void ClearPreApply()
+    {
+        if (File.Exists(PreApplyPath)) File.Delete(PreApplyPath);
     }
 
     /// <summary>

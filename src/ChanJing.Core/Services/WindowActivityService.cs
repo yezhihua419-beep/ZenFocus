@@ -157,31 +157,22 @@ public sealed class WindowActivityService : IDisposable
                 }
             }
 
-            // 桌面应用拦截：屏蔽已生效时，前台命中分心 App → 最小化 + 触发AppBlocked事件。
+            // 桌面应用拦截：仅在专注中生效（屏蔽绑定专注）。前台命中分心 App → 最小化 + 触发AppBlocked事件。
             // 杀进程由 UI 层在后台线程执行（避免阻塞 UI 线程）。
-            // 专注中持续拦截（2 秒冷却，最小化后用户再点回会再次拦截）；非专注 10 秒冷却。
-            if (_blocklist.IsApplied() && info.Hwnd != IntPtr.Zero)
+            // 专注中持续拦截（2 秒冷却，最小化后用户再点回会再次拦截）。
+            if (_engine.IsRunning && _blocklist.IsApplied() && info.Hwnd != IntPtr.Zero)
             {
                 var cat = _blocklist.MatchBlockedApp(info.ProcessName);
                 if (cat is not null)
                 {
-                    // 沟通工具且开启"仅专注中屏蔽"时，非专注状态不拦截
-                    if (cat == "沟通工具" && _blocklist.IsFocusOnlyCommunication() && !_engine.IsRunning)
+                    lock (_lock)
                     {
-                        // 非专注中，跳过沟通工具拦截
-                    }
-                    else
-                    {
-                        lock (_lock)
+                        var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
+                        if (DateTime.UtcNow - last > TimeSpan.FromSeconds(2))
                         {
-                            var cooldown = _engine.IsRunning ? 2 : 10;
-                            var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
-                            if (DateTime.UtcNow - last > TimeSpan.FromSeconds(cooldown))
-                            {
-                                _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
-                                ShowWindow(info.Hwnd, SW_MINIMIZE);
-                                AppBlocked?.Invoke(info.ProcessName, cat);
-                            }
+                            _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
+                            ShowWindow(info.Hwnd, SW_MINIMIZE);
+                            AppBlocked?.Invoke(info.ProcessName, cat);
                         }
                     }
                 }
