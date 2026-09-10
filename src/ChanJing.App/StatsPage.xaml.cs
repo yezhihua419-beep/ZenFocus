@@ -65,7 +65,15 @@ public sealed partial class StatsPage : Page
                 ? $"今日已专注 {totalMinutes} 分钟 · 完成 {sessions.Count} 次定心 · 继续保持"
                 : "今日还没有专注记录 · 回到「禅定」页开始第一次定心";
             StreakDays.Text = CalcStreak().ToString();
-            DistractionCount.Text = sessions.Sum(s => s.DistractionCount).ToString();
+            var totalDistractions = sessions.Sum(s => s.DistractionCount);
+            DistractionCount.Text = totalDistractions.ToString();
+            // 专注质量分：时长基础分(每分钟2分，上限100) - 分心扣分(每次5分)，下限0
+            var baseScore = Math.Min(100, totalMinutes * 2);
+            var qualityScore = Math.Max(0, baseScore - totalDistractions * 5);
+            QualityScore.Text = totalMinutes > 0 ? qualityScore.ToString() : "—";
+            // 付费功能预览钩子：免费版且有专注记录时显示
+            PremiumPreview.Visibility = (!AppServices.Blocklist.IsActivated() && totalMinutes > 0)
+                ? Visibility.Visible : Visibility.Collapsed;
 
             // 空状态引导：无记录时显示提示并隐藏图表区
             var isEmpty = sessions.Count == 0;

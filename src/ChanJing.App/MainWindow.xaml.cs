@@ -16,9 +16,13 @@ public sealed partial class MainWindow : Window
 {
     private readonly TrayIconService _tray;
     private bool _exiting;
+    private bool _hotkeyPressed;
     private FrictionOverlay? _frictionOverlay;
 
     private const int SW_RESTORE = 9;
+
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int vKey);
 
     [DllImport("user32.dll")]
     private static extern bool IsIconic(IntPtr hWnd);
@@ -49,6 +53,26 @@ public sealed partial class MainWindow : Window
 
         _tray = new TrayIconService(ShowMain, ExitApp, ToggleFocus, ToggleShield, QuickShield);
         _tray.Show("禅净 — 先管住手，再看清时间");
+
+        // 全局快捷键检测：Ctrl+Alt+F 开始/结束专注
+        var hotkeyTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        hotkeyTimer.Tick += (s, e) =>
+        {
+            // VK_CONTROL=0x11, VK_MENU=0x12(Alt), VK_F=0x46
+            bool ctrl = (GetAsyncKeyState(0x11) & 0x8000) != 0;
+            bool alt = (GetAsyncKeyState(0x12) & 0x8000) != 0;
+            bool f = (GetAsyncKeyState(0x46) & 0x8000) != 0;
+            if (ctrl && alt && f && !_hotkeyPressed)
+            {
+                _hotkeyPressed = true;
+                ToggleFocus();
+            }
+            else if (!f)
+            {
+                _hotkeyPressed = false;
+            }
+        };
+        hotkeyTimer.Start();
 
         AppServices.Activity.LimitExceeded += OnLimitExceeded;
         AppServices.Activity.LimitBlocked += OnLimitBlocked;

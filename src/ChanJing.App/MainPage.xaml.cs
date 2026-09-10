@@ -24,6 +24,7 @@ public sealed partial class MainPage : Page
     private string? _pendingWish;
     private int _pendingMinutes = 25;
     private bool _breathing;
+    private bool _deepMode;
 
     public MainPage()
     {
@@ -89,6 +90,19 @@ public sealed partial class MainPage : Page
     }
 
     // ---------- 开始流程：存愿 → 呼吸 → 专注 ----------
+
+    private void DeepMode_Toggled(object sender, RoutedEventArgs e)
+    {
+        _deepMode = DeepModeSwitch.IsOn;
+        if (_deepMode)
+        {
+            SessionHint.Text = "深度模式 · 不计时 · 随心而定 · 手动结束";
+        }
+        else
+        {
+            SessionHint.Text = $"{_pendingMinutes} 分钟定心 · 正计时 · 心无旁骛";
+        }
+    }
 
     private void StartButton_Click(object sender, RoutedEventArgs e)
     {
@@ -347,7 +361,8 @@ public sealed partial class MainPage : Page
         if (!_breathing) return;
         _breathing = false;
         _breathTimer.Stop();
-        _engine.Start(_pendingWish, _pendingMinutes);
+        var startMinutes = _deepMode ? 0 : _pendingMinutes;
+        _engine.Start(_pendingWish, startMinutes);
         App.LogAction("进入专注");
         EnterFocusView();
     }
@@ -452,6 +467,33 @@ public sealed partial class MainPage : Page
     }
 
     /// <summary>摩擦式退出：破功前给 3 秒冷静期，按钮倒计时后才可结束。</summary>
+    private DispatcherTimer? _emergencyTimer;
+
+    private async void EmergencyPass_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "紧急放行",
+            Content = "临时解除屏蔽 5 分钟，用于紧急事务。期间仍记录专注时长。",
+            PrimaryButtonText = "确认放行",
+            CloseButtonText = "取消",
+            XamlRoot = Content.XamlRoot
+        };
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+        App.LogAction("紧急放行", "临时解除屏蔽5分钟");
+        AppServices.Notify("紧急放行已开启 · 5分钟后自动恢复屏蔽", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
+        _emergencyTimer?.Stop();
+        _emergencyTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
+        _emergencyTimer.Tick += (s, e) =>
+        {
+            _emergencyTimer?.Stop();
+            App.LogAction("紧急放行结束", "自动恢复屏蔽");
+            AppServices.Notify("紧急放行结束 · 屏蔽已自动恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
+        };
+        _emergencyTimer.Start();
+    }
+
     private async void Break_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -539,6 +581,7 @@ public sealed partial class MainPage : Page
             ? $"今日一愿：{w}"
             : "心无旁骛，只做眼前这一件事";
         TimerText.Text = "00:00";
+        if (_deepMode) WishShow.Text = "深度模式 · 随心而定 · 完成后手动结束";
     }
 
     private void EnterIdleView()

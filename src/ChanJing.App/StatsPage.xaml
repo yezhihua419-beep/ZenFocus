@@ -51,8 +51,14 @@
                     </StackPanel>
                     <StackPanel Spacing="2" MinWidth="80">
                         <TextBlock x:Name="DistractionCount" FontSize="22" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center" Foreground="#A0563B" />
-                        <TextBlock Text="今日分心（次）" FontSize="12" HorizontalAlignment="Center"
+                                   HorizontalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock Text="起身活动（次）" FontSize="12" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                    </StackPanel>
+                    <StackPanel Spacing="2" MinWidth="80">
+                        <TextBlock x:Name="QualityScore" FontSize="22" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
+                        <TextBlock Text="专注质量（分）" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <Button Content="生成今日卡片" Click="ShareCard_Click"
@@ -61,6 +67,14 @@
                             Foreground="{StaticResource BrushTextPrimary}"
                             BorderBrush="{StaticResource BrushTextSecondary}" Padding="16,8" />
                 </StackPanel>
+
+                <!-- 付费功能预览钩子 -->
+                <Border Grid.Row="3" Background="{StaticResource BrushPanel}" CornerRadius="8" Padding="16,12" Margin="0,16,0,0" Visibility="Collapsed" x:Name="PremiumPreview">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="升级解锁更多洞察" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" />
+                        <TextBlock Text="付费版：最专注时段分析 · 分心模式识别 · 跨设备同步屏蔽 · 无限自定义场景" FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                    </StackPanel>
+                </Border>
 
                 <!-- 空状态引导：无记录时提示，并隐藏图表区 -->
                 <TextBlock x:Name="EmptyHint" Grid.Row="3" FontSize="13" TextWrapping="Wrap" Margin="0,26,0,0"

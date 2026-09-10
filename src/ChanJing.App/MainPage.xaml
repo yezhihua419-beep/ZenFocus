@@ -69,6 +69,7 @@
                         <TextBlock x:Name="SessionHint" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    Text="默认定心 25 分钟 · 正计时 · 心无旁骛" />
+                        <ToggleSwitch x:Name="DeepModeSwitch" Header="深度模式（不计时，随心而定）" OffContent="关" OnContent="开" Toggled="DeepMode_Toggled" Margin="0,8,0,0" HorizontalAlignment="Center" />
                     </StackPanel>
 
                     <!-- 呼吸引导：开始前的 3 秒静心 -->
@@ -111,6 +112,10 @@
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
                             <Button x:Name="PauseButton" Content="暂离" Click="PauseToggle_Click"
+                                    Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                    Foreground="{StaticResource BrushTextSecondary}"
+                                    Padding="20,10" CornerRadius="24" FontSize="13" />
+                            <Button Content="紧急放行" Click="EmergencyPass_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
