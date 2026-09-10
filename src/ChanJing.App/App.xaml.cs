@@ -1,4 +1,4 @@
-using Windows.ApplicationModel;
+﻿using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -23,6 +23,7 @@ public partial class App : Application
 {
     private Window? _window;
     private System.Threading.Mutex? _mutex;
+    private CompanionHttpServer? _companionServer;
 
     /// <summary>提权重启时主动释放单实例锁（仅在管理员进程已启动成功后调用，UAC取消不会走到这里）。</summary>
     public void ReleaseSingleInstanceMutex()
@@ -71,6 +72,18 @@ public partial class App : Application
         _window = new MainWindow();
         _window.Activate();
         LogAction("应用启动");
+
+        // 启动局域网伴侣服务（手机扫码查看统计+远程控制专注）
+        try
+        {
+            _companionServer = new CompanionHttpServer(AppServices.Engine, AppServices.Db, AppServices.Blocklist);
+            AppServices.Companion = _companionServer;
+            _companionServer.Start();
+        }
+        catch (Exception ex)
+        {
+            LogCrash("伴侣服务启动失败", ex);
+        }
 
         // 提权重启后的自动执行：--apply-shield / --remove-shield / --cleanup
         var cmd = Environment.GetCommandLineArgs();

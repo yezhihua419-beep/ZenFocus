@@ -1,4 +1,4 @@
-using ChanJing.Core.Services;
+﻿using ChanJing.Core.Services;
 
 namespace ChanJing_App;
 
@@ -34,4 +34,7 @@ public static class AppServices
     public static readonly BlocklistService Blocklist = new(Db);
     public static readonly DailyLimitService DailyLimits = new(Db);
     public static readonly WindowActivityService Activity = new(Db, DailyLimits, Engine, Blocklist);
+
+    /// <summary>局域网伴侣页HTTP服务（App启动时初始化）。</summary>
+    public static CompanionHttpServer? Companion { get; set; }
 }

@@ -15,6 +15,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <!-- 头部 -->
@@ -145,6 +146,18 @@
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
                         <TextBlock Text="屏蔽规则" FontSize="12"
                                    Foreground="{StaticResource BrushTextSecondary}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 底部：手机伴侣二维码 -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,20,0,0">
+                    <Border Background="{StaticResource BrushCard}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="12" Padding="10">
+                        <Image x:Name="QrCodeImage" Width="90" Height="90" Stretch="Uniform" />
+                    </Border>
+                    <StackPanel Spacing="4" VerticalAlignment="Center" MaxWidth="220">
+                        <TextBlock Text="手机扫码连接" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock Text="手机浏览器扫码，查看专注统计、远程开始/结束专注" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock x:Name="ConnectUrlText" FontSize="11" Foreground="{StaticResource BrushAccent}" />
                     </StackPanel>
                 </StackPanel>
             </Grid>
