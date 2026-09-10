@@ -75,7 +75,21 @@ public sealed class WindowActivityService : IDisposable
         _engine.FocusStarted += OnFocusStarted;
     }
 
-    /// <summary>专注开始时立即最小化所有已启用分类的桌面应用（不等应用到前台，Electron应用如抖音在后台也立即处理）。</summary>
+    /// <summary>立即生效：枚举所有已启用分类的进程并最小化（专注开始或手动屏蔽启用时调用）。</summary>
+    public void ApplyShieldNow()
+    {
+        if (!_blocklist.IsApplied()) return;
+        try
+        {
+            foreach (var proc in _blocklist.GetActiveAppProcesses())
+            {
+                MinimizeProcessWindows(proc);
+            }
+        }
+        catch { }
+    }
+
+    /// <summary>专注开始时立即最小化所有已启用分类的桌面应用。</summary>
     private void OnFocusStarted()
     {
         if (!_blocklist.IsApplied()) return;
@@ -184,7 +198,7 @@ public sealed class WindowActivityService : IDisposable
             // 桌面应用拦截：仅在专注中生效（屏蔽绑定专注）。前台命中分心 App → 最小化 + 触发AppBlocked事件。
             // 杀进程由 UI 层在后台线程执行（避免阻塞 UI 线程）。
             // 专注中持续拦截（2 秒冷却，最小化后用户再点回会再次拦截）。
-            if (_engine.IsRunning && _blocklist.IsApplied() && info.Hwnd != IntPtr.Zero)
+            if ((_engine.IsRunning || _blocklist.IsManualShieldActive()) && _blocklist.IsApplied() && info.Hwnd != IntPtr.Zero)
             {
                 var cat = _blocklist.MatchBlockedApp(info.ProcessName);
                 if (cat is not null)

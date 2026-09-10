@@ -35,6 +35,11 @@
                     <TextBlock FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
                                Text="勾选分类、添加域名，点击底部「保存配置」，开始专注时自动生效（覆盖所有浏览器，含隐身窗口）" />
+                    <ToggleSwitch x:Name="ManualShieldSwitch" Header="立即屏蔽（不计时）" OffContent="关" OnContent="开"
+                                  Toggled="ManualShield_Toggled" Margin="0,12,0,0" />
+                    <TextBlock x:Name="ManualShieldHint" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="开启后立即屏蔽已保存的网站和应用，无需开始专注；关闭后恢复" Visibility="Collapsed" />
                 </StackPanel>
 
                 <!-- 分类名单 -->

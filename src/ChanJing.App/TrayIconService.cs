@@ -150,7 +150,7 @@ public sealed class TrayIconService : IDisposable
         _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
 
         // 屏蔽状态
-        var isShieldOn = AppServices.Blocklist.IsApplied();
+        var isShieldOn = AppServices.Blocklist.IsManualShieldActive();
         _ = AppendMenu(menu, MF_GRAYED, 0, isShieldOn ? "屏蔽：已开启" : "屏蔽：已关闭");
         _ = AppendMenu(menu, 0, ID_TOGGLE_SHIELD, isShieldOn ? "关闭屏蔽" : "开启屏蔽");
         _ = AppendMenu(menu, 0, ID_QUICK_SHIELD, "一键屏蔽 抖音/B站");

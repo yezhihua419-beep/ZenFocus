@@ -10,133 +10,145 @@
 
     <Grid Background="{StaticResource BrushBackground}">
         <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
-            <Grid Padding="48,24,48,28">
+            <Grid Padding="48,20,48,24">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <!-- 头部 -->
-                <StackPanel Grid.Row="0" Spacing="4">
-                    <TextBlock Text="禅定" FontSize="26" FontWeight="SemiBold"
+                <StackPanel Grid.Row="0" Spacing="2">
+                    <TextBlock Text="禅定" FontSize="24" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
-                    <TextBlock x:Name="DateText" FontSize="13"
+                    <TextBlock x:Name="DateText" FontSize="12"
                                Foreground="{StaticResource BrushTextSecondary}" />
                 </StackPanel>
 
-                <!-- 空闲态：场景选择 + 今日一愿 + 开始专注 -->
-                <StackPanel x:Name="IdlePanel" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Spacing="14" MaxWidth="440" MinWidth="280">
-                    <TextBlock Text="今日一愿" FontSize="13" HorizontalAlignment="Center"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <!-- 场景快捷选择 -->
-                    <StackPanel x:Name="ScenePanel" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                        <Button Content="工作" Tag="work" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="14,4" CornerRadius="14" FontSize="12" />
-                        <Button Content="写作" Tag="write" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="14,4" CornerRadius="14" FontSize="12" />
-                        <Button Content="学习" Tag="study" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="14,4" CornerRadius="14" FontSize="12" />
-                        <Button Content="会议" Tag="meeting" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="14,4" CornerRadius="14" FontSize="12" />
-                    </StackPanel>
-                    <TextBlock x:Name="SceneConfigHint" Text="选择场景一键进入专注状态 · 右键可自定义（付费）" FontSize="11" HorizontalAlignment="Center"
-                               Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" TextWrapping="Wrap" />
-                    <TextBox x:Name="WishBox" PlaceholderText="此刻，你最想完成的一件事…" FontSize="15"
-                             HorizontalAlignment="Stretch" Padding="14,10" TextWrapping="Wrap"
-                             Background="{StaticResource BrushPanel}"
-                             BorderBrush="{StaticResource BrushTextSecondary}" />
-                    <Button x:Name="StartButton" Content="开始专注" Click="StartButton_Click"
-                            FontSize="16" Padding="40,12" HorizontalAlignment="Center"
-                            CornerRadius="28" MinWidth="180"
-                            Background="{StaticResource BrushState}" Foreground="White" />
-                    <TextBlock x:Name="SessionHint" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}"
-                               Text="默认定心 25 分钟 · 正计时 · 心无旁骛" />
-                </StackPanel>
-
-                <!-- 呼吸引导：开始前的 3 秒静心 -->
-                <StackPanel x:Name="BreathingPanel" Grid.Row="1" Visibility="Collapsed"
-                            VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
-                    <Grid Width="130" Height="130" HorizontalAlignment="Center">
-                        <Ellipse x:Name="BreathCircle" Fill="{StaticResource BrushState}" Opacity="0.9"
-                                 RenderTransformOrigin="0.5,0.5">
-                            <Ellipse.RenderTransform>
-                                <ScaleTransform x:Name="BreathScale" />
-                            </Ellipse.RenderTransform>
-                        </Ellipse>
-                    </Grid>
-                    <TextBlock x:Name="BreathText" Text="吸气…" FontSize="16" HorizontalAlignment="Center"
-                               Foreground="{StaticResource BrushState}" />
-                    <TextBlock Text="跟随呼吸，心先静下来" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <Button Content="跳过" Click="SkipBreath_Click" HorizontalAlignment="Center"
-                            Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="16,6" CornerRadius="16" />
-                </StackPanel>
-
-                <!-- 专注态：正计时（无倒计时）+ 结束 -->
-                <StackPanel x:Name="FocusPanel" Grid.Row="1" Visibility="Collapsed"
-                            VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Spacing="12" MaxWidth="440" MinWidth="280">
-                    <TextBlock Text="心已定" FontSize="14" HorizontalAlignment="Center"
-                               Foreground="{StaticResource BrushState}" />
-                    <TextBlock x:Name="TimerText" FontSize="46" FontWeight="SemiBold"
-                               HorizontalAlignment="Center" Text="00:00"
-                               Foreground="{StaticResource BrushTextPrimary}" />
-                    <TextBlock x:Name="WishShow" FontSize="13" HorizontalAlignment="Center" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12" Margin="0,12,0,0">
-                        <Button Content="圆满结束" Click="Complete_Click"
-                                Background="{StaticResource BrushState}" Foreground="White"
-                                Padding="20,10" CornerRadius="24" FontSize="13" />
-                        <Button Content="提前结束" Click="Break_Click"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="20,10" CornerRadius="24" FontSize="13" />
-                        <Button x:Name="PauseButton" Content="临时离开" Click="PauseToggle_Click"
-                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                                Foreground="{StaticResource BrushTextSecondary}"
-                                Padding="20,10" CornerRadius="24" FontSize="13" />
-                    </StackPanel>
-                    <Button Content="临时放行当前网站" AllowFocusOnInteraction="True"
+                <!-- 场景标签（顶部一行） -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,12,0,4">
+                    <Button x:Name="SceneWork" Content="工作" Tag="work" Click="Scene_Click" RightTapped="Scene_RightTapped"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="20,6" CornerRadius="18" FontSize="12" HorizontalAlignment="Center">
-                        <Button.Flyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="放行 5 分钟" Tag="5" Click="AllowCurrentMenu_Click" />
-                                <MenuFlyoutItem Text="放行 15 分钟" Tag="15" Click="AllowCurrentMenu_Click" />
-                                <MenuFlyoutItem Text="放行 30 分钟" Tag="30" Click="AllowCurrentMenu_Click" />
-                            </MenuFlyout>
-                        </Button.Flyout>
-                    </Button>
+                            Padding="16,5" CornerRadius="16" FontSize="12" />
+                    <Button x:Name="SceneWrite" Content="写作" Tag="write" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="16,5" CornerRadius="16" FontSize="12" />
+                    <Button x:Name="SceneStudy" Content="学习" Tag="study" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="16,5" CornerRadius="16" FontSize="12" />
+                    <Button x:Name="SceneMeeting" Content="会议" Tag="meeting" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="16,5" CornerRadius="16" FontSize="12" />
                 </StackPanel>
+                <TextBlock Grid.Row="1" x:Name="SceneConfigHint" Text="选择场景一键进入 · 右键可自定义" FontSize="11" HorizontalAlignment="Center"
+                           Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" Margin="0,36,0,0" />
 
-                <!-- 专注后反馈 -->
-                <StackPanel x:Name="FeedbackPanel" Grid.Row="1" Visibility="Collapsed"
-                            VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Spacing="16" MaxWidth="480" MinWidth="280">
-                    <TextBlock x:Name="FeedbackText" FontSize="15" TextWrapping="Wrap"
-                               HorizontalAlignment="Center" TextAlignment="Center"
-                               Foreground="{StaticResource BrushTextPrimary}" />
-                    <Button Content="再来一次" Click="StartAgain_Click"
-                            Background="{StaticResource BrushState}" Foreground="White"
-                            Padding="28,10" CornerRadius="24" HorizontalAlignment="Center" />
-                </StackPanel>
+                <!-- 中间区域：空闲态/呼吸态/专注态/反馈态 -->
+                <Grid Grid.Row="2" VerticalAlignment="Center">
+
+                    <!-- 空闲态：呼吸感开始按钮 + 今日一愿 -->
+                    <StackPanel x:Name="IdlePanel" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="16" MaxWidth="440" MinWidth="280">
+                        <TextBlock Text="今日一愿" FontSize="12" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBox x:Name="WishBox" PlaceholderText="此刻，你最想完成的一件事…" FontSize="14"
+                                 HorizontalAlignment="Stretch" Padding="14,10" TextWrapping="Wrap"
+                                 Background="{StaticResource BrushPanel}"
+                                 BorderBrush="{StaticResource BrushTextSecondary}" />
+                        <Button x:Name="StartButton" Content="开始专注" Click="StartButton_Click"
+                                FontSize="18" Padding="48,16" HorizontalAlignment="Center"
+                                CornerRadius="32" MinWidth="200" MinHeight="56"
+                                Background="{StaticResource BrushState}" Foreground="White" />
+                        <TextBlock x:Name="SessionHint" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Text="默认定心 25 分钟 · 正计时 · 心无旁骛" />
+                    </StackPanel>
+
+                    <!-- 呼吸引导：开始前的 3 秒静心 -->
+                    <StackPanel x:Name="BreathingPanel" Visibility="Collapsed"
+                                VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
+                        <Grid Width="130" Height="130" HorizontalAlignment="Center">
+                            <Ellipse x:Name="BreathCircle" Fill="{StaticResource BrushState}" Opacity="0.9"
+                                     RenderTransformOrigin="0.5,0.5">
+                                <Ellipse.RenderTransform>
+                                    <ScaleTransform x:Name="BreathScale" />
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                        </Grid>
+                        <TextBlock x:Name="BreathText" Text="吸气…" FontSize="16" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushState}" />
+                        <TextBlock Text="跟随呼吸，心先静下来" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <Button Content="跳过" Click="SkipBreath_Click" HorizontalAlignment="Center"
+                                Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="16,6" CornerRadius="16" />
+                    </StackPanel>
+
+                    <!-- 专注态：正计时（无倒计时）+ 结束 -->
+                    <StackPanel x:Name="FocusPanel" Visibility="Collapsed"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="12" MaxWidth="440" MinWidth="280">
+                        <TextBlock Text="心已定" FontSize="14" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushState}" />
+                        <TextBlock x:Name="TimerText" FontSize="48" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Text="00:00"
+                                   Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock x:Name="WishShow" FontSize="13" HorizontalAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12" Margin="0,12,0,0">
+                            <Button Content="圆满结束" Click="Complete_Click"
+                                    Background="{StaticResource BrushState}" Foreground="White"
+                                    Padding="20,10" CornerRadius="24" FontSize="13" />
+                            <Button Content="提前结束" Click="Break_Click"
+                                    Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                    Foreground="{StaticResource BrushTextSecondary}"
+                                    Padding="20,10" CornerRadius="24" FontSize="13" />
+                            <Button x:Name="PauseButton" Content="临时离开" Click="PauseToggle_Click"
+                                    Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                    Foreground="{StaticResource BrushTextSecondary}"
+                                    Padding="20,10" CornerRadius="24" FontSize="13" />
+                        </StackPanel>
+                        <Button Content="临时放行当前网站" AllowFocusOnInteraction="True"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="20,6" CornerRadius="18" FontSize="12" HorizontalAlignment="Center">
+                            <Button.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="放行 5 分钟" Tag="5" Click="AllowCurrentMenu_Click" />
+                                    <MenuFlyoutItem Text="放行 15 分钟" Tag="15" Click="AllowCurrentMenu_Click" />
+                                    <MenuFlyoutItem Text="放行 30 分钟" Tag="30" Click="AllowCurrentMenu_Click" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 专注后反馈 -->
+                    <StackPanel x:Name="FeedbackPanel" Visibility="Collapsed"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="16" MaxWidth="480" MinWidth="280">
+                        <TextBlock x:Name="FeedbackText" FontSize="15" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" TextAlignment="Center"
+                                   Foreground="{StaticResource BrushTextPrimary}" />
+                        <Button Content="再来一次" Click="StartAgain_Click"
+                                Background="{StaticResource BrushState}" Foreground="White"
+                                Padding="28,10" CornerRadius="24" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- 今日一句话反馈 -->
+                <TextBlock Grid.Row="3" x:Name="TodayFeedback" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"
+                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,12,0,0"
+                           Text="今日已专注 0 分钟 · 每一次定心都是进步" />
 
                 <!-- 底部：今日统计 -->
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="40" Margin="0,20,0,0">
+                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="40" Margin="0,16,0,0">
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="TodayCount" FontSize="20" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
@@ -158,9 +170,9 @@
                 </StackPanel>
 
                 <!-- 底部：手机伴侣二维码（付费功能） -->
-                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,20,0,0">
+                <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,20,0,0">
                     <Border x:Name="QrCodeBorder" Background="{StaticResource BrushCard}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="12" Padding="10">
-                        <Image x:Name="QrCodeImage" Width="90" Height="90" Stretch="Uniform" />
+                        <Image x:Name="QrCodeImage" Width="80" Height="80" Stretch="Uniform" />
                     </Border>
                     <StackPanel Spacing="4" VerticalAlignment="Center" MaxWidth="240">
                         <TextBlock x:Name="CompanionTitleText" Text="手机扫码连接" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}" />

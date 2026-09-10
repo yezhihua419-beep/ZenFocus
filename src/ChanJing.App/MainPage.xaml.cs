@@ -155,15 +155,12 @@ public sealed partial class MainPage : Page
             _blocklist.Apply();
 
             // 更新场景按钮高亮状态
-            foreach (var child in ScenePanel.Children)
+            foreach (var btn in new[] { SceneWork, SceneWrite, SceneStudy, SceneMeeting })
             {
-                if (child is Button btn)
-                {
                     var isActive = btn.Tag?.ToString() == tag;
                     btn.Background = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : new SolidColorBrush(Colors.Transparent);
                     btn.Foreground = isActive ? new SolidColorBrush(Colors.White) : (Brush)Application.Current.Resources["BrushTextSecondary"];
                     btn.BorderBrush = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : (Brush)Application.Current.Resources["BrushTextSecondary"];
-                }
             }
 
             // 更新场景配置摘要提示
@@ -589,15 +586,12 @@ public sealed partial class MainPage : Page
             if (string.IsNullOrEmpty(restoreTag)) return;
 
             _currentSceneTag = restoreTag;
-            foreach (var child in ScenePanel.Children)
+            foreach (var btn in new[] { SceneWork, SceneWrite, SceneStudy, SceneMeeting })
             {
-                if (child is Button btn)
-                {
                     var isActive = btn.Tag?.ToString() == restoreTag;
                     btn.Background = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : new SolidColorBrush(Colors.Transparent);
                     btn.Foreground = isActive ? new SolidColorBrush(Colors.White) : (Brush)Application.Current.Resources["BrushTextSecondary"];
                     btn.BorderBrush = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : (Brush)Application.Current.Resources["BrushTextSecondary"];
-                }
             }
 
             var config = SceneManager.GetSceneConfig(_db, restoreTag);

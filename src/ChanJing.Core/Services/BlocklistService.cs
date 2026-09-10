@@ -13,6 +13,7 @@ public sealed class BlocklistService
     public const string SettingKeyCustomApps = "custom_apps";
     public const string SettingKeyAppBlockMode = "app_block_mode";
     public const string SettingKeyFocusOnlyCommunication = "focus_only_communication";
+    public const string SettingKeyManualShield = "manual_shield";
 
     /// <summary>免费版最多可配置的屏蔽目标数（分类 + 自定义域名项）。</summary>
     public const int FreeTargetLimit = 3;
@@ -198,6 +199,39 @@ public sealed class BlocklistService
 
     /// <summary>是否已激活（买断/订阅）。V1 为占位，支付上线后接入。</summary>
     public bool IsActivated() => _db.GetSetting(SettingKeyActivated) == "true";
+
+    // ---------- 手动屏蔽总开关（独立于专注计时） ----------
+
+    /// <summary>手动屏蔽是否已启用（用户主动开启，不依赖专注计时）。</summary>
+    public bool IsManualShieldActive() => _db.GetSetting(SettingKeyManualShield) == "true";
+
+    /// <summary>启用手动屏蔽：立即写系统hosts（网站屏蔽），桌面App拦截同步生效。专注结束后不自动关闭。</summary>
+    public void EnableManualShield()
+    {
+        _db.SetSetting(SettingKeyManualShield, "true");
+        Apply(); // 写 hosts.pre
+        try { HostsBlocker.Apply(GetActiveDomains()); }
+        catch (UnauthorizedAccessException) { /* 普通权限写不了hosts，桌面App拦截仍生效 */ }
+    }
+
+    /// <summary>禁用手动屏蔽：清除系统hosts（仅当不在专注中）。专注中调用只清标记，专注结束时再清hosts。</summary>
+    public void DisableManualShield(bool focusRunning = false)
+    {
+        _db.SetSetting(SettingKeyManualShield, "false");
+        Remove(); // 清 hosts.pre
+        if (!focusRunning)
+        {
+            try { HostsBlocker.Remove(); }
+            catch (UnauthorizedAccessException) { }
+        }
+    }
+
+    /// <summary>切换手动屏蔽状态，返回切换后状态。</summary>
+    public bool ToggleManualShield(bool focusRunning = false)
+    {
+        if (IsManualShieldActive()) { DisableManualShield(focusRunning); return false; }
+        else { EnableManualShield(); return true; }
+    }
 
     /// <summary>免费版自定义域名是否达到上限（分类不限制，仅自定义域名限3个）。</summary>
     public bool IsOverFreeLimit(int extra = 0) =>

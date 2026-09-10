@@ -111,6 +111,12 @@ public partial class App : Application
         {
             try
             {
+                if (AppServices.Blocklist.IsManualShieldActive())
+                {
+                    LogAction("focus-start", "manual shield active, skip hosts write");
+                }
+                else
+                {
                 var domains = ChanJing.Core.Services.HostsBlocker.GetPreAppliedDomains();
                 if (domains.Count > 0)
                 {
@@ -120,6 +126,7 @@ public partial class App : Application
                 else
                 {
                     LogAction("专注开始", "无预应用网站屏蔽配置");
+                }
                 }
 
                 // 方案B：开始专注时统一保存当前配置到场景（只对已自定义的场景自动记忆，避免消耗免费额度）
@@ -145,22 +152,25 @@ public partial class App : Application
         {
             try
             {
-                if (ChanJing.Core.Services.HostsBlocker.IsApplied())
+                if (AppServices.Blocklist.IsManualShieldActive())
+                {
+                    LogAction("focus-finish", "manual shield active, keep hosts");
+                }
+                else if (ChanJing.Core.Services.HostsBlocker.IsApplied())
                 {
                     ChanJing.Core.Services.HostsBlocker.Remove();
-                    LogAction("专注结束", completed ? "圆满结束，自动解除网站屏蔽" : "破功，自动解除网站屏蔽");
+                    LogAction("focus-finish", completed ? "completed, remove hosts" : "broken, remove hosts");
                 }
             }
             catch (UnauthorizedAccessException)
             {
-                LogAction("专注结束", "解除网站屏蔽需要管理员权限，已跳过");
+                LogAction("focus-finish", "need admin, skipped");
             }
             catch (Exception ex)
             {
-                LogCrash("专注结束-解除屏蔽失败", ex);
+                LogCrash("focus-finish error", ex);
             }
         };
-
         // 提权重启后的自动执行：--apply-shield / --remove-shield / --cleanup
         var cmd = Environment.GetCommandLineArgs();
         if (cmd.Contains("--apply-shield")) { RunElevatedAction("apply", "屏蔽已应用。"); }

@@ -309,10 +309,17 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                ShowMain();
-                // 导航到屏蔽页
-                ContentFrame.Navigate(typeof(ShieldPage));
-                App.LogAction("托盘快捷操作", "打开屏蔽设置");
+                if (AppServices.Blocklist.IsManualShieldActive())
+                {
+                    AppServices.Blocklist.DisableManualShield(AppServices.Engine.IsRunning);
+                    AppServices.Notify("屏蔽已关闭");
+                }
+                else
+                {
+                    AppServices.Blocklist.EnableManualShield();
+                    AppServices.Activity.ApplyShieldNow();
+                    AppServices.Notify("屏蔽已开启（不计时）");
+                }
             }
             catch (Exception ex)
             {

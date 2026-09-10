@@ -131,6 +131,11 @@ public sealed partial class ShieldPage : Page
             RefreshCustomDomains();
             RefreshLimits();
             RefreshAllowStatus();
+            if (ManualShieldSwitch is not null)
+            {
+                ManualShieldSwitch.IsOn = AppServices.Blocklist.IsManualShieldActive();
+                ManualShieldHint.Visibility = ManualShieldSwitch.IsOn ? Visibility.Visible : Visibility.Collapsed;
+            }
             RefreshApps();
             AppModeBox.SelectedIndex = blockMode == "kill" ? 1 : 0;
             FocusOnlyCommSwitch.IsOn = _blocklist.IsFocusOnlyCommunication();
@@ -295,6 +300,11 @@ public sealed partial class ShieldPage : Page
             _blocklist.AddTempAllow(domain, minutes);
             AllowDomainBox.Text = string.Empty;
             RefreshAllowStatus();
+            if (ManualShieldSwitch is not null)
+            {
+                ManualShieldSwitch.IsOn = AppServices.Blocklist.IsManualShieldActive();
+                ManualShieldHint.Visibility = ManualShieldSwitch.IsOn ? Visibility.Visible : Visibility.Collapsed;
+            }
             RefreshStatus();
             App.LogAction("临时放行", $"{domain} {minutes}分钟");
         }
@@ -310,6 +320,11 @@ public sealed partial class ShieldPage : Page
         {
             _blocklist.ClearTempAllows();
             RefreshAllowStatus();
+            if (ManualShieldSwitch is not null)
+            {
+                ManualShieldSwitch.IsOn = AppServices.Blocklist.IsManualShieldActive();
+                ManualShieldHint.Visibility = ManualShieldSwitch.IsOn ? Visibility.Visible : Visibility.Collapsed;
+            }
             RefreshStatus();
             App.LogAction("清除全部放行");
         }
@@ -556,5 +571,25 @@ public sealed partial class ShieldPage : Page
             App.LogCrash("ShieldPage.ImportConfig", ex);
             StatusText.Text = $"导入失败：{ex.Message}";
         }
+    }
+
+
+    private void ManualShield_Toggled(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var isOn = ManualShieldSwitch.IsOn;
+            if (isOn)
+            {
+                AppServices.Blocklist.EnableManualShield();
+                AppServices.Activity.ApplyShieldNow();
+            }
+            else
+            {
+                AppServices.Blocklist.DisableManualShield(AppServices.Engine.IsRunning);
+            }
+            ManualShieldHint.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch (Exception ex) { App.LogCrash("ManualShield_Toggled", ex); }
     }
 }
