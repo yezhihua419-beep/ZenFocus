@@ -116,7 +116,7 @@
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button Content="紧急放行" Click="EmergencyPass_Click"
+                            <Button Content="暂离" Click="EmergencyPass_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />

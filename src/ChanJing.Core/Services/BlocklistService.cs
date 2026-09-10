@@ -203,7 +203,10 @@ public sealed class BlocklistService
     // ---------- 手动屏蔽总开关（独立于专注计时） ----------
 
     /// <summary>手动屏蔽是否已启用（用户主动开启，不依赖专注计时）。</summary>
-    public bool IsManualShieldActive() => _db.GetSetting(SettingKeyManualShield) == "true";
+    /// <summary>紧急放行：为true时暂停桌面应用拦截（网站屏蔽保持生效）。</summary>
+        public bool EmergencyPass { get; set; }
+
+        public bool IsManualShieldActive() => _db.GetSetting(SettingKeyManualShield) == "true";
 
     /// <summary>启用手动屏蔽：立即写系统hosts（网站屏蔽），桌面App拦截同步生效。专注结束后不自动关闭。</summary>
     public void EnableManualShield()

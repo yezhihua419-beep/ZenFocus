@@ -415,6 +415,7 @@ public sealed partial class MainPage : Page
         try
         {
             _emergencyTimer?.Stop();
+            AppServices.Blocklist.EmergencyPass = false;
             var done = _engine.Finish(completed: true);
             App.LogAction("圆满结束", $"专注 {done.ActualMinutes} 分钟 分心 {done.DistractionCount} 次");
             ShowFeedback(_engine.GenerateFeedback(done));
@@ -489,23 +490,25 @@ public sealed partial class MainPage : Page
     {
         var dialog = new ContentDialog
         {
-            Title = "紧急放行",
-            Content = "临时解除屏蔽 5 分钟，用于紧急事务。期间仍记录专注时长。",
+            Title = "暂离模式",
+            Content = "暂离 5 分钟，桌面应用（抖音/B站等）暂停拦截，网站屏蔽保持生效。期间仍记录专注时长。",
             PrimaryButtonText = "确认放行",
             CloseButtonText = "取消",
             XamlRoot = Content.XamlRoot
         };
         var result = await dialog.ShowAsync();
         if (result != ContentDialogResult.Primary) return;
-        App.LogAction("紧急放行", "临时解除屏蔽5分钟");
-        AppServices.Notify("紧急放行已开启 · 5分钟后自动恢复屏蔽", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
+        App.LogAction("暂离模式", "桌面应用暂停拦截5分钟");
+        AppServices.Blocklist.EmergencyPass = true;
+            AppServices.Notify("暂离模式已开启 · 桌面应用暂停拦截 · 5分钟后自动恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
         _emergencyTimer?.Stop();
         _emergencyTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
         _emergencyTimer.Tick += (s, e) =>
         {
             _emergencyTimer?.Stop();
             App.LogAction("紧急放行结束", "自动恢复屏蔽");
-            AppServices.Notify("紧急放行结束 · 屏蔽已自动恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
+            AppServices.Blocklist.EmergencyPass = false;
+                AppServices.Notify("暂离模式结束 · 桌面应用拦截已恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
         };
         _emergencyTimer.Start();
     }
@@ -572,6 +575,7 @@ public sealed partial class MainPage : Page
             if (result == ContentDialogResult.None) // 用户确认结束
             {
                 _emergencyTimer?.Stop();
+                AppServices.Blocklist.EmergencyPass = false;
                 App.LogAction("破功", $"专注 {_engine.Elapsed.TotalMinutes:0.#} 分钟");
                 var done = _engine.Finish(completed: false);
                 ShowFeedback(_engine.GenerateFeedback(done));
