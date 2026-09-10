@@ -29,14 +29,29 @@ public sealed partial class StatsPage : Page
     };
 
     private readonly AppDatabase _db = AppServices.Db;
+    private readonly DispatcherTimer _refreshTimer;
 
     public StatsPage()
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+        _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        _refreshTimer.Tick += (_, _) => RefreshAll();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        _refreshTimer.Stop();
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        RefreshAll();
+        _refreshTimer.Start();
+    }
+
+    private void RefreshAll()
     {
         var today = DateTime.Today;
         var sessions = _db.GetSessions(today, today.AddDays(1));
