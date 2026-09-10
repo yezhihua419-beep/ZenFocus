@@ -156,7 +156,7 @@
                     </Border>
                     <StackPanel Spacing="4" VerticalAlignment="Center" MaxWidth="220">
                         <TextBlock Text="手机扫码连接" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock Text="手机浏览器扫码，查看专注统计、远程开始/结束专注" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock Text="手机和电脑需在同一WiFi下，手机浏览器扫码，查看专注统计、远程开始/结束专注" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
                         <TextBlock x:Name="ConnectUrlText" FontSize="11" Foreground="{StaticResource BrushAccent}" />
                     </StackPanel>
                 </StackPanel>

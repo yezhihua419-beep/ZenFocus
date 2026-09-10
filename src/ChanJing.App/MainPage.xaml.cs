@@ -648,7 +648,7 @@ public sealed partial class MainPage : Page
                     return;
                 }
                 url = $"http://{ip}:{server.Port}";
-                ConnectUrlText.Text = url;
+                ConnectUrlText.Text = $"{url}（手机和电脑需在同一WiFi下）";
             }
             else
             {
