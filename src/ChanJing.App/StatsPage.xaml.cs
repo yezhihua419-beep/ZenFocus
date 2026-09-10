@@ -53,17 +53,25 @@ public sealed partial class StatsPage : Page
 
     private void RefreshAll()
     {
-        var today = DateTime.Today;
-        var sessions = _db.GetSessions(today, today.AddDays(1));
-        TodayCount.Text = sessions.Count.ToString();
-        TodayMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString();
-        StreakDays.Text = CalcStreak().ToString();
-        DistractionCount.Text = sessions.Sum(s => s.DistractionCount).ToString();
+        try
+        {
+            var today = DateTime.Today;
+            var sessions = _db.GetSessions(today, today.AddDays(1));
+            TodayCount.Text = sessions.Count.ToString();
+            TodayMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString();
+            StreakDays.Text = CalcStreak().ToString();
+            DistractionCount.Text = sessions.Sum(s => s.DistractionCount).ToString();
 
-        DrawWeekChart();
-        DrawHourlyChart();
-        DrawMonthHeatmap();
-        LoadUsage();
+            DrawWeekChart();
+            DrawHourlyChart();
+            DrawMonthHeatmap();
+            LoadUsage();
+            App.LogAction("统计刷新", $"专注{sessions.Count}次/{sessions.Sum(s => s.ActualMinutes)}分 分心{sessions.Sum(s => s.DistractionCount)}次");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("StatsPage.RefreshAll", ex);
+        }
     }
 
     /// <summary>连续定心天数（今天起向前数，中断即停）。</summary>
