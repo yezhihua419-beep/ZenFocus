@@ -203,6 +203,17 @@ public sealed partial class MainPage : Page
                 }
             }
 
+            // 更新场景配置摘要提示
+            var sceneName = tag switch
+            {
+                "work" => "工作",
+                "write" => "写作",
+                "study" => "学习",
+                "meeting" => "会议",
+                _ => tag
+            };
+            SceneConfigHint.Text = $"{sceneName} · {config.Minutes}分钟 · 屏蔽{config.Categories.Length}类（{string.Join("/", config.Categories)}） · 右键可自定义";
+
             App.LogAction("选择场景", $"{tag} {config.Minutes}分钟 屏蔽=[{string.Join("/", config.Categories)}]");
         }
         catch (Exception ex)

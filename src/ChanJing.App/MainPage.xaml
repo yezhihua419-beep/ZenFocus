@@ -50,8 +50,8 @@
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="14,4" CornerRadius="14" FontSize="12" />
                     </StackPanel>
-                    <TextBlock Text="右键场景按钮可自定义时长、屏蔽和愿望（付费）" FontSize="11" HorizontalAlignment="Center"
-                               Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" />
+                    <TextBlock x:Name="SceneConfigHint" Text="选择场景一键进入专注状态 · 右键可自定义（付费）" FontSize="11" HorizontalAlignment="Center"
+                               Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" TextWrapping="Wrap" />
                     <TextBox x:Name="WishBox" PlaceholderText="此刻，你最想完成的一件事…" FontSize="15"
                              HorizontalAlignment="Stretch" Padding="14,10" TextWrapping="Wrap"
                              Background="{StaticResource BrushPanel}"
