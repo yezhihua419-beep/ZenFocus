@@ -183,6 +183,7 @@ public sealed partial class MainWindow : Window
     /// <summary>屏蔽生效时命中分心桌面应用（后台线程，调度回 UI 弹托盘气泡）。</summary>
     private void OnAppBlocked(string processName, string category)
     {
+        App.LogAction("桌面应用拦截", $"{processName}({category}) 已最小化");
         DispatcherQueue.TryEnqueue(() =>
         {
             try
