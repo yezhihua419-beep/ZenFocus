@@ -38,8 +38,13 @@
                 <StackPanel Grid.Row="1" Margin="0,20,0,0" Spacing="8">
                     <TextBlock Text="网站分类" FontSize="15" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
-                    <StackPanel x:Name="CategoryPanel" Orientation="Horizontal">
-                    </StackPanel>
+                    <ItemsControl x:Name="CategoryPanel">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Horizontal" ItemWidth="140" ItemHeight="40" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
                     <TextBlock x:Name="LimitHint" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushWarning}"
                                Text="免费版最多启用 3 个屏蔽目标（分类+自定义域名合计），升级后无限制。" />

@@ -78,23 +78,28 @@ public sealed partial class ShieldPage : Page
         _isLoading = true;
         try
         {
-            CategoryPanel.Children.Clear();
+            CategoryPanel.Items.Clear();
             var enabled = _blocklist.GetEnabledCategories();
             var activated = _blocklist.IsActivated();
             var blockMode = _blocklist.GetAppBlockMode();
 
             foreach (var category in BlocklistService.DefaultCategories.Keys)
             {
+                var siteCount = BlocklistService.DefaultCategories[category].Length;
                 var checkBox = new CheckBox
                 {
-                    Content = category,
+                    Content = $"{category}（{siteCount}站）",
                     IsChecked = enabled.Contains(category),
                     Tag = category,
-                    FontSize = 14
+                    FontSize = 13,
+                    MinWidth = 100,
+                    Padding = new Thickness(12, 6, 12, 6),
+                    Margin = new Thickness(0, 0, 8, 8),
+                    CornerRadius = new CornerRadius(14)
                 };
                 checkBox.Checked += OnCategoryChecked;
                 checkBox.Unchecked += OnCategoryChanged;
-                CategoryPanel.Children.Add(checkBox);
+                CategoryPanel.Items.Add(checkBox);
             }
 
             LimitHint.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
@@ -146,7 +151,7 @@ public sealed partial class ShieldPage : Page
 
     private void SaveCategories()
     {
-        var enabled = CategoryPanel.Children
+        var enabled = CategoryPanel.Items
             .OfType<CheckBox>()
             .Where(c => c.IsChecked == true)
             .Select(c => (string)c.Tag);
