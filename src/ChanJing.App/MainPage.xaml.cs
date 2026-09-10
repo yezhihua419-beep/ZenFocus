@@ -104,6 +104,20 @@ public sealed partial class MainPage : Page
         }
     }
 
+    private void AdhdMode_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (AdhdModeSwitch.IsOn)
+        {
+            _pendingMinutes = 15;
+            SessionHint.Text = "ADHD友好模式 · 15分钟短周期 · 视觉化时间 · 减少焦虑";
+        }
+        else
+        {
+            _pendingMinutes = _currentSceneTag != null ? SceneManager.GetSceneConfig(_db, _currentSceneTag).Minutes : 25;
+            SessionHint.Text = $"{_pendingMinutes} 分钟定心 · 正计时 · 心无旁骛";
+        }
+    }
+
     private void StartButton_Click(object sender, RoutedEventArgs e)
     {
         try

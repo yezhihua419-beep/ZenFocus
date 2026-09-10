@@ -70,6 +70,7 @@
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    Text="默认定心 25 分钟 · 正计时 · 心无旁骛" />
                         <ToggleSwitch x:Name="DeepModeSwitch" Header="深度模式（不计时，随心而定）" OffContent="关" OnContent="开" Toggled="DeepMode_Toggled" Margin="0,8,0,0" HorizontalAlignment="Center" />
+                        <ToggleSwitch x:Name="AdhdModeSwitch" Header="ADHD友好模式（15分钟短周期·视觉化时间）" OffContent="关" OnContent="开" Toggled="AdhdMode_Toggled" Margin="0,4,0,0" HorizontalAlignment="Center" />
                     </StackPanel>
 
                     <!-- 呼吸引导：开始前的 3 秒静心 -->
