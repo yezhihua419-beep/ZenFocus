@@ -640,11 +640,29 @@ public sealed partial class MainPage : Page
         BlockStatus.Text = AppServices.Blocklist.IsApplied() ? "已启用" : "未启用";
     }
 
-    /// <summary>生成手机伴侣页二维码：根据伴侣服务实际监听状态显示。</summary>
+    /// <summary>生成手机伴侣页二维码：手机伴侣为付费功能，免费版显示升级提示，激活后才生成二维码。</summary>
     private void GenerateCompanionQrCode()
     {
         try
         {
+            // 免费版：不显示二维码，显示升级提示（付费钩子）
+            if (!AppServices.Blocklist.IsActivated())
+            {
+                QrCodeBorder.Visibility = Visibility.Collapsed;
+                CompanionTitleText.Text = "手机伴侣（付费功能）";
+                CompanionDescText.Text = "升级后可手机扫码查看专注统计、远程开始/结束专注";
+                ConnectUrlText.Text = "";
+                CompanionUpgradeText.Visibility = Visibility.Visible;
+                App.LogAction("伴侣二维码", "免费版显示升级提示");
+                return;
+            }
+
+            // 付费版：显示二维码
+            QrCodeBorder.Visibility = Visibility.Visible;
+            CompanionTitleText.Text = "手机扫码连接";
+            CompanionDescText.Text = "手机和电脑需在同一WiFi下，手机浏览器扫码，查看专注统计、远程开始/结束专注";
+            CompanionUpgradeText.Visibility = Visibility.Collapsed;
+
             var server = AppServices.Companion;
             if (server == null || !server.IsRunning)
             {

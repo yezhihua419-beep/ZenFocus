@@ -149,15 +149,16 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- 底部：手机伴侣二维码 -->
+                <!-- 底部：手机伴侣二维码（付费功能） -->
                 <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,20,0,0">
-                    <Border Background="{StaticResource BrushCard}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="12" Padding="10">
+                    <Border x:Name="QrCodeBorder" Background="{StaticResource BrushCard}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="12" Padding="10">
                         <Image x:Name="QrCodeImage" Width="90" Height="90" Stretch="Uniform" />
                     </Border>
-                    <StackPanel Spacing="4" VerticalAlignment="Center" MaxWidth="220">
-                        <TextBlock Text="手机扫码连接" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock Text="手机和电脑需在同一WiFi下，手机浏览器扫码，查看专注统计、远程开始/结束专注" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                    <StackPanel Spacing="4" VerticalAlignment="Center" MaxWidth="240">
+                        <TextBlock x:Name="CompanionTitleText" Text="手机扫码连接" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock x:Name="CompanionDescText" Text="手机和电脑需在同一WiFi下，手机浏览器扫码，查看专注统计、远程开始/结束专注" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
                         <TextBlock x:Name="ConnectUrlText" FontSize="11" Foreground="{StaticResource BrushAccent}" />
+                        <TextBlock x:Name="CompanionUpgradeText" Text="手机伴侣为付费功能 · ¥68 买断后扫码连接" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushWarning}" Visibility="Collapsed" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

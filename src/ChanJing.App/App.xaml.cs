@@ -84,12 +84,21 @@ public partial class App : Application
             LogCrash("活动追踪启动失败", ex);
         }
 
-        // 启动局域网伴侣服务（手机扫码查看统计+远程控制专注）
+        // 启动局域网伴侣服务（手机扫码查看统计+远程控制专注）——付费功能，免费版不启动
         try
         {
-            _companionServer = new CompanionHttpServer(AppServices.Engine, AppServices.Db, AppServices.Blocklist);
-            AppServices.Companion = _companionServer;
-            _companionServer.Start();
+            if (AppServices.Blocklist.IsActivated())
+            {
+                _companionServer = new CompanionHttpServer(AppServices.Engine, AppServices.Db, AppServices.Blocklist);
+                AppServices.Companion = _companionServer;
+                _companionServer.Start();
+                LogAction("伴侣服务", "已启动（付费版）");
+            }
+            else
+            {
+                AppServices.Companion = null;
+                LogAction("伴侣服务", "免费版不启动（付费功能）");
+            }
         }
         catch (Exception ex)
         {
