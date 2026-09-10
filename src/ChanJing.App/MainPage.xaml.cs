@@ -4,6 +4,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Input;
 
@@ -42,6 +43,7 @@ public sealed partial class MainPage : Page
                 CultureInfo.GetCultureInfo("zh-CN"));
             WishBox.Text = _db.GetSetting("today_wish") ?? string.Empty;
             RefreshTodayStats();
+            GenerateCompanionQrCode();
 
             if (_engine.IsRunning) EnterFocusView();
             else EnterIdleView();
@@ -622,5 +624,86 @@ public sealed partial class MainPage : Page
         TodayCount.Text = sessions.Count.ToString(CultureInfo.InvariantCulture);
         TodayMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString(CultureInfo.InvariantCulture);
         BlockStatus.Text = AppServices.Blocklist.IsApplied() ? "已启用" : "未启用";
+    }
+
+    /// <summary>生成手机伴侣页二维码：根据伴侣服务实际监听状态显示。</summary>
+    private void GenerateCompanionQrCode()
+    {
+        try
+        {
+            var server = AppServices.Companion;
+            if (server == null || !server.IsRunning)
+            {
+                ConnectUrlText.Text = "伴侣服务未启动";
+                return;
+            }
+
+            string url;
+            if (server.IsLanAccess)
+            {
+                var ip = GetLocalIpAddress();
+                if (string.IsNullOrEmpty(ip))
+                {
+                    ConnectUrlText.Text = "未检测到网络";
+                    return;
+                }
+                url = $"http://{ip}:{server.Port}";
+                ConnectUrlText.Text = url;
+            }
+            else
+            {
+                url = $"http://localhost:{server.Port}";
+                ConnectUrlText.Text = "需管理员权限运行才能让手机访问（当前仅本机）";
+            }
+
+            using var qrGenerator = new QRCoder.QRCodeGenerator();
+            var qrCodeData = qrGenerator.CreateQrCode(url, QRCoder.QRCodeGenerator.ECCLevel.M);
+            using var qrCode = new QRCoder.BitmapByteQRCode(qrCodeData);
+            var qrBytes = qrCode.GetGraphic(10);
+
+            var bitmap = new BitmapImage();
+            using (var stream = new System.IO.MemoryStream(qrBytes))
+            {
+                bitmap.SetSource(stream.AsRandomAccessStream());
+            }
+            QrCodeImage.Source = bitmap;
+
+            App.LogAction("伴侣二维码", $"生成成功 url={url}");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("GenerateCompanionQrCode", ex);
+            ConnectUrlText.Text = "二维码生成失败";
+        }
+    }
+
+    /// <summary>获取本机局域网IPv4地址（排除回环和虚拟网卡）。</summary>
+    private static string? GetLocalIpAddress()
+    {
+        try
+        {
+            var interfaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+            foreach (var ni in interfaces)
+            {
+                if (ni.OperationalStatus != System.Net.NetworkInformation.OperationalStatus.Up) continue;
+                if (ni.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Loopback) continue;
+                var desc = ni.Description.ToLowerInvariant();
+                if (desc.Contains("docker") || desc.Contains("vmware") || desc.Contains("virtualbox") ||
+                    desc.Contains("hyper-v") || desc.Contains("wsl") || desc.Contains("tailscale")) continue;
+
+                var props = ni.GetIPProperties();
+                foreach (var addr in props.UnicastAddresses)
+                {
+                    if (addr.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
+                        var ipStr = addr.Address.ToString();
+                        if (!ipStr.StartsWith("169.254."))
+                            return ipStr;
+                    }
+                }
+            }
+        }
+        catch { }
+        return null;
     }
 }
