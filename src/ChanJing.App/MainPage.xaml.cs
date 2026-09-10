@@ -91,6 +91,14 @@ public sealed partial class MainPage : Page
                 _db.SetSetting("today_wish", _pendingWish);
             }
             App.LogAction("开始专注", _pendingWish is { Length: > 0 } ? $"愿：{_pendingWish}" : "无愿");
+            // 方案B：开始专注时，把当前屏蔽配置保存到当前场景（场景自动记忆用户修改）
+            if (!string.IsNullOrEmpty(_currentSceneTag))
+            {
+                var currentCategories = _blocklist.GetEnabledCategories().ToArray();
+                SaveSceneConfig(_currentSceneTag, new SceneConfig(_pendingWish ?? "", _pendingMinutes, currentCategories));
+                App.LogAction("场景自动记忆", $"{_currentSceneTag} {_pendingMinutes}分钟 屏蔽=[{string.Join("/", currentCategories)}]");
+            }
+
             StartBreathing();
         }
         catch (Exception ex)
