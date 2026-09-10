@@ -396,25 +396,19 @@ public sealed partial class MainPage : Page
     {
         var sb = new Storyboard();
 
-        void Add(string property, double from, double to, double beginSeconds)
+        void AddScale(string property)
         {
-            var animation = new DoubleAnimation
-            {
-                From = from,
-                To = to,
-                Duration = TimeSpan.FromSeconds(1.5),
-                BeginTime = TimeSpan.FromSeconds(beginSeconds),
-                EnableDependentAnimation = true
-            };
+            var animation = new DoubleAnimationUsingKeyFrames();
+            animation.KeyFrames.Add(new LinearDoubleKeyFrame { KeyTime = TimeSpan.FromSeconds(0), Value = 1.0 });
+            animation.KeyFrames.Add(new LinearDoubleKeyFrame { KeyTime = TimeSpan.FromSeconds(1.5), Value = 1.15 });
+            animation.KeyFrames.Add(new LinearDoubleKeyFrame { KeyTime = TimeSpan.FromSeconds(3), Value = 1.0 });
             Storyboard.SetTarget(animation, BreathScale);
             Storyboard.SetTargetProperty(animation, property);
             sb.Children.Add(animation);
         }
 
-        Add("ScaleX", 1.0, 1.15, 0);
-        Add("ScaleY", 1.0, 1.15, 0);
-        Add("ScaleX", 1.15, 1.0, 1.5);
-        Add("ScaleY", 1.15, 1.0, 1.5);
+        AddScale("ScaleX");
+        AddScale("ScaleY");
         return sb;
     }
 
