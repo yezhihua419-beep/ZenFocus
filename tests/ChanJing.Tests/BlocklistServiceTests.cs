@@ -145,4 +145,130 @@ public class BlocklistServiceTests : IDisposable
         Assert.True(activated.IsActivated());
         Assert.False(activated.IsOverFreeLimit());
     }
+
+    // ===== P0-1 手动屏蔽开关测试 =====
+
+    [Fact]
+    public void ManualShield_DefaultOff()
+    {
+        Assert.False(_service.IsManualShieldActive());
+    }
+
+    [Fact]
+    public void ManualShield_EnableThenDisable()
+    {
+        _service.EnableManualShield();
+        Assert.True(_service.IsManualShieldActive());
+
+        _service.DisableManualShield(focusRunning: false);
+        Assert.False(_service.IsManualShieldActive());
+    }
+
+    [Fact]
+    public void ManualShield_PersistsAcrossInstances()
+    {
+        _service.EnableManualShield();
+
+        var reloaded = new BlocklistService(_db);
+        Assert.True(reloaded.IsManualShieldActive());
+
+        reloaded.DisableManualShield(focusRunning: false);
+        var reloaded2 = new BlocklistService(_db);
+        Assert.False(reloaded2.IsManualShieldActive());
+    }
+
+    [Fact]
+    public void ManualShield_DisableWhileFocusRunning_DoesNotClearHosts()
+    {
+        // 模拟：专注中禁用手动屏蔽，不应清除hosts（专注仍在运行）
+        _service.EnableManualShield();
+        _service.Apply(); // 写hosts.pre
+        Assert.True(_service.IsApplied());
+
+        _service.DisableManualShield(focusRunning: true);
+        // 专注中禁用手动屏蔽，hosts.pre应保留（专注结束时才清除）
+        Assert.True(_service.IsApplied());
+    }
+
+    [Fact]
+    public void ManualShield_Enable_WritesSystemHosts()
+    {
+        // EnableManualShield 应写系统hosts（用临时hosts文件模拟）
+        _service.SetEnabledCategories(new[] { "短视频" });
+        _service.EnableManualShield();
+
+        var hostsContent = File.ReadAllText(HostsBlocker.HostsPathOverride!);
+        Assert.Contains("douyin.com", hostsContent);
+        Assert.Contains("# BEGIN CHANJING", hostsContent);
+    }
+
+    [Fact]
+    public void ManualShield_Disable_NotFocusing_ClearsSystemHosts()
+    {
+        _service.SetEnabledCategories(new[] { "短视频" });
+        _service.EnableManualShield();
+        Assert.True(File.ReadAllText(HostsBlocker.HostsPathOverride!).Contains("# BEGIN CHANJING"));
+
+        _service.DisableManualShield(focusRunning: false);
+        var hostsContent = File.ReadAllText(HostsBlocker.HostsPathOverride!);
+        Assert.DoesNotContain("# BEGIN CHANJING", hostsContent);
+    }
+
+    [Fact]
+    public void ManualShield_Toggle_SwitchesState()
+    {
+        Assert.False(_service.IsManualShieldActive());
+
+        var newState = _service.ToggleManualShield(focusRunning: false);
+        Assert.True(newState);
+        Assert.True(_service.IsManualShieldActive());
+
+        newState = _service.ToggleManualShield(focusRunning: false);
+        Assert.False(newState);
+        Assert.False(_service.IsManualShieldActive());
+    }
+
+    // ===== P2-8 配置导入导出版本测试 =====
+
+    [Fact]
+    public void ExportConfig_ContainsVersion1()
+    {
+        _service.SetEnabledCategories(new[] { "短视频", "社交" });
+        var json = _service.ExportConfig();
+        Assert.Contains("\"version\": 1", json);
+        Assert.Contains("\"enabledCategories\"", json);
+    }
+
+    [Fact]
+    public void ImportConfig_Version1_ImportsCorrectly()
+    {
+        var json = "{\"version\":1,\"enabledCategories\":[\"短视频\",\"购物\"],\"customDomains\":[\"test.com\"],\"customApps\":[],\"appBlockMode\":\"kill\"}";
+        _service.ImportConfig(json);
+
+        Assert.Contains("短视频", _service.GetEnabledCategories());
+        Assert.Contains("购物", _service.GetEnabledCategories());
+        Assert.Contains("test.com", _service.GetCustomDomains());
+        Assert.Equal("kill", _service.GetAppBlockMode());
+    }
+
+    [Fact]
+    public void ImportConfig_HigherVersion_StillImportsKnownFields()
+    {
+        // 模拟未来v2配置，包含v1没有的字段，应按兼容导入已知字段
+        var json = "{\"version\":2,\"enabledCategories\":[\"视频娱乐\"],\"customDomains\":[],\"customApps\":[],\"appBlockMode\":\"minimize\",\"futureField\":\"ignored\"}";
+        _service.ImportConfig(json);
+
+        Assert.Contains("视频娱乐", _service.GetEnabledCategories());
+        Assert.Equal("minimize", _service.GetAppBlockMode());
+    }
+
+    [Fact]
+    public void ImportConfig_NoVersion_DefaultsToV1()
+    {
+        // 旧版配置没有version字段，应按v1处理
+        var json = "{\"enabledCategories\":[\"资讯\"],\"customDomains\":[],\"customApps\":[],\"appBlockMode\":\"minimize\"}";
+        _service.ImportConfig(json);
+
+        Assert.Contains("资讯", _service.GetEnabledCategories());
+    }
 }

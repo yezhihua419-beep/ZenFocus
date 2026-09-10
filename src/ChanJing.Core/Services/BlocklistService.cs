@@ -218,7 +218,8 @@ public sealed class BlocklistService
     public void DisableManualShield(bool focusRunning = false)
     {
         _db.SetSetting(SettingKeyManualShield, "false");
-        Remove(); // 清 hosts.pre
+        // 不调用 Remove()：hosts.pre 是用户保存的配置，手动屏蔽禁用不应清除配置
+        // 专注中：只清标记，系统hosts由专注结束时的FocusFinished清除
         if (!focusRunning)
         {
             try { HostsBlocker.Remove(); }
