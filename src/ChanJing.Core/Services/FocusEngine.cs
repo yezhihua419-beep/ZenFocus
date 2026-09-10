@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using ChanJing.Core.Models;
 
 namespace ChanJing.Core.Services;
@@ -46,7 +46,7 @@ public sealed class FocusEngine
     /// <summary>开始一次专注（默认 25 分钟，正计时）。</summary>
     public void Start(string? wish, int plannedMinutes = 25)
     {
-        if (plannedMinutes <= 0) plannedMinutes = 25;
+        if (plannedMinutes < 0) plannedMinutes = 25; // 0 表示深度模式（不计时，手动结束）
         Current = new FocusSession
         {
             StartedAt = DateTime.Now,
