@@ -72,6 +72,30 @@ public sealed class WindowActivityService : IDisposable
         _dailyLimits = dailyLimits;
         _engine = engine;
         _blocklist = blocklist;
+        _engine.FocusStarted += OnFocusStarted;
+    }
+
+    /// <summary>专注开始时立即最小化所有已启用分类的桌面应用（不等应用到前台，Electron应用如抖音在后台也立即处理）。</summary>
+    private void OnFocusStarted()
+    {
+        if (!_blocklist.IsApplied()) return;
+        try
+        {
+            var processed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in Process.GetProcesses())
+            {
+                var name = p.ProcessName;
+                if (processed.Contains(name)) continue;
+                var cat = _blocklist.MatchBlockedApp(name);
+                if (cat is not null)
+                {
+                    processed.Add(name);
+                    MinimizeProcessWindows(name);
+                    AppBlocked?.Invoke(name, cat);
+                }
+            }
+        }
+        catch { }
     }
 
     public bool IsRunning => _timer is not null;
@@ -171,12 +195,8 @@ public sealed class WindowActivityService : IDisposable
                         if (DateTime.UtcNow - last > TimeSpan.FromSeconds(2))
                         {
                             _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
-                            // 先最小化前台顶层窗口（GetAncestor确保是可最小化的顶层窗口）
-                            var rootHwnd = GetAncestor(info.Hwnd, GA_ROOT);
-                            ShowWindow(rootHwnd != IntPtr.Zero ? rootHwnd : info.Hwnd, SW_MINIMIZE);
-                            // 多进程应用：枚举所有同名进程的可见顶层窗口全部最小化（抖音10+进程+守护进程）
-                            MinimizeAllWindowsOfProcess(info.ProcessName);
-                            System.Diagnostics.Debug.WriteLine($"[ChanJing] AppBlocked: {info.ProcessName} cat={cat} hwnd={info.Hwnd} root={rootHwnd} pids={Process.GetProcessesByName(info.ProcessName).Length}");
+                            // 直接对该进程所有主窗口最小化（Process.MainWindowHandle对Electron应用可靠，EnumWindows找不到抖音窗口）
+                            MinimizeProcessWindows(info.ProcessName);
                             AppBlocked?.Invoke(info.ProcessName, cat);
                         }
                     }
@@ -300,46 +320,21 @@ public sealed class WindowActivityService : IDisposable
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
-
-    [DllImport("user32.dll")]
-    private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
-    [DllImport("user32.dll")]
-    private static extern bool IsWindowVisible(IntPtr hWnd);
-
-    private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
     private const int SW_MINIMIZE = 6;
-    private const uint GA_ROOT = 2;
 
-    /// <summary>枚举所有同名进程的可见顶层窗口并全部最小化（针对多进程应用如抖音：10+进程+守护进程）。</summary>
-    private static void MinimizeAllWindowsOfProcess(string processName)
+    /// <summary>最小化指定进程名的所有主窗口（直接用Process.MainWindowHandle，对Electron应用如抖音可靠——EnumWindows找不到其窗口）。</summary>
+    private static void MinimizeProcessWindows(string processName)
     {
-        var targetPids = new HashSet<int>();
         try
         {
             foreach (var p in Process.GetProcessesByName(processName))
             {
-                targetPids.Add(p.Id);
+                if (p.MainWindowHandle != IntPtr.Zero)
+                {
+                    ShowWindow(p.MainWindowHandle, SW_MINIMIZE);
+                }
             }
         }
         catch { }
-        if (targetPids.Count == 0) return;
-        EnumWindows((hwnd, lParam) =>
-        {
-            try
-            {
-                if (!IsWindowVisible(hwnd)) return true;
-                _ = GetWindowThreadProcessId(hwnd, out var pid);
-                if (targetPids.Contains((int)pid))
-                {
-                    ShowWindow(hwnd, SW_MINIMIZE);
-                }
-            }
-            catch { }
-            return true;
-        }, IntPtr.Zero);
     }
 }
