@@ -506,7 +506,7 @@ public sealed partial class MainPage : Page
         _emergencyTimer.Tick += (s, e) =>
         {
             _emergencyTimer?.Stop();
-            App.LogAction("紧急放行结束", "自动恢复屏蔽");
+            App.LogAction("暂离模式结束", "自动恢复桌面应用拦截");
             AppServices.Blocklist.EmergencyPass = false;
                 AppServices.Notify("暂离模式结束 · 桌面应用拦截已恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
         };

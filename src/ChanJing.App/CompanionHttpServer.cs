@@ -213,8 +213,27 @@ public sealed class CompanionHttpServer : IDisposable
         {
             return new { success = false, message = "已经在专注中" };
         }
-        _engine.Start("手机远程启动", 25);
-        App.LogAction("伴侣控制", "远程开始专注");
+        // 走当前场景配置（与首页/托盘一致），写 hosts.pre，专注开始时同步到系统 hosts
+        var sceneTag = AppServices.CurrentSceneTag;
+        string wish;
+        int startMinutes;
+        if (!string.IsNullOrEmpty(sceneTag))
+        {
+            var config = SceneManager.GetSceneConfig(_db, sceneTag);
+            _blocklist.SetEnabledCategories(config.Categories);
+            wish = config.Wish;
+            startMinutes = AppServices.DeepMode ? 0 : config.Minutes;
+        }
+        else
+        {
+            wish = "专注";
+            startMinutes = AppServices.DeepMode ? 0 : 25;
+        }
+        _blocklist.Apply();
+        AppServices.CurrentWish = wish;
+        AppServices.CurrentMinutes = startMinutes;
+        _engine.Start(wish, startMinutes);
+        App.LogAction("伴侣控制", $"远程开始专注 {startMinutes}分钟（场景 {sceneTag ?? "未选"}）");
         return new { success = true, message = "专注已开始", wish = _engine.Current?.Wish };
     }
 
@@ -224,6 +243,7 @@ public sealed class CompanionHttpServer : IDisposable
         {
             return new { success = false, message = "当前没有在专注" };
         }
+        _blocklist.EmergencyPass = false; // 重置暂离模式
         _engine.Finish(false); // 提前结束
         App.LogAction("伴侣控制", "远程停止专注");
         return new { success = true, message = "专注已停止" };

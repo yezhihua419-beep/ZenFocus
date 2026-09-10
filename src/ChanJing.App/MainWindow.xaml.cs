@@ -318,8 +318,8 @@ public sealed partial class MainWindow : Window
                         AppServices.Blocklist.SetEnabledCategories(sceneConfig.Categories);
                         AppServices.Blocklist.Apply(); // 写 hosts.pre，专注开始时同步到系统 hosts
                         AppServices.CurrentWish = sceneConfig.Wish;
-                        AppServices.CurrentMinutes = sceneConfig.Minutes;
                         var startMinutes = AppServices.DeepMode ? 0 : sceneConfig.Minutes;
+                        AppServices.CurrentMinutes = startMinutes;
                           AppServices.Engine.Start(sceneConfig.Wish, startMinutes);
                         App.LogAction("托盘快捷操作", $"开始专注 {sceneConfig.Minutes}分钟（场景 {AppServices.CurrentSceneTag}）");
                     }
