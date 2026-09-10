@@ -92,7 +92,7 @@ public sealed class WindowActivityService : IDisposable
     /// <summary>专注开始时立即最小化所有已启用分类的桌面应用。</summary>
     private void OnFocusStarted()
     {
-        if (!_blocklist.IsApplied()) return;
+        if (!_blocklist.IsApplied() || _blocklist.EmergencyPass) return;
         try
         {
             var processed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

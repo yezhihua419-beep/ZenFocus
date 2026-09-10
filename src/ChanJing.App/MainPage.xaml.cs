@@ -131,7 +131,7 @@ public sealed partial class MainPage : Page
             App.LogAction("开始专注", _pendingWish is { Length: > 0 } ? $"愿：{_pendingWish}" : "无愿");
             // 同步当前愿望/时长到 AppServices，FocusStarted 时统一保存到场景（首页/托盘/伴侣页所有路径一致）
             AppServices.CurrentWish = _pendingWish;
-            AppServices.CurrentMinutes = _pendingMinutes;
+            AppServices.CurrentMinutes = _deepMode ? 0 : _pendingMinutes;
 
             StartBreathing();
         }
