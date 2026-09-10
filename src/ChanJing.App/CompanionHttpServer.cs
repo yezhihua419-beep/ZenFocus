@@ -166,9 +166,9 @@ public sealed class CompanionHttpServer : IDisposable
         var distractionApps = usage.Where(kv => IsDistractionApp(kv.Key))
             .OrderByDescending(kv => kv.Value)
             .Take(5)
-            .Select(kv => new { app = kv.Key, seconds = kv.Value })
+            .Select(kv => new { app = kv.Key, count = (int)(kv.Value / 60) })
             .ToList();
-        var distractionCount = distractionApps.Sum(d => (int)(d.seconds / 60)); // 粗略估算分心次数
+        var distractionCount = distractionApps.Sum(d => d.count);
 
         return new
         {
