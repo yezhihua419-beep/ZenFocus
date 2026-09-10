@@ -46,6 +46,7 @@ public static class AppServices
 
     /// <summary>当前待专注的时长（分钟）（跨路径共享）。</summary>
     public static int CurrentMinutes { get; set; } = 25;
+        public static bool DeepMode { get; set; }
 
     /// <summary>全局通知（MainWindow 的 InfoBar 承载）：消息 + 严重级别。</summary>
     public static Action<string, Microsoft.UI.Xaml.Controls.InfoBarSeverity>? NotifyHandler { get; set; }

@@ -203,7 +203,7 @@ public sealed partial class MainWindow : Window
                 {
                     // 渐进式自动化：推荐满3次后自动切换「工作」场景（仅当未在专注中）
                     App.LogAction("场景自动推荐", "第3次触发，自动切换工作场景");
-                    AppServices.Notify("已为你切换到「工作」场景 · 右键场景可自定义", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
+                    AppServices.Notify("检测到你持续编码，建议切换到「工作」场景 · 首页点击「工作」即可", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
                     _sceneRecommendCount = 0;
                     return;
                 }
@@ -319,14 +319,16 @@ public sealed partial class MainWindow : Window
                         AppServices.Blocklist.Apply(); // 写 hosts.pre，专注开始时同步到系统 hosts
                         AppServices.CurrentWish = sceneConfig.Wish;
                         AppServices.CurrentMinutes = sceneConfig.Minutes;
-                        AppServices.Engine.Start(sceneConfig.Wish, sceneConfig.Minutes);
+                        var startMinutes = AppServices.DeepMode ? 0 : sceneConfig.Minutes;
+                          AppServices.Engine.Start(sceneConfig.Wish, startMinutes);
                         App.LogAction("托盘快捷操作", $"开始专注 {sceneConfig.Minutes}分钟（场景 {AppServices.CurrentSceneTag}）");
                     }
                     else
                     {
                         AppServices.CurrentWish = "专注";
                         AppServices.CurrentMinutes = 25;
-                        AppServices.Engine.Start("专注", 25);
+                        var startMinutes2 = AppServices.DeepMode ? 0 : 25;
+                          AppServices.Engine.Start("专注", startMinutes2);
                         App.LogAction("托盘快捷操作", "开始专注25分钟（未选场景）");
                     }
                 }

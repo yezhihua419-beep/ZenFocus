@@ -310,6 +310,7 @@ loadFocusStatus();
 setInterval(() => {
   loadStats();
   if (!isFocusing) loadFocusStatus();
+  loadPeerStatus();
 }, 10000);
 </script>
 </body>

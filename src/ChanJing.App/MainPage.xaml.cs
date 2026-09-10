@@ -94,6 +94,7 @@ public sealed partial class MainPage : Page
     private void DeepMode_Toggled(object sender, RoutedEventArgs e)
     {
         _deepMode = DeepModeSwitch.IsOn;
+            AppServices.DeepMode = _deepMode;
         if (_deepMode)
         {
             SessionHint.Text = "深度模式 · 不计时 · 随心而定 · 手动结束";
@@ -413,6 +414,7 @@ public sealed partial class MainPage : Page
     {
         try
         {
+            _emergencyTimer?.Stop();
             var done = _engine.Finish(completed: true);
             App.LogAction("圆满结束", $"专注 {done.ActualMinutes} 分钟 分心 {done.DistractionCount} 次");
             ShowFeedback(_engine.GenerateFeedback(done));
@@ -569,6 +571,7 @@ public sealed partial class MainPage : Page
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.None) // 用户确认结束
             {
+                _emergencyTimer?.Stop();
                 App.LogAction("破功", $"专注 {_engine.Elapsed.TotalMinutes:0.#} 分钟");
                 var done = _engine.Finish(completed: false);
                 ShowFeedback(_engine.GenerateFeedback(done));
