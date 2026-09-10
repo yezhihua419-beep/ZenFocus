@@ -78,6 +78,10 @@ public static class SceneManager
     public static int GetCustomSceneCount(AppDatabase db) =>
         ScenePresets.Keys.Count(tag => !string.IsNullOrEmpty(db.GetSetting("scene_config_" + tag)));
 
+    /// <summary>该场景是否已被用户主动自定义（scene_config_<tag> 非空）。用于区分"自动记忆"与"主动自定义"。</summary>
+    public static bool IsCustomized(AppDatabase db, string tag) =>
+        !string.IsNullOrEmpty(db.GetSetting("scene_config_" + tag));
+
     /// <summary>当前场景摘要（如「工作 · 50分钟 · 屏蔽3类」），无场景返回 null。</summary>
     public static string? GetCurrentSceneSummary(AppDatabase db, string? currentTag)
     {

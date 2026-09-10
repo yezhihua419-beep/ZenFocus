@@ -41,6 +41,12 @@ public static class AppServices
     /// <summary>当前选中的场景标签（跨页面共享：首页选中后，屏蔽页顶部显示当前场景摘要）。</summary>
     public static string? CurrentSceneTag { get; set; }
 
+    /// <summary>当前待专注的愿望（跨路径共享：首页/托盘/伴侣页开始专注前设置，FocusStarted 时统一保存到场景）。</summary>
+    public static string? CurrentWish { get; set; }
+
+    /// <summary>当前待专注的时长（分钟）（跨路径共享）。</summary>
+    public static int CurrentMinutes { get; set; } = 25;
+
     /// <summary>全局通知（MainWindow 的 InfoBar 承载）：消息 + 严重级别。</summary>
     public static Action<string, Microsoft.UI.Xaml.Controls.InfoBarSeverity>? NotifyHandler { get; set; }
 

@@ -120,6 +120,16 @@ public partial class App : Application
                 {
                     LogAction("专注开始", "无预应用网站屏蔽配置");
                 }
+
+                // 方案B：开始专注时统一保存当前配置到场景（只对已自定义的场景自动记忆，避免消耗免费额度）
+                // 所有开始专注路径（首页按钮/托盘/伴侣页/快捷键）都经过 FocusStarted，保证逻辑一致
+                var sceneTag = AppServices.CurrentSceneTag;
+                if (!string.IsNullOrEmpty(sceneTag) && SceneManager.IsCustomized(AppServices.Db, sceneTag))
+                {
+                    var cats = AppServices.Blocklist.GetEnabledCategories().ToArray();
+                    SceneManager.SaveSceneConfig(AppServices.Db, sceneTag, new SceneManager.SceneConfig(AppServices.CurrentWish ?? "", AppServices.CurrentMinutes, cats));
+                    LogAction("场景自动记忆", $"{sceneTag} {AppServices.CurrentMinutes}分钟 屏蔽=[{string.Join("/", cats)}]");
+                }
             }
             catch (UnauthorizedAccessException)
             {

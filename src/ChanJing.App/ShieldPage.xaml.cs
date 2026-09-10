@@ -110,9 +110,22 @@ public sealed partial class ShieldPage : Page
             }
 
             // 顶部显示当前场景摘要（跨页面同步：首页选中场景后这里可见）
-            var sceneSummary = SceneManager.GetCurrentSceneSummary(AppServices.Db, AppServices.CurrentSceneTag);
-            SceneStateHint.Text = sceneSummary is null ? "" : $"当前场景：{sceneSummary} · 改动会随「保存配置」记录";
-            SceneStateHint.Visibility = sceneSummary is null ? Visibility.Collapsed : Visibility.Visible;
+            // 顶部场景摘要：比较当前勾选分类与场景配置，不一致时提示"有未保存修改"
+            var sceneTag = AppServices.CurrentSceneTag;
+            if (!string.IsNullOrEmpty(sceneTag))
+            {
+                var sceneCfg = SceneManager.GetSceneConfig(AppServices.Db, sceneTag);
+                var curCats = _blocklist.GetEnabledCategories().ToHashSet(StringComparer.Ordinal);
+                var scnCats = sceneCfg.Categories.ToHashSet(StringComparer.Ordinal);
+                var hasDiff = !curCats.SetEquals(scnCats);
+                var diffHint = hasDiff ? $" · 当前勾选{curCats.Count}类（有未保存修改，点「保存配置」或开始专注时记录）" : "";
+                SceneStateHint.Text = $"当前场景：{SceneManager.GetSceneName(sceneTag)} · {sceneCfg.Minutes}分钟 · 屏蔽{sceneCfg.Categories.Length}类{diffHint}";
+                SceneStateHint.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SceneStateHint.Visibility = Visibility.Collapsed;
+            }
 
             LimitHint.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
             RefreshCustomDomains();

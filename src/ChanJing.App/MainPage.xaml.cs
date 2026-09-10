@@ -100,13 +100,9 @@ public sealed partial class MainPage : Page
                 _db.SetSetting("today_wish", _pendingWish);
             }
             App.LogAction("开始专注", _pendingWish is { Length: > 0 } ? $"愿：{_pendingWish}" : "无愿");
-            // 方案B：开始专注时，把当前屏蔽配置保存到当前场景（场景自动记忆用户修改）
-            if (!string.IsNullOrEmpty(_currentSceneTag))
-            {
-                var currentCategories = _blocklist.GetEnabledCategories().ToArray();
-                SceneManager.SaveSceneConfig(_db, _currentSceneTag, new SceneManager.SceneConfig(_pendingWish ?? "", _pendingMinutes, currentCategories));
-                App.LogAction("场景自动记忆", $"{_currentSceneTag} {_pendingMinutes}分钟 屏蔽=[{string.Join("/", currentCategories)}]");
-            }
+            // 同步当前愿望/时长到 AppServices，FocusStarted 时统一保存到场景（首页/托盘/伴侣页所有路径一致）
+            AppServices.CurrentWish = _pendingWish;
+            AppServices.CurrentMinutes = _pendingMinutes;
 
             StartBreathing();
         }
@@ -135,11 +131,21 @@ public sealed partial class MainPage : Page
                 return;
             }
 
+            // 切换场景前，若旧场景已自定义，保存当前配置到旧场景（避免屏蔽修改后切换场景数据丢失）
+            if (!string.IsNullOrEmpty(_currentSceneTag) && _currentSceneTag != tag && SceneManager.IsCustomized(_db, _currentSceneTag))
+            {
+                var oldCategories = _blocklist.GetEnabledCategories().ToArray();
+                SceneManager.SaveSceneConfig(_db, _currentSceneTag, new SceneManager.SceneConfig(WishBox.Text?.Trim() ?? "", _pendingMinutes, oldCategories));
+                App.LogAction("场景切换前保存", $"{_currentSceneTag} {_pendingMinutes}分钟 屏蔽=[{string.Join("/", oldCategories)}]");
+            }
+
             _currentSceneTag = tag;
             AppServices.CurrentSceneTag = tag; // 跨页面共享：屏蔽页顶部显示当前场景
             var config = SceneManager.GetSceneConfig(_db, tag);
             WishBox.Text = config.Wish;
             _pendingMinutes = config.Minutes;
+            AppServices.CurrentWish = config.Wish;
+            AppServices.CurrentMinutes = config.Minutes;
 
             // 更新时长显示（用户可见）
             SessionHint.Text = $"{config.Minutes} 分钟定心 · 正计时 · 心无旁骛";
@@ -267,10 +273,11 @@ public sealed partial class MainPage : Page
         content.Children.Add(categoryPanel);
         content.Children.Add(wishBox);
 
+        var usedQuota = SceneManager.GetCustomSceneCount(_db);
+        var quotaText = _blocklist.IsActivated() ? "" : $"（免费版已用{usedQuota}/1个自定义额度）";
         var dialog = new ContentDialog
         {
-            Title = $"自定义「{sceneName}」场景",
-            Content = content,
+            Title = $"自定义「{sceneName}」场景{quotaText}",
             PrimaryButtonText = "保存",
             SecondaryButtonText = "重置默认",
             CloseButtonText = "取消",
