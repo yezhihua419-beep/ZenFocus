@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Windowing;
@@ -45,7 +46,7 @@ public sealed partial class MainWindow : Window
         // 前台窗口采集常驻（进程名 + 标题哈希，本地存储）。
         AppServices.Activity.Start();
 
-        _tray = new TrayIconService(ShowMain, ExitApp, ToggleFocus, ToggleShield);
+        _tray = new TrayIconService(ShowMain, ExitApp, ToggleFocus, ToggleShield, QuickShield);
         _tray.Show("禅净 — 先管住手，再看清时间");
 
         AppServices.Activity.LimitExceeded += OnLimitExceeded;
@@ -54,6 +55,15 @@ public sealed partial class MainWindow : Window
         AppServices.Activity.AppBlocked += OnAppBlocked;
         AppServices.Activity.CodingDetected += OnCodingDetected;
         AppWindow.Closing += OnClosing;
+        // 全局通知承载：页面/服务统一走 AppServices.Notify，由本窗口 InfoBar 显示
+        AppServices.NotifyHandler = (message, severity) =>
+        {
+            try
+            {
+                DispatcherQueue.TryEnqueue(() => ShowNotify(message, severity));
+            }
+            catch { }
+        };
         AppWindow.Changed += OnAppWindowChanged;
     }
 
@@ -263,8 +273,20 @@ public sealed partial class MainWindow : Window
                 }
                 else
                 {
-                    AppServices.Engine.Start("专注", 25);
-                    App.LogAction("托盘快捷操作", "开始专注25分钟");
+                    // 走当前场景配置（愿望+时长+屏蔽分类），与首页「开始专注」一致
+                    var sceneConfig = SceneManager.GetSceneConfig(AppServices.Db, AppServices.CurrentSceneTag);
+                    if (!string.IsNullOrEmpty(AppServices.CurrentSceneTag) && !string.IsNullOrEmpty(sceneConfig.Wish))
+                    {
+                        AppServices.Blocklist.SetEnabledCategories(sceneConfig.Categories);
+                        AppServices.Blocklist.Apply(); // 写 hosts.pre，专注开始时同步到系统 hosts
+                        AppServices.Engine.Start(sceneConfig.Wish, sceneConfig.Minutes);
+                        App.LogAction("托盘快捷操作", $"开始专注 {sceneConfig.Minutes}分钟（场景 {AppServices.CurrentSceneTag}）");
+                    }
+                    else
+                    {
+                        AppServices.Engine.Start("专注", 25);
+                        App.LogAction("托盘快捷操作", "开始专注25分钟（未选场景）");
+                    }
                 }
             }
             catch (Exception ex)
@@ -289,6 +311,47 @@ public sealed partial class MainWindow : Window
             catch (Exception ex)
             {
                 App.LogCrash("MainWindow.ToggleShield", ex);
+            }
+        });
+    }
+
+    /// <summary>显示全局通知条（InfoBar），4 秒后自动收起；同类消息刷新计时。</summary>
+    private DispatcherQueueTimer? _notifyTimer;
+    private void ShowNotify(string message, Microsoft.UI.Xaml.Controls.InfoBarSeverity severity)
+    {
+        try
+        {
+            NotifyBar.Message = message;
+            NotifyBar.Severity = severity;
+            NotifyBar.IsOpen = true;
+            _notifyTimer ??= DispatcherQueue.CreateTimer();
+            _notifyTimer.Interval = TimeSpan.FromSeconds(4);
+            _notifyTimer.IsRepeating = false;
+            _notifyTimer.Tick += (s, e) => NotifyBar.IsOpen = false;
+            _notifyTimer.Stop();
+            _notifyTimer.Start();
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainWindow.ShowNotify", ex);
+        }
+    }
+
+    /// <summary>托盘快捷：一键保存屏蔽 抖音/B站（短视频+视频娱乐分类），专注开始后生效。</summary>
+    private void QuickShield()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                AppServices.Blocklist.SetEnabledCategories(new[] { "短视频", "视频娱乐" });
+                AppServices.Blocklist.Apply();
+                App.LogAction("托盘快捷操作", "一键屏蔽抖音/B站（短视频+视频娱乐）");
+                AppServices.Notify("已保存：屏蔽 短视频+视频娱乐，开始专注后生效。");
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.QuickShield", ex);
             }
         });
     }

@@ -109,10 +109,18 @@
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="20,10" CornerRadius="24" FontSize="13" />
                     </StackPanel>
-                    <Button Content="临时放行当前网站 5 分钟" Click="AllowCurrent_Click"
+                    <Button Content="临时放行当前网站" AllowFocusOnInteraction="True"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="20,6" CornerRadius="18" FontSize="12" HorizontalAlignment="Center" />
+                            Padding="20,6" CornerRadius="18" FontSize="12" HorizontalAlignment="Center">
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="放行 5 分钟" Tag="5" Click="AllowCurrentMenu_Click" />
+                                <MenuFlyoutItem Text="放行 15 分钟" Tag="15" Click="AllowCurrentMenu_Click" />
+                                <MenuFlyoutItem Text="放行 30 分钟" Tag="30" Click="AllowCurrentMenu_Click" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
 
                 <!-- 专注后反馈 -->

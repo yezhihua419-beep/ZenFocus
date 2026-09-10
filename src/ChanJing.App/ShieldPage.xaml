@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ChanJing_App.ShieldPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -29,6 +29,9 @@
                 <StackPanel Grid.Row="0" Spacing="4">
                     <TextBlock Text="屏蔽" FontSize="26" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
+                    <TextBlock x:Name="SceneStateHint" FontSize="13" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushState}"
+                               Visibility="Collapsed" />
                     <TextBlock FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
                                Text="勾选分类、添加域名，点击底部「保存配置」，开始专注时自动生效（覆盖所有浏览器，含隐身窗口）" />
@@ -50,85 +53,8 @@
                                Text="免费版最多启用 3 个屏蔽目标（分类+自定义域名合计），升级后无限制。" />
                 </StackPanel>
 
-                <!-- 自定义域名 -->
+                <!-- 桌面应用拦截（高频，前置展开） -->
                 <StackPanel Grid.Row="2" Margin="0,20,0,0" Spacing="8">
-                    <TextBlock Text="自定义域名" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{StaticResource BrushTextPrimary}" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBox x:Name="DomainBox" PlaceholderText="如 example.com（不含 http://）"
-                                 Width="280" />
-                        <Button Content="添加" Click="AddDomain_Click" Padding="16,8" />
-                    </StackPanel>
-                    <ItemsControl x:Name="DomainList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" Margin="0,2" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-
-                <!-- 每日限额 -->
-                <StackPanel Grid.Row="3" Margin="0,20,0,0" Spacing="8">
-                    <TextBlock Text="每日限额" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{StaticResource BrushTextPrimary}" />
-                    <TextBlock FontSize="12" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}"
-                               Text="设定某域名每日最多使用分钟数，超限后自动最小化浏览器窗口（按域名每日去重提醒）。" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBox x:Name="LimitDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
-                        <NumberBox x:Name="LimitMinutesBox" Header="分钟/天" Minimum="5" Maximum="1440"
-                                   Value="30" SmallChange="5" LargeChange="30" Width="110" SpinButtonPlacementMode="Compact" />
-                        <Button Content="添加限额" Click="AddLimit_Click" Padding="16,8" VerticalAlignment="Bottom" />
-                    </StackPanel>
-                    <ItemsControl x:Name="LimitList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="0,2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Domain}" VerticalAlignment="Center" />
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
-                                        <TextBlock Text="{Binding Minutes}" />
-                                        <TextBlock Text=" 分钟/天" Foreground="{StaticResource BrushTextSecondary}" />
-                                    </StackPanel>
-                                    <Button Grid.Column="2" Content="删除" Tag="{Binding Domain}"
-                                            Click="DeleteLimit_Click" FontSize="11" Padding="10,2" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-
-                <!-- 临时放行 -->
-                <StackPanel Grid.Row="4" Margin="0,20,0,0" Spacing="8">
-                    <TextBlock Text="临时放行" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{StaticResource BrushTextPrimary}" />
-                    <TextBlock FontSize="12" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}"
-                               Text="临时放行某域名 10 分钟，到期自动恢复屏蔽。适合查资料时短暂放行。" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBox x:Name="AllowDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
-                        <Button Content="放行 10 分钟" Click="AddAllow_Click" Padding="16,8" />
-                        <Button Content="清除全部放行" Click="ClearAllow_Click" Padding="16,8" />
-                    </StackPanel>
-                    <ItemsControl x:Name="AllowList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" Margin="0,2"
-                                           Foreground="{StaticResource BrushTextSecondary}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock x:Name="AllowStatus" FontSize="12" TextWrapping="Wrap"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                </StackPanel>
-
-                <!-- 桌面应用拦截 -->
-                <StackPanel Grid.Row="5" Margin="0,20,0,0" Spacing="8">
                     <TextBlock Text="桌面应用拦截" FontSize="15" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
                     <StackPanel Orientation="Horizontal" Spacing="12">
@@ -184,6 +110,93 @@
                                Foreground="{StaticResource BrushTextSecondary}"
                                Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名（如抖音是 Douyin）。" />
                 </StackPanel>
+
+                <!-- 自定义域名（低频，折叠） -->
+                <Expander Grid.Row="3" Header="自定义域名" Margin="0,16,0,0">
+                    <StackPanel Spacing="8" Padding="0,10,0,0">
+                        <TextBlock FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Text="添加分类名单之外的单站域名（不含 http://）。" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox x:Name="DomainBox" PlaceholderText="如 example.com" Width="280" />
+                            <Button Content="添加" Click="AddDomain_Click" Padding="16,8" />
+                        </StackPanel>
+                        <ItemsControl x:Name="DomainList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Margin="0,2" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 每日限额（低频，折叠） -->
+                <Expander Grid.Row="4" Header="每日限额" Margin="0,16,0,0">
+                    <StackPanel Spacing="8" Padding="0,10,0,0">
+                        <TextBlock FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Text="设定某域名每日最多使用分钟数，超限后自动最小化浏览器窗口（按域名每日去重提醒）。" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox x:Name="LimitDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
+                            <NumberBox x:Name="LimitMinutesBox" Header="分钟/天" Minimum="5" Maximum="1440"
+                                       Value="30" SmallChange="5" LargeChange="30" Width="110" SpinButtonPlacementMode="Compact" />
+                            <Button Content="添加限额" Click="AddLimit_Click" Padding="16,8" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <ItemsControl x:Name="LimitList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Domain}" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+                                            <TextBlock Text="{Binding Minutes}" />
+                                            <TextBlock Text=" 分钟/天" Foreground="{StaticResource BrushTextSecondary}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="删除" Tag="{Binding Domain}"
+                                                Click="DeleteLimit_Click" FontSize="11" Padding="10,2" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 临时放行（低频，折叠） -->
+                <Expander Grid.Row="5" Header="临时放行" Margin="0,16,0,0">
+                    <StackPanel Spacing="8" Padding="0,10,0,0">
+                        <TextBlock FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Text="临时放行某域名 5/15/30 分钟，到期自动恢复屏蔽。适合查资料时短暂放行。" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox x:Name="AllowDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
+                            <Button Content="放行" Padding="16,8">
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="放行 5 分钟" Tag="5" Click="AddAllowMenu_Click" />
+                                        <MenuFlyoutItem Text="放行 15 分钟" Tag="15" Click="AddAllowMenu_Click" />
+                                        <MenuFlyoutItem Text="放行 30 分钟" Tag="30" Click="AddAllowMenu_Click" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                            <Button Content="清除全部放行" Click="ClearAllow_Click" Padding="16,8" />
+                        </StackPanel>
+                        <ItemsControl x:Name="AllowList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Margin="0,2"
+                                               Foreground="{StaticResource BrushTextSecondary}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="AllowStatus" FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                    </StackPanel>
+                </Expander>
             </Grid>
         </ScrollViewer>
 

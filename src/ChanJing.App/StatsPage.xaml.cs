@@ -1,4 +1,4 @@
-using ChanJing.Core.Services;
+﻿using ChanJing.Core.Services;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
 using Windows.UI;
 
@@ -62,6 +63,14 @@ public sealed partial class StatsPage : Page
             StreakDays.Text = CalcStreak().ToString();
             DistractionCount.Text = sessions.Sum(s => s.DistractionCount).ToString();
 
+            // 空状态引导：无记录时显示提示并隐藏图表区
+            var isEmpty = sessions.Count == 0;
+            EmptyHint.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+            WeekSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            HourSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            MonthSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            UsageSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            if (isEmpty) { App.LogAction("统计刷新", "空状态：无专注记录"); return; }
             DrawWeekChart();
             DrawHourlyChart();
             DrawMonthHeatmap();
@@ -367,10 +376,23 @@ public sealed partial class StatsPage : Page
                 await stream.AsStreamForRead().CopyToAsync(fileStream);
             }
 
+            // 同时复制到剪贴板（P2-3 分享出口：可直接粘贴到微信/朋友圈/飞书）
+            try
+            {
+                stream.Seek(0);
+                var package = new DataPackage();
+                package.SetBitmap(RandomAccessStreamReference.CreateFromStream(stream));
+                Clipboard.SetContent(package);
+            }
+            catch (Exception ex)
+            {
+                App.LogAction("分享卡片", "复制剪贴板失败: " + ex.Message);
+            }
+
             var info = new ContentDialog
             {
                 Title = "已保存",
-                Content = $"卡片已保存到：\n{path}",
+                Content = $"卡片已保存到：\n{path}\n且已复制到剪贴板，可直接粘贴分享。",
                 CloseButtonText = "好",
                 XamlRoot = XamlRoot
             };
@@ -395,7 +417,7 @@ public sealed partial class StatsPage : Page
     private sealed record UsageItem(string Name, long Value, long Max, string Text, bool IsDistraction = false)
     {
         public Brush NameBrush => IsDistraction
-            ? new SolidColorBrush(Color.FromArgb(255, 234, 102, 104))
+            ? new SolidColorBrush(Color.FromArgb(255, 160, 86, 59)) // 赭石，与警告色统一
             : (Brush)App.Current.Resources["BrushTextPrimary"];
     }
 }

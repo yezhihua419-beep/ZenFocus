@@ -68,6 +68,13 @@ public sealed partial class ShieldPage : Page
         Loaded += OnLoaded;
     }
 
+    /// <summary>每次进入屏蔽页都刷新（跨页面同步场景/状态）。</summary>
+    protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        RefreshAll();
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         RefreshAll();
@@ -101,6 +108,11 @@ public sealed partial class ShieldPage : Page
                 checkBox.Unchecked += OnCategoryChanged;
                 CategoryPanel.Items.Add(checkBox);
             }
+
+            // 顶部显示当前场景摘要（跨页面同步：首页选中场景后这里可见）
+            var sceneSummary = SceneManager.GetCurrentSceneSummary(AppServices.Db, AppServices.CurrentSceneTag);
+            SceneStateHint.Text = sceneSummary is null ? "" : $"当前场景：{sceneSummary} · 改动会随「保存配置」记录";
+            SceneStateHint.Visibility = sceneSummary is null ? Visibility.Collapsed : Visibility.Visible;
 
             LimitHint.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
             RefreshCustomDomains();
@@ -258,18 +270,20 @@ public sealed partial class ShieldPage : Page
 
     // ---------- 临时放行 ----------
 
-    private void AddAllow_Click(object sender, RoutedEventArgs e)
+    /// <summary>临时放行（菜单选择时长）：放行指定域名 5/15/30 分钟。</summary>
+    private void AddAllowMenu_Click(object sender, RoutedEventArgs e)
     {
         try
         {
+            var minutes = int.TryParse((sender as MenuFlyoutItem)?.Tag?.ToString(), out var m) ? m : 5;
             var domain = AllowDomainBox.Text;
             if (string.IsNullOrWhiteSpace(domain)) return;
 
-            _blocklist.AddTempAllow(domain, 10);
+            _blocklist.AddTempAllow(domain, minutes);
             AllowDomainBox.Text = string.Empty;
             RefreshAllowStatus();
             RefreshStatus();
-            App.LogAction("临时放行", $"{domain} 10分钟");
+            App.LogAction("临时放行", $"{domain} {minutes}分钟");
         }
         catch (Exception ex)
         {

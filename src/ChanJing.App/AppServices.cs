@@ -37,4 +37,16 @@ public static class AppServices
 
     /// <summary>局域网伴侣页HTTP服务（App启动时初始化）。</summary>
     public static CompanionHttpServer? Companion { get; set; }
+
+    /// <summary>当前选中的场景标签（跨页面共享：首页选中后，屏蔽页顶部显示当前场景摘要）。</summary>
+    public static string? CurrentSceneTag { get; set; }
+
+    /// <summary>全局通知（MainWindow 的 InfoBar 承载）：消息 + 严重级别。</summary>
+    public static Action<string, Microsoft.UI.Xaml.Controls.InfoBarSeverity>? NotifyHandler { get; set; }
+
+    /// <summary>统一提示入口：页面/服务用此方法发消息，由主窗口 InfoBar 显示。</summary>
+    public static void Notify(string message, Microsoft.UI.Xaml.Controls.InfoBarSeverity severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational)
+    {
+        try { NotifyHandler?.Invoke(message, severity); } catch { }
+    }
 }

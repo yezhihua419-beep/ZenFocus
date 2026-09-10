@@ -16,6 +16,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -25,7 +26,11 @@
             </TitleBar.IconSource>
         </TitleBar>
 
-        <NavigationView x:Name="Nav" Grid.Row="1"
+        <!-- 全局通知条：成功/失败/提示统一走这里，替代分散的弹窗 -->
+        <InfoBar x:Name="NotifyBar" Grid.Row="1" IsOpen="False" IsClosable="True"
+                 Severity="Informational" Margin="12,6,12,0" />
+
+        <NavigationView x:Name="Nav" Grid.Row="2"
                         PaneDisplayMode="LeftCompact"
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="False"

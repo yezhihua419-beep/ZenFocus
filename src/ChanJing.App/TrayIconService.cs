@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace ChanJing_App;
 
@@ -24,6 +24,7 @@ public sealed class TrayIconService : IDisposable
     private const int ID_EXIT = 2;
     private const int ID_TOGGLE_FOCUS = 3;
     private const int ID_TOGGLE_SHIELD = 4;
+    private const int ID_QUICK_SHIELD = 5;
     private const int MAX_TIP_LENGTH = 127;
     private const uint MF_SEPARATOR = 0x00000800;
     private const uint MF_GRAYED = 0x00000001;
@@ -32,6 +33,7 @@ public sealed class TrayIconService : IDisposable
     private readonly Action _onExit;
     private readonly Action? _onToggleFocus;
     private readonly Action? _onToggleShield;
+    private readonly Action? _onQuickShield;
     private IntPtr _hwnd;
     private IntPtr _icon;
     private NOTIFYICONDATA _nid;
@@ -39,12 +41,13 @@ public sealed class TrayIconService : IDisposable
 
     private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-    public TrayIconService(Action onOpen, Action onExit, Action? onToggleFocus = null, Action? onToggleShield = null)
+    public TrayIconService(Action onOpen, Action onExit, Action? onToggleFocus = null, Action? onToggleShield = null, Action? onQuickShield = null)
     {
         _onOpen = onOpen;
         _onExit = onExit;
         _onToggleFocus = onToggleFocus;
         _onToggleShield = onToggleShield;
+        _onQuickShield = onQuickShield;
     }
 
     public void Show(string tooltip)
@@ -124,6 +127,7 @@ public sealed class TrayIconService : IDisposable
             else if (id == ID_EXIT) _onExit();
             else if (id == ID_TOGGLE_FOCUS) _onToggleFocus?.Invoke();
             else if (id == ID_TOGGLE_SHIELD) _onToggleShield?.Invoke();
+            else if (id == ID_QUICK_SHIELD) _onQuickShield?.Invoke();
             return IntPtr.Zero;
         }
 
@@ -149,6 +153,7 @@ public sealed class TrayIconService : IDisposable
         var isShieldOn = AppServices.Blocklist.IsApplied();
         _ = AppendMenu(menu, MF_GRAYED, 0, isShieldOn ? "屏蔽：已开启" : "屏蔽：已关闭");
         _ = AppendMenu(menu, 0, ID_TOGGLE_SHIELD, isShieldOn ? "关闭屏蔽" : "开启屏蔽");
+        _ = AppendMenu(menu, 0, ID_QUICK_SHIELD, "一键屏蔽 抖音/B站");
         _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
 
         // 打开/退出

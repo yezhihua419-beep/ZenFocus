@@ -35,6 +35,14 @@ public sealed partial class MainPage : Page
         Loaded += OnLoaded;
     }
 
+    /// <summary>每次回到首页刷新统计与场景高亮（跨页面同步）。</summary>
+    protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        try { RestoreSceneHighlight(); RefreshTodayStats(); }
+        catch (Exception ex) { App.LogCrash("MainPage.OnNavigatedTo", ex); }
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         try
@@ -42,6 +50,7 @@ public sealed partial class MainPage : Page
             DateText.Text = DateTime.Today.ToString("M 月 d 日 dddd",
                 CultureInfo.GetCultureInfo("zh-CN"));
             WishBox.Text = _db.GetSetting("today_wish") ?? string.Empty;
+            RestoreSceneHighlight(); // 回到首页时恢复场景高亮（跨页面同步）
             RefreshTodayStats();
             GenerateCompanionQrCode();
 
@@ -95,7 +104,7 @@ public sealed partial class MainPage : Page
             if (!string.IsNullOrEmpty(_currentSceneTag))
             {
                 var currentCategories = _blocklist.GetEnabledCategories().ToArray();
-                SaveSceneConfig(_currentSceneTag, new SceneConfig(_pendingWish ?? "", _pendingMinutes, currentCategories));
+                SceneManager.SaveSceneConfig(_db, _currentSceneTag, new SceneManager.SceneConfig(_pendingWish ?? "", _pendingMinutes, currentCategories));
                 App.LogAction("场景自动记忆", $"{_currentSceneTag} {_pendingMinutes}分钟 屏蔽=[{string.Join("/", currentCategories)}]");
             }
 
@@ -108,64 +117,11 @@ public sealed partial class MainPage : Page
     }
 
 
-    /// <summary>场景预设：愿望 + 时长 + 屏蔽分类。点场景按钮一键应用，无需去屏蔽页手动设置。</summary>
-    private static readonly IReadOnlyDictionary<string, (string Wish, int Minutes, string[] Categories)> ScenePresets =
-        new Dictionary<string, (string, int, string[])>
-        {
-            ["work"] = ("完成今日工作任务", 50, new[] { "短视频", "视频娱乐", "购物" }),
-            ["write"] = ("专注写作，心无旁骛", 45, new[] { "短视频", "视频娱乐", "社交", "购物", "资讯" }),
-            ["study"] = ("深度学习，理解透彻", 25, new[] { "短视频", "视频娱乐", "社交", "购物", "资讯" }),
-            ["meeting"] = ("专注会议，高效沟通", 30, new[] { "短视频", "视频娱乐" }),
-        };
 
     /// <summary>当前选中的场景标签，用于UI高亮和专注界面显示。</summary>
     private string? _currentSceneTag;
 
-    /// <summary>场景配置记录：愿望+时长+屏蔽分类。</summary>
-    private record SceneConfig(string Wish, int Minutes, string[] Categories);
 
-    /// <summary>读取场景配置：优先用户自定义，没有则用预设默认值。</summary>
-    private SceneConfig GetSceneConfig(string tag)
-    {
-        if (ScenePresets.TryGetValue(tag, out var preset))
-        {
-            var raw = _db.GetSetting("scene_config_" + tag);
-            if (!string.IsNullOrEmpty(raw))
-            {
-                try
-                {
-                    using var json = System.Text.Json.JsonDocument.Parse(raw);
-                    var wish = json.RootElement.TryGetProperty("wish", out var w) ? w.GetString() ?? preset.Wish : preset.Wish;
-                    var minutes = json.RootElement.TryGetProperty("minutes", out var m) ? m.GetInt32() : preset.Minutes;
-                    var categories = json.RootElement.TryGetProperty("categories", out var c)
-                        ? c.EnumerateArray().Select(x => x.GetString()).Where(s => !string.IsNullOrEmpty(s)).ToArray()
-                        : preset.Categories;
-                    return new SceneConfig(wish, minutes, categories!);
-                }
-                catch { /* JSON解析失败，回退预设 */ }
-            }
-            return new SceneConfig(preset.Wish, preset.Minutes, preset.Categories);
-        }
-        return new SceneConfig("", 25, Array.Empty<string>());
-    }
-
-    /// <summary>保存场景自定义配置到本地数据库。</summary>
-    private void SaveSceneConfig(string tag, SceneConfig config)
-    {
-        var json = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            wish = config.Wish,
-            minutes = config.Minutes,
-            categories = config.Categories
-        });
-        _db.SetSetting("scene_config_" + tag, json);
-    }
-
-    /// <summary>重置场景配置为预设默认值（删除用户自定义）。</summary>
-    private void ResetSceneConfig(string tag)
-    {
-        _db.SetSetting("scene_config_" + tag, "");
-    }
 
     /// <summary>场景快捷选择：自动填充愿望、预设时长、应用该场景的屏蔽配置。</summary>
     private void Scene_Click(object sender, RoutedEventArgs e)
@@ -173,14 +129,15 @@ public sealed partial class MainPage : Page
         try
         {
             var tag = (sender as Button)?.Tag?.ToString();
-            if (string.IsNullOrEmpty(tag) || !ScenePresets.TryGetValue(tag, out var preset))
+            if (string.IsNullOrEmpty(tag) || !SceneManager.ScenePresets.TryGetValue(tag, out var preset))
             {
                 App.LogAction("选择场景", "未知场景: " + tag);
                 return;
             }
 
             _currentSceneTag = tag;
-            var config = GetSceneConfig(tag);
+            AppServices.CurrentSceneTag = tag; // 跨页面共享：屏蔽页顶部显示当前场景
+            var config = SceneManager.GetSceneConfig(_db, tag);
             WishBox.Text = config.Wish;
             _pendingMinutes = config.Minutes;
 
@@ -204,14 +161,7 @@ public sealed partial class MainPage : Page
             }
 
             // 更新场景配置摘要提示
-            var sceneName = tag switch
-            {
-                "work" => "工作",
-                "write" => "写作",
-                "study" => "学习",
-                "meeting" => "会议",
-                _ => tag
-            };
+            var sceneName = SceneManager.GetSceneName(tag);
             SceneConfigHint.Text = $"{sceneName} · {config.Minutes}分钟 · 屏蔽{config.Categories.Length}类（{string.Join("/", config.Categories)}） · 右键可自定义";
 
             App.LogAction("选择场景", $"{tag} {config.Minutes}分钟 屏蔽=[{string.Join("/", config.Categories)}]");
@@ -230,7 +180,8 @@ public sealed partial class MainPage : Page
             var tag = (sender as Button)?.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
 
-            if (!_blocklist.IsActivated())
+            // 免费版开放 1 个自定义场景额度，超出后提示升级
+            if (!_blocklist.IsActivated() && SceneManager.GetCustomSceneCount(_db) >= 1)
             {
                 _ = ShowSceneUpgradeHint(tag);
                 return;
@@ -247,14 +198,7 @@ public sealed partial class MainPage : Page
     /// <summary>免费版长按场景按钮时的升级提示。</summary>
     private async Task ShowSceneUpgradeHint(string tag)
     {
-        var sceneName = tag switch
-        {
-            "work" => "工作",
-            "write" => "写作",
-            "study" => "学习",
-            "meeting" => "会议",
-            _ => tag
-        };
+        var sceneName = SceneManager.GetSceneName(tag);
 
         var dialog = new ContentDialog
         {
@@ -264,9 +208,9 @@ public sealed partial class MainPage : Page
                 Spacing = 8,
                 Children =
                 {
-                    new TextBlock { Text = "场景自定义为付费功能", FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
-                    new TextBlock { Text = "免费版可使用4个预设场景（一键应用愿望+时长+屏蔽）。", TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = "升级后可自定义每个场景的时长、屏蔽分类和愿望文案。", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "自定义场景额度已用完", FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = "免费版可自定义 1 个场景（时长+屏蔽分类+愿望文案），当前额度已用完。", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "升级后可自定义全部 4 个场景。", TextWrapping = TextWrapping.Wrap },
                     new TextBlock { Text = "¥68 买断，永久使用。", Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
                 }
             },
@@ -286,15 +230,8 @@ public sealed partial class MainPage : Page
     /// <summary>显示场景自定义配置对话框：时长+屏蔽分类+愿望文案。</summary>
     private async Task ShowSceneConfigDialog(string tag)
     {
-        var config = GetSceneConfig(tag);
-        var sceneName = tag switch
-        {
-            "work" => "工作",
-            "write" => "写作",
-            "study" => "学习",
-            "meeting" => "会议",
-            _ => tag
-        };
+        var config = SceneManager.GetSceneConfig(_db, tag);
+        var sceneName = SceneManager.GetSceneName(tag);
 
         var minutesCombo = new ComboBox
         {
@@ -347,8 +284,8 @@ public sealed partial class MainPage : Page
             var selectedCategories = categoryCheckboxes.Where(cb => cb.IsChecked == true)
                 .Select(cb => cb.Content.ToString()!).ToArray();
             var newWish = wishBox.Text.Trim();
-            var newConfig = new SceneConfig(newWish, selectedMinutes, selectedCategories);
-            SaveSceneConfig(tag, newConfig);
+            var newConfig = new SceneManager.SceneConfig(newWish, selectedMinutes, selectedCategories);
+            SceneManager.SaveSceneConfig(_db, tag, newConfig);
             App.LogAction("自定义场景", $"{tag} {selectedMinutes}分钟 屏蔽=[{string.Join("/", selectedCategories)}]");
 
             if (_currentSceneTag == tag)
@@ -361,12 +298,12 @@ public sealed partial class MainPage : Page
         }
         else if (result == ContentDialogResult.Secondary)
         {
-            ResetSceneConfig(tag);
+            SceneManager.ResetSceneConfig(_db, tag);
             App.LogAction("重置场景", tag);
 
             if (_currentSceneTag == tag)
             {
-                var preset = GetSceneConfig(tag);
+                var preset = SceneManager.GetSceneConfig(_db, tag);
                 WishBox.Text = preset.Wish;
                 _pendingMinutes = preset.Minutes;
                 SessionHint.Text = $"{preset.Minutes} 分钟定心 · 正计时 · 心无旁骛";
@@ -481,11 +418,12 @@ public sealed partial class MainPage : Page
         }
     }
 
-    /// <summary>快捷放行：当前前台网站放行 10 分钟（无需切到屏蔽页）。</summary>
-    private async void AllowCurrent_Click(object sender, RoutedEventArgs e)
+    /// <summary>快捷放行（菜单选择时长）：当前前台网站临时放行 5/15/30 分钟（无需切到屏蔽页）。</summary>
+    private async void AllowCurrentMenu_Click(object sender, RoutedEventArgs e)
     {
         try
         {
+            var minutes = int.TryParse((sender as MenuFlyoutItem)?.Tag?.ToString(), out var m) ? m : 5;
             var domain = AppServices.Activity.GetCurrentBlockedDomain();
             if (domain is null)
             {
@@ -499,16 +437,9 @@ public sealed partial class MainPage : Page
                 await none.ShowAsync();
                 return;
             }
-            AppServices.Blocklist.AddTempAllow(domain, 5);
-            App.LogAction("快捷放行", $"{domain} 10分钟");
-            var ok = new ContentDialog
-            {
-                Title = "已放行",
-                Content = $"{domain} 已临时放行 5 分钟，期间可正常访问。",
-                CloseButtonText = "好",
-                XamlRoot = XamlRoot
-            };
-            await ok.ShowAsync();
+            AppServices.Blocklist.AddTempAllow(domain, minutes);
+            App.LogAction("快捷放行", $"{domain} {minutes}分钟");
+            AppServices.Notify($"「{domain}」已临时放行 {minutes} 分钟，期间可正常访问。");
         }
         catch (Exception ex)
         {
@@ -637,7 +568,38 @@ public sealed partial class MainPage : Page
         var sessions = _db.GetSessions(today, today.AddDays(1));
         TodayCount.Text = sessions.Count.ToString(CultureInfo.InvariantCulture);
         TodayMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString(CultureInfo.InvariantCulture);
-        BlockStatus.Text = AppServices.Blocklist.IsApplied() ? "已启用" : "未启用";
+        // 屏蔽规则状态：有当前场景时显示场景摘要，否则显示是否已保存配置
+        var sceneSummary = SceneManager.GetCurrentSceneSummary(_db, AppServices.CurrentSceneTag);
+        BlockStatus.Text = sceneSummary ?? (AppServices.Blocklist.IsApplied() ? "已启用" : "未启用");
+    }
+
+    /// <summary>回到首页时恢复上次选中的场景高亮与摘要（跨页面同步）。</summary>
+    private void RestoreSceneHighlight()
+    {
+        try
+        {
+            var restoreTag = AppServices.CurrentSceneTag;
+            if (string.IsNullOrEmpty(restoreTag)) return;
+
+            _currentSceneTag = restoreTag;
+            foreach (var child in ScenePanel.Children)
+            {
+                if (child is Button btn)
+                {
+                    var isActive = btn.Tag?.ToString() == restoreTag;
+                    btn.Background = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : new SolidColorBrush(Colors.Transparent);
+                    btn.Foreground = isActive ? new SolidColorBrush(Colors.White) : (Brush)Application.Current.Resources["BrushTextSecondary"];
+                    btn.BorderBrush = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : (Brush)Application.Current.Resources["BrushTextSecondary"];
+                }
+            }
+
+            var config = SceneManager.GetSceneConfig(_db, restoreTag);
+            SceneConfigHint.Text = $"{SceneManager.GetSceneName(restoreTag)} · {config.Minutes}分钟 · 屏蔽{config.Categories.Length}类（{string.Join("/", config.Categories)}） · 右键可自定义";
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainPage.RestoreScene", ex);
+        }
     }
 
     /// <summary>生成手机伴侣页二维码：手机伴侣为付费功能，免费版显示升级提示，激活后才生成二维码。</summary>
