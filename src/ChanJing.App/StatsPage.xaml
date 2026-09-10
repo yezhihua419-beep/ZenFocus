@@ -26,6 +26,10 @@
                                Foreground="{StaticResource BrushTextPrimary}" />
                 </StackPanel>
 
+                <!-- 分心模式识别洞察 -->
+                <TextBlock x:Name="PatternInsight" Grid.Row="1" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
+                           Foreground="{StaticResource BrushAccent}" Visibility="Collapsed" />
+
                 <!-- 今日卡片 + 分享 -->
                 <TextBlock x:Name="InsightText" Grid.Row="1" FontSize="13" TextWrapping="Wrap" Margin="0,12,0,0"
                            Foreground="{StaticResource BrushState}" Text="今日已专注 0 分钟 · 每一次定心都是进步" />
@@ -154,6 +158,12 @@
                         <TextBlock x:Name="ShareStreak" FontSize="40" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
                         <TextBlock Text="连续定心天数" FontSize="12" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                    </StackPanel>
+                    <StackPanel Spacing="2">
+                        <TextBlock x:Name="ShareQuality" FontSize="40" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="{StaticResource BrushAccent}" />
+                        <TextBlock Text="专注质量分" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                 </StackPanel>

@@ -1,4 +1,4 @@
-namespace ChanJing_App;
+﻿namespace ChanJing_App;
 
 /// <summary>
 /// 手机端伴侣页HTML：禅意风格，显示统计+远程控制专注。
@@ -144,6 +144,14 @@ body {
   <div id=""distractionList""><div class=""empty"">暂无分心记录</div></div>
 </div>
 
+<div class=""distraction-list"">
+  <h3>同伴专注（可选 · 非社交）</h3>
+  <div>输入同伴的地址（如 http://192.168.1.5:8765 ），即可看到对方是否在专注。</div>
+  <input id=""peerUrl"" placeholder=""http://IP:8765"" style=""width:100%;padding:8px;margin:6px 0;border:1px solid #ccc;border-radius:6px;"" />
+  <button class=""control-btn start"" onclick=""savePeer()"" style=""font-size:12px;padding:6px 10px;"">保存</button>
+  <div id=""peerStatus"" class=""peer-status"" style=""margin-top:8px;font-size:13px;""></div>
+</div>
+
 <div class=""footer"">禅净 · 局域网伴侣页 · 手机与电脑需连接同一WiFi</div>
 <div class=""toast"" id=""toast""></div>
 
@@ -270,7 +278,32 @@ async function stopFocus() {
   }
 }
 
+function savePeer() {
+  const url = document.getElementById('peerUrl').value.trim();
+  if (!url) { showToast('请输入同伴地址'); return; }
+  localStorage.setItem('peerUrl', url);
+  showToast('同伴地址已保存');
+  loadPeerStatus();
+}
+
+async function loadPeerStatus() {
+  const url = localStorage.getItem('peerUrl');
+  const el = document.getElementById('peerStatus');
+  if (!url) { el.textContent = '未设置同伴地址'; return; }
+  try {
+    const res = await fetch(url.replace(/\\/$/, '') + '/api/focus/status');
+    const data = await res.json();
+    el.textContent = data.isFocusing ? '同伴正在专注中' : '同伴当前空闲';
+    el.style.color = data.isFocusing ? '#2e7d32' : '#888';
+  } catch (e) {
+    el.textContent = '无法连接同伴（检查网络或地址）';
+    el.style.color = '#c62828';
+  }
+}
+
 // 初始化
+const savedPeer = localStorage.getItem('peerUrl');
+if (savedPeer) { document.getElementById('peerUrl').value = savedPeer; loadPeerStatus(); }
 loadStats();
 loadFocusStatus();
 // 每10秒刷新一次

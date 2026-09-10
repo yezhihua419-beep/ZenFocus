@@ -71,6 +71,8 @@ public sealed partial class StatsPage : Page
             var baseScore = Math.Min(100, totalMinutes * 2);
             var qualityScore = Math.Max(0, baseScore - totalDistractions * 5);
             QualityScore.Text = totalMinutes > 0 ? qualityScore.ToString() : "—";
+            // 分心模式识别：找出分心最多的时段（基于专注会话的开始时间分布）
+            AnalyzeDistractionPattern(sessions);
             // 付费功能预览钩子：免费版且有专注记录时显示
             PremiumPreview.Visibility = (!AppServices.Blocklist.IsActivated() && totalMinutes > 0)
                 ? Visibility.Visible : Visibility.Collapsed;
@@ -96,6 +98,43 @@ public sealed partial class StatsPage : Page
     }
 
     /// <summary>连续定心天数（今天起向前数，中断即停）。</summary>
+    /// <summary>分心模式识别：分析近7天专注会话，找出「最易分心时段」并给建议。</summary>
+    private void AnalyzeDistractionPattern(List<ChanJing.Core.Models.FocusSession> sessions)
+    {
+        try
+        {
+            var last7 = _db.GetSessions(DateTime.Today.AddDays(-6), DateTime.Today.AddDays(1));
+            var withDistraction = last7.Where(s => s.DistractionCount > 0).ToList();
+            if (withDistraction.Count == 0)
+            {
+                PatternInsight.Visibility = Visibility.Collapsed;
+                return;
+            }
+            var hourGroups = withDistraction.GroupBy(s => s.StartedAt.Hour)
+                .OrderByDescending(g => g.Sum(x => x.DistractionCount))
+                .First();
+            var bestHour = hourGroups.Key;
+            var distCount = hourGroups.Sum(x => x.DistractionCount);
+            var totalDist = withDistraction.Sum(x => x.DistractionCount);
+            var ratio = (int)Math.Round((double)distCount / totalDist * 100);
+            var periodName = bestHour switch
+            {
+                >= 5 and < 9 => "清晨",
+                >= 9 and < 12 => "上午",
+                >= 12 and < 14 => "午间",
+                >= 14 and < 18 => "下午",
+                >= 18 and < 22 => "晚间",
+                _ => "深夜"
+            };
+            PatternInsight.Text = $"观察：你在{periodName}（{bestHour}点前后）最容易起身活动，近7天{ratio}%的活动集中在这个时段。可在屏蔽页为此时段加设每日限额。";
+            PatternInsight.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("StatsPage.PatternInsight", ex);
+        }
+    }
+
     private int CalcStreak()
     {
         var streak = 0;
@@ -337,6 +376,10 @@ public sealed partial class StatsPage : Page
         ShareCount.Text = sessions.Count.ToString();
         ShareMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString();
         ShareStreak.Text = CalcStreak().ToString();
+        var totalDist = sessions.Sum(s => s.DistractionCount);
+        var totalMin = sessions.Sum(s => s.ActualMinutes);
+        var baseSc = Math.Min(100, totalMin * 2);
+        ShareQuality.Text = (totalMin > 0 ? Math.Max(0, baseSc - totalDist * 5) : 0).ToString();
         ShareQuote.Text = Quotes[Random.Shared.Next(Quotes.Length)];
         ShareCard.Visibility = Visibility.Visible;
 

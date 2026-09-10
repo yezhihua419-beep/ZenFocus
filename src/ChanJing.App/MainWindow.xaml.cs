@@ -189,14 +189,26 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>检测到用户持续在 IDE/编辑器中编码（≥2分钟）→ 弹托盘提示建议开启专注。</summary>
+    private int _sceneRecommendCount;
+
+    /// <summary>检测到持续编码 → 推荐「工作」场景；推荐满3次后自动切换场景。</summary>
     private void OnCodingDetected(string processName)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
             try
             {
-                _tray.ShowBalloon($"检测到你在「{processName}」中持续编码2分钟了，建议开启专注模式，屏蔽分心应用。", "禅净 · 编码检测");
-                App.LogAction("编码检测提示", processName);
+                _sceneRecommendCount++;
+                if (_sceneRecommendCount >= 3)
+                {
+                    // 渐进式自动化：推荐满3次后自动切换「工作」场景（仅当未在专注中）
+                    App.LogAction("场景自动推荐", "第3次触发，自动切换工作场景");
+                    AppServices.Notify("已为你切换到「工作」场景 · 右键场景可自定义", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
+                    _sceneRecommendCount = 0;
+                    return;
+                }
+                _tray.ShowBalloon($"检测到你在「{processName}」中持续编码2分钟了，建议开启专注模式，屏蔽分心应用。（第{_sceneRecommendCount}/3次，之后自动切换场景）", "禅净 · 场景推荐");
+                App.LogAction("场景推荐提示", $"{processName} 第{_sceneRecommendCount}次");
             }
             catch (Exception ex)
             {
