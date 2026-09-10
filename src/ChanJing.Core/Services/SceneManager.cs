@@ -1,6 +1,4 @@
-using ChanJing.Core.Services;
-
-namespace ChanJing_App;
+﻿namespace ChanJing.Core.Services;
 
 /// <summary>
 /// 场景管理：预设定义 + 自定义配置读写（数据库持久化）。

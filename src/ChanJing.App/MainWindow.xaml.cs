@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using ChanJing.Core.Services;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
