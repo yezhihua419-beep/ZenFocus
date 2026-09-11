@@ -38,4 +38,7 @@ public sealed class FocusSession
 
     /// <summary>会话期间切换到被屏蔽站点的次数（破功信号）。</summary>
     public int DistractionCount { get; set; }
+
+    /// <summary>是否ADHD模式下的会话。</summary>
+    public bool IsAdhd { get; set; }
 }

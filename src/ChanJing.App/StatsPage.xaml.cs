@@ -77,6 +77,16 @@ public sealed partial class StatsPage : Page
             PremiumPreview.Visibility = (!AppServices.Blocklist.IsActivated() && totalMinutes > 0)
                 ? Visibility.Visible : Visibility.Collapsed;
 
+            // 付费功能：高效时段分析 + 连续纪录历史
+            var isActivated = AppServices.Blocklist.IsActivated();
+            PeakHourSection.Visibility = isActivated ? Visibility.Visible : Visibility.Collapsed;
+            StreakHistorySection.Visibility = isActivated ? Visibility.Visible : Visibility.Collapsed;
+            if (isActivated)
+            {
+                AnalyzePeakHours();
+                AnalyzeStreakHistory();
+            }
+
             // 空状态引导：无记录时显示提示并隐藏图表区
             var isEmpty = sessions.Count == 0;
             EmptyHint.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
@@ -464,6 +474,85 @@ public sealed partial class StatsPage : Page
                 XamlRoot = XamlRoot
             };
             await error.ShowAsync();
+        }
+    }
+
+    /// <summary>高效时段分析：近30天按时段统计专注时长，找出最高效时段。</summary>
+    private void AnalyzePeakHours()
+    {
+        try
+        {
+            var start = DateTime.Today.AddDays(-29);
+            var sessions = _db.GetSessions(start, DateTime.Today.AddDays(1));
+            if (sessions.Count == 0)
+            {
+                PeakHourText.Text = "近30天暂无专注记录";
+                return;
+            }
+            var morning = sessions.Where(s => s.StartedAt.Hour >= 6 && s.StartedAt.Hour < 12).Sum(s => s.ActualMinutes);
+            var afternoon = sessions.Where(s => s.StartedAt.Hour >= 12 && s.StartedAt.Hour < 18).Sum(s => s.ActualMinutes);
+            var evening = sessions.Where(s => s.StartedAt.Hour >= 18 && s.StartedAt.Hour < 24).Sum(s => s.ActualMinutes);
+            var night = sessions.Where(s => s.StartedAt.Hour >= 0 && s.StartedAt.Hour < 6).Sum(s => s.ActualMinutes);
+            var periods = new (string Name, long Minutes)[] { ("上午6-12点", morning), ("下午12-18点", afternoon), ("晚上18-24点", evening), ("凌晨0-6点", night) };
+            var best = periods.OrderByDescending(p => p.Minutes).First();
+            var total = periods.Sum(p => p.Minutes);
+            var percent = total > 0 ? (int)(best.Minutes * 100.0 / total) : 0;
+            PeakHourText.Text = $"你在{best.Name}最专注，近30天共{best.Minutes}分钟（占{percent}%）。建议把重要工作安排在这个时段。";
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("StatsPage.AnalyzePeakHours", ex);
+            PeakHourText.Text = "时段分析暂不可用";
+        }
+    }
+
+    /// <summary>连续纪录历史：计算当前连续天数、最长连续天数、本月专注天数。</summary>
+    private void AnalyzeStreakHistory()
+    {
+        try
+        {
+            var allSessions = _db.GetSessions(DateTime.Today.AddDays(-365), DateTime.Today.AddDays(1));
+            if (allSessions.Count == 0)
+            {
+                StreakHistoryText.Text = "暂无专注纪录";
+                return;
+            }
+            var currentStreak = 0;
+            for (var d = DateTime.Today; d >= DateTime.Today.AddDays(-365); d = d.AddDays(-1))
+            {
+                if (allSessions.Any(s => s.StartedAt.Date == d.Date))
+                {
+                    currentStreak++;
+                }
+                else if (d < DateTime.Today)
+                {
+                    break;
+                }
+            }
+            var daysWithSessions = allSessions.Select(s => s.StartedAt.Date).Distinct().OrderBy(d => d).ToList();
+            var longestStreak = 0;
+            var tempStreak = 1;
+            for (var i = 1; i < daysWithSessions.Count; i++)
+            {
+                if ((daysWithSessions[i] - daysWithSessions[i - 1]).Days == 1)
+                {
+                    tempStreak++;
+                }
+                else
+                {
+                    longestStreak = Math.Max(longestStreak, tempStreak);
+                    tempStreak = 1;
+                }
+            }
+            longestStreak = Math.Max(longestStreak, tempStreak);
+            var monthStart = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            var monthDays = allSessions.Where(s => s.StartedAt.Date >= monthStart).Select(s => s.StartedAt.Date).Distinct().Count();
+            StreakHistoryText.Text = $"当前连续{currentStreak}天 · 最长连续{longestStreak}天 · 本月专注{monthDays}天";
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("StatsPage.AnalyzeStreakHistory", ex);
+            StreakHistoryText.Text = "纪录统计暂不可用";
         }
     }
 

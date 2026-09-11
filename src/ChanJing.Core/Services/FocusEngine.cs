@@ -44,7 +44,7 @@ public sealed class FocusEngine
     }
 
     /// <summary>开始一次专注（默认 25 分钟，正计时）。</summary>
-    public void Start(string? wish, int plannedMinutes = 25)
+    public void Start(string? wish, int plannedMinutes = 25, bool isAdhd = false)
     {
         if (plannedMinutes < 0) plannedMinutes = 25; // 0 表示深度模式（不计时，手动结束）
         Current = new FocusSession
@@ -52,7 +52,8 @@ public sealed class FocusEngine
             StartedAt = DateTime.Now,
             PlannedMinutes = plannedMinutes,
             State = FocusSessionState.Running,
-            Wish = string.IsNullOrWhiteSpace(wish) ? null : wish.Trim()
+            Wish = string.IsNullOrWhiteSpace(wish) ? null : wish.Trim(),
+            IsAdhd = isAdhd
         };
         _startedTicks = Environment.TickCount64;
         _pausedMs = 0;
@@ -101,9 +102,10 @@ public sealed class FocusEngine
 
         var done = Current;
         _db.SaveFocusSession(done);
+        // 先触发事件（此时Current还在，事件处理可访问Current.IsAdhd等信息）
+        FocusFinished?.Invoke(completed);
         Current = null;
         _pauseStartTicks = null;
-        FocusFinished?.Invoke(completed);
         return done;
     }
 

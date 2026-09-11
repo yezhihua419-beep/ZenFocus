@@ -81,6 +81,20 @@
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
                                Text="开启后，微信/钉钉/QQ等沟通工具仅在专注模式下被拦截，非专注时间可正常使用。" />
+                    <!-- ADHD模式缓冲期时长 -->
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                        <TextBlock Text="ADHD缓冲期（分钟）" VerticalAlignment="Center" FontSize="13" />
+                        <ComboBox x:Name="CooldownMinutesBox" Width="120" SelectionChanged="CooldownMinutes_Changed">
+                            <ComboBoxItem Content="5" Tag="5" />
+                            <ComboBoxItem Content="10" Tag="10" IsSelected="True" />
+                            <ComboBoxItem Content="15" Tag="15" />
+                            <ComboBoxItem Content="20（付费）" Tag="20" />
+                            <ComboBoxItem Content="30（付费）" Tag="30" />
+                        </ComboBox>
+                    </StackPanel>
+                    <TextBlock x:Name="CooldownHint" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Text="ADHD模式下专注结束后屏蔽保持的时长，防止一结束就刷手机。免费版可选5/10/15分钟，付费版可选20/30分钟。" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
                         <TextBox x:Name="AppBox" PlaceholderText="进程名如 Douyin" Width="200" />
                         <ComboBox x:Name="AppCategoryBox" Width="120">

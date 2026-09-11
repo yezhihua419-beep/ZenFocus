@@ -141,16 +141,65 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- 专注后反馈 -->
+                    <!-- 专注后反馈（正反馈：连续次数+再来15分钟） -->
                     <StackPanel x:Name="FeedbackPanel" Visibility="Collapsed"
                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Spacing="16" MaxWidth="480" MinWidth="280">
+                        <TextBlock x:Name="FeedbackStreak" FontSize="13" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushAccent}" />
                         <TextBlock x:Name="FeedbackText" FontSize="15" TextWrapping="Wrap"
                                    HorizontalAlignment="Center" TextAlignment="Center"
                                    Foreground="{StaticResource BrushTextPrimary}" />
-                        <Button Content="再来一次" Click="StartAgain_Click"
+                        <Button x:Name="FeedbackAgainButton" Content="再来 15 分钟" Click="StartAgain_Click"
                                 Background="{StaticResource BrushState}" Foreground="White"
-                                Padding="28,10" CornerRadius="24" HorizontalAlignment="Center" />
+                                Padding="32,12" CornerRadius="24" HorizontalAlignment="Center"
+                                FontSize="14" MinWidth="160" MinHeight="48" />
+                        <Button x:Name="FeedbackRestButton" Content="先休息一下" Click="FeedbackRest_Click"
+                                Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="20,6" CornerRadius="18" HorizontalAlignment="Center" FontSize="12" />
+                    </StackPanel>
+
+                    <!-- 缓冲期界面（ADHD模式：专注结束后屏蔽保持10分钟） -->
+                    <StackPanel x:Name="CooldownPanel" Visibility="Collapsed"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="14" MaxWidth="440" MinWidth="280">
+                        <TextBlock Text="🧘 缓冲期" FontSize="16" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushState}" />
+                        <TextBlock x:Name="CooldownText" FontSize="13" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" TextAlignment="Center"
+                                   Foreground="{StaticResource BrushTextPrimary}"
+                                   Text="专注结束，休息一下\n屏蔽还剩 10 分钟" />
+                        <TextBlock Text="可以喝水、伸展、远眺\n暂时不能刷抖音哦" FontSize="11" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" TextAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" Opacity="0.8" />
+                        <Button Content="再来 15 分钟" Click="CooldownAgain_Click"
+                                Background="{StaticResource BrushState}" Foreground="White"
+                                Padding="32,12" CornerRadius="24" HorizontalAlignment="Center"
+                                FontSize="14" MinWidth="160" MinHeight="48" />
+                        <Button x:Name="CooldownReleaseButton" Content="提前解除屏蔽" Click="CooldownRelease_Click"
+                                Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="20,6" CornerRadius="18" HorizontalAlignment="Center" FontSize="12" />
+                    </StackPanel>
+
+                    <!-- 软着陆界面（缓冲期到期：用户选择后才解除屏蔽） -->
+                    <StackPanel x:Name="SoftLandingPanel" Visibility="Collapsed"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="16" MaxWidth="440" MinWidth="280">
+                        <TextBlock Text="🌿 缓冲期结束" FontSize="16" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushState}" />
+                        <TextBlock x:Name="SoftLandingText" FontSize="13" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" TextAlignment="Center"
+                                   Foreground="{StaticResource BrushTextPrimary}"
+                                   Text="你已经休息了 10 分钟\n接下来想做什么？" />
+                        <Button Content="再来 15 分钟" Click="SoftLandingAgain_Click"
+                                Background="{StaticResource BrushState}" Foreground="White"
+                                Padding="32,12" CornerRadius="24" HorizontalAlignment="Center"
+                                FontSize="14" MinWidth="160" MinHeight="48" />
+                        <Button Content="我想自由使用" Click="SoftLandingRelease_Click"
+                                Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="20,6" CornerRadius="18" HorizontalAlignment="Center" FontSize="12" />
+                        <TextBlock Text="（解除屏蔽，返回首页）" FontSize="10" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" Opacity="0.6" />
                     </StackPanel>
                 </Grid>
 

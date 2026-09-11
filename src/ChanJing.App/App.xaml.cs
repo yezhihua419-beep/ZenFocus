@@ -159,6 +159,8 @@ public partial class App : Application
         {
             try
             {
+                // 判断是否ADHD模式（事件触发时Current还在）
+                var isAdhd = AppServices.Engine.Current?.IsAdhd ?? false;
                 // 标记非专注中
                 AppServices.Blocklist.IsFocusRunning = false;
                 // 重置暂离模式（所有结束专注路径统一重置）
@@ -168,6 +170,11 @@ public partial class App : Application
                 if (AppServices.Blocklist.IsManualShieldActive())
                 {
                     LogAction("focus-finish", "manual shield active, keep hosts");
+                }
+                else if (isAdhd)
+                {
+                    // ADHD模式：不立即解除屏蔽，进入缓冲期（10分钟后由UI层软着陆解除）
+                    LogAction("focus-finish", $"adhd mode, keep hosts for cooldown, completed={completed}");
                 }
                 else if (ChanJing.Core.Services.HostsBlocker.IsApplied())
                 {

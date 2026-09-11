@@ -139,6 +139,10 @@ public sealed partial class ShieldPage : Page
             RefreshApps();
             AppModeBox.SelectedIndex = blockMode == "kill" ? 1 : 0;
             FocusOnlyCommSwitch.IsOn = _blocklist.IsFocusOnlyCommunication();
+            // 初始化ADHD缓冲期时长
+            var cooldownMinutes = _blocklist.GetCooldownMinutes();
+            var cooldownIndex = cooldownMinutes == 5 ? 0 : cooldownMinutes == 10 ? 1 : cooldownMinutes == 15 ? 2 : cooldownMinutes == 20 ? 3 : 4;
+            CooldownMinutesBox.SelectedIndex = cooldownIndex;
             RefreshStatus();
             App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count} 拦截方式={blockMode} UI设置={(blockMode == "kill" ? 1 : 0)}");
         }
@@ -535,6 +539,31 @@ public sealed partial class ShieldPage : Page
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.AppMode", ex);
+        }
+    }
+
+    /// <summary>ADHD缓冲期时长变更。免费版只能5/10/15，付费版可选20/30。</summary>
+    private void CooldownMinutes_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (_isLoading || !IsLoaded) return;
+        try
+        {
+            var item = CooldownMinutesBox.SelectedItem as ComboBoxItem;
+            if (item == null || item.Tag == null) return;
+            if (!int.TryParse(item.Tag.ToString(), out var minutes)) return;
+            // 免费版限制：20/30需要付费
+            if (!_blocklist.IsActivated() && minutes > 15)
+            {
+                CooldownMinutesBox.SelectedIndex = 1; // 回退到10分钟
+                AppServices.Notify("20/30分钟缓冲期为付费功能，免费版可选5/10/15分钟。");
+                return;
+            }
+            _blocklist.SetCooldownMinutes(minutes);
+            App.LogAction("设置ADHD缓冲期", $"{minutes}分钟");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.CooldownMinutes", ex);
         }
     }
 

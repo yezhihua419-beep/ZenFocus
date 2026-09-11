@@ -14,6 +14,7 @@ public sealed class BlocklistService
     public const string SettingKeyAppBlockMode = "app_block_mode";
     public const string SettingKeyFocusOnlyCommunication = "focus_only_communication";
     public const string SettingKeyManualShield = "manual_shield";
+    public const string SettingKeyCooldownMinutes = "cooldown_minutes";
 
     /// <summary>免费版最多可配置的屏蔽目标数（分类 + 自定义域名项）。</summary>
     public const int FreeTargetLimit = 3;
@@ -191,6 +192,19 @@ public sealed class BlocklistService
     public void SetAppBlockMode(string mode)
     {
         _db.SetSetting(SettingKeyAppBlockMode, mode == "kill" ? "kill" : "minimize");
+    }
+
+    /// <summary>ADHD模式缓冲期时长（分钟），默认10。免费版只能5/10/15，付费版可自定义。</summary>
+    public int GetCooldownMinutes()
+    {
+        var val = _db.GetSetting(SettingKeyCooldownMinutes);
+        return int.TryParse(val, out var m) && m >= 1 && m <= 60 ? m : 10;
+    }
+
+    /// <summary>设置ADHD模式缓冲期时长（分钟）。</summary>
+    public void SetCooldownMinutes(int minutes)
+    {
+        _db.SetSetting(SettingKeyCooldownMinutes, Math.Clamp(minutes, 1, 60).ToString());
     }
 
     /// <summary>沟通工具是否仅在专注中屏蔽（默认false=全局屏蔽）。</summary>

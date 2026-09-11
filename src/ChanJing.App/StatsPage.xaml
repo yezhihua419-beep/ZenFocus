@@ -72,6 +72,22 @@
                     </StackPanel>
                 </Border>
 
+                <!-- 高效时段分析（付费） -->
+                <StackPanel x:Name="PeakHourSection" Margin="0,0,0,0" Spacing="4" Visibility="Collapsed">
+                    <TextBlock Text="最高效时段（近30天）" FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}" />
+                    <TextBlock x:Name="PeakHourText" FontSize="14" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushState}" />
+                </StackPanel>
+
+                <!-- 连续纪录历史（付费） -->
+                <StackPanel x:Name="StreakHistorySection" Margin="0,0,0,0" Spacing="4" Visibility="Collapsed">
+                    <TextBlock Text="连续纪录" FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}" />
+                    <TextBlock x:Name="StreakHistoryText" FontSize="14" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushAccent}" />
+                </StackPanel>
+
                 <!-- 空状态引导：无记录时提示，并隐藏图表区 -->
                 <TextBlock x:Name="EmptyHint" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,0"
                            Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
