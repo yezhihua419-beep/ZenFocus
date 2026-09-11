@@ -31,7 +31,8 @@ public sealed class AppDatabase
                 ActualMinutes   INTEGER NOT NULL,
                 State           INTEGER NOT NULL,
                 Wish            TEXT NULL,
-                DistractionCount INTEGER NOT NULL DEFAULT 0
+                DistractionCount INTEGER NOT NULL DEFAULT 0,
+                IsAdhd          INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS AppUsage (
@@ -49,6 +50,18 @@ public sealed class AppDatabase
             );
             """;
         cmd.ExecuteNonQuery();
+
+        // 迁移：旧数据库没有IsAdhd字段时添加（新数据库CREATE TABLE已包含，ALTER会报错，用try-catch忽略）
+        try
+        {
+            using var migrateCmd = conn.CreateCommand();
+            migrateCmd.CommandText = "ALTER TABLE FocusSessions ADD COLUMN IsAdhd INTEGER NOT NULL DEFAULT 0;";
+            migrateCmd.ExecuteNonQuery();
+        }
+        catch (Microsoft.Data.Sqlite.SqliteException)
+        {
+            // 列已存在，忽略
+        }
     }
 
     private SqliteConnection Open()
@@ -69,8 +82,8 @@ public sealed class AppDatabase
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO FocusSessions (StartedAt, EndedAt, PlannedMinutes, ActualMinutes, State, Wish, DistractionCount)
-            VALUES ($started, $ended, $planned, $actual, $state, $wish, $distraction);
+            INSERT INTO FocusSessions (StartedAt, EndedAt, PlannedMinutes, ActualMinutes, State, Wish, DistractionCount, IsAdhd)
+            VALUES ($started, $ended, $planned, $actual, $state, $wish, $distraction, $isAdhd);
             """;
         cmd.Parameters.AddWithValue("$started", session.StartedAt.ToString("o"));
         cmd.Parameters.AddWithValue("$ended", session.EndedAt?.ToString("o") ?? (object?)DBNull.Value);
@@ -79,6 +92,7 @@ public sealed class AppDatabase
         cmd.Parameters.AddWithValue("$state", (int)session.State);
         cmd.Parameters.AddWithValue("$wish", (object?)session.Wish ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$distraction", session.DistractionCount);
+        cmd.Parameters.AddWithValue("$isAdhd", session.IsAdhd ? 1 : 0);
         cmd.ExecuteNonQuery();
     }
 
@@ -88,7 +102,7 @@ public sealed class AppDatabase
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            SELECT Id, StartedAt, EndedAt, PlannedMinutes, ActualMinutes, State, Wish, DistractionCount
+            SELECT Id, StartedAt, EndedAt, PlannedMinutes, ActualMinutes, State, Wish, DistractionCount, IsAdhd
             FROM FocusSessions
             WHERE StartedAt >= $from AND StartedAt < $to
             ORDER BY StartedAt DESC;
@@ -107,7 +121,8 @@ public sealed class AppDatabase
                 ActualMinutes = reader.GetInt32(4),
                 State = (FocusSessionState)reader.GetInt32(5),
                 Wish = reader.IsDBNull(6) ? null : reader.GetString(6),
-                DistractionCount = reader.GetInt32(7)
+                DistractionCount = reader.GetInt32(7),
+                IsAdhd = reader.GetInt32(8) != 0
             });
         }
         return result;

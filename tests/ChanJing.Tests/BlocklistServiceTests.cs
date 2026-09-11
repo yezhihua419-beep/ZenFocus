@@ -271,4 +271,41 @@ public class BlocklistServiceTests : IDisposable
 
         Assert.Contains("资讯", _service.GetEnabledCategories());
     }
+
+    // ---------- ADHD缓冲期时长测试 ----------
+
+    [Fact]
+    public void GetCooldownMinutes_DefaultIs10()
+    {
+        Assert.Equal(10, _service.GetCooldownMinutes());
+    }
+
+    [Fact]
+    public void SetCooldownMinutes_PersistsAcrossInstances()
+    {
+        _service.SetCooldownMinutes(15);
+
+        var service2 = new BlocklistService(_db);
+        Assert.Equal(15, service2.GetCooldownMinutes());
+    }
+
+    [Fact]
+    public void SetCooldownMinutes_ClampsToValidRange()
+    {
+        _service.SetCooldownMinutes(0); // 小于1应钳制为1
+        Assert.Equal(1, _service.GetCooldownMinutes());
+
+        _service.SetCooldownMinutes(100); // 大于60应钳制为60
+        Assert.Equal(60, _service.GetCooldownMinutes());
+    }
+
+    [Fact]
+    public void SetCooldownMinutes_ValidValues()
+    {
+        foreach (var m in new[] { 5, 10, 15, 20, 30 })
+        {
+            _service.SetCooldownMinutes(m);
+            Assert.Equal(m, _service.GetCooldownMinutes());
+        }
+    }
 }

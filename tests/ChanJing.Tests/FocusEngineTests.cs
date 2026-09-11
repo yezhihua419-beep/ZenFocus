@@ -121,4 +121,65 @@ public class FocusEngineTests : IDisposable
         Assert.Contains("发生了什么？", text);
         Assert.Contains("分心 1 次", text);
     }
+
+    // ---------- ADHD模式相关测试 ----------
+
+    [Fact]
+    public void Start_WithIsAdhdTrue_SetsIsAdhdOnSession()
+    {
+        _engine.Start("ADHD专注", 15, isAdhd: true);
+
+        Assert.NotNull(_engine.Current);
+        Assert.True(_engine.Current.IsAdhd);
+        Assert.Equal(15, _engine.Current.PlannedMinutes);
+
+        var done = _engine.Finish(completed: true);
+        Assert.True(done.IsAdhd);
+    }
+
+    [Fact]
+    public void Start_WithIsAdhdFalse_DefaultsToFalse()
+    {
+        _engine.Start("普通专注", 25, isAdhd: false);
+
+        Assert.NotNull(_engine.Current);
+        Assert.False(_engine.Current.IsAdhd);
+    }
+
+    [Fact]
+    public void Start_DefaultIsAdhd_IsFalse()
+    {
+        _engine.Start("默认专注", 25);
+
+        Assert.NotNull(_engine.Current);
+        Assert.False(_engine.Current.IsAdhd);
+    }
+
+    [Fact]
+    public void FocusFinished_EventFiresWhileCurrentStillAccessible_CanReadIsAdhd()
+    {
+        // 验证FocusFinished事件触发时Current还没被置null，事件处理可访问IsAdhd
+        bool? eventIsAdhd = null;
+        _engine.FocusFinished += (completed) =>
+        {
+            eventIsAdhd = _engine.Current?.IsAdhd;
+        };
+
+        _engine.Start("ADHD测试", 15, isAdhd: true);
+        _engine.Finish(completed: true);
+
+        Assert.True(eventIsAdhd.HasValue);
+        Assert.True(eventIsAdhd.Value);
+    }
+
+    [Fact]
+    public void Finish_AdhdSession_PersistsIsAdhdToDb()
+    {
+        _engine.Start("ADHD落库测试", 15, isAdhd: true);
+        _engine.Finish(completed: true);
+
+        var fromDb = _db.GetSessions(DateTime.Today, DateTime.Today.AddDays(1));
+        var item = Assert.Single(fromDb);
+        Assert.True(item.IsAdhd);
+    }
 }

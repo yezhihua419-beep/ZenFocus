@@ -1,3 +1,4 @@
+using ChanJing.Core.Models;
 using ChanJing.Core.Services;
 using Xunit;
 
@@ -352,5 +353,106 @@ public class IntegrationFlowTests : IDisposable
         Assert.True(SceneManager.IsCustomized(_db, "work"));
         var sceneConfig = SceneManager.GetSceneConfig(_db, "work");
         Assert.Equal("测试愿望", sceneConfig.Wish);
+    }
+
+    // ========== 操作流9：ADHD模式全流程 ==========
+
+    [Fact]
+    public void Flow9_AdhdFocus_FullCycle_PersistsIsAdhd()
+    {
+        // 开始ADHD模式专注
+        _engine.Start("ADHD专注测试", 15, isAdhd: true);
+        Assert.True(_engine.IsRunning);
+        Assert.True(_engine.Current!.IsAdhd);
+        Assert.Equal(15, _engine.Current.PlannedMinutes);
+
+        // 结束专注
+        var done = _engine.Finish(completed: true);
+        Assert.True(done.IsAdhd);
+        Assert.Equal(FocusSessionState.Completed, done.State);
+
+        // 验证落库
+        var fromDb = _db.GetSessions(DateTime.Today, DateTime.Today.AddDays(1));
+        var item = Assert.Single(fromDb);
+        Assert.True(item.IsAdhd);
+        Assert.Equal(15, item.PlannedMinutes);
+    }
+
+    [Fact]
+    public void Flow9_AdhdAndNormal_Isolated()
+    {
+        // 第一次：ADHD模式
+        _engine.Start("ADHD", 15, isAdhd: true);
+        _engine.Finish(completed: true);
+
+        // 第二次：普通模式
+        _engine.Start("普通", 25, isAdhd: false);
+        _engine.Finish(completed: true);
+
+        // 验证两条记录互不影响
+        var sessions = _db.GetSessions(DateTime.Today, DateTime.Today.AddDays(1));
+        Assert.Equal(2, sessions.Count);
+
+        var adhdSession = sessions.First(s => s.Wish == "ADHD");
+        var normalSession = sessions.First(s => s.Wish == "普通");
+
+        Assert.True(adhdSession.IsAdhd);
+        Assert.Equal(15, adhdSession.PlannedMinutes);
+        Assert.False(normalSession.IsAdhd);
+        Assert.Equal(25, normalSession.PlannedMinutes);
+    }
+
+    [Fact]
+    public void Flow9_AdhdFocusFinished_EventCanAccessIsAdhd()
+    {
+        // 验证FocusFinished事件触发时Current还在，可访问IsAdhd
+        bool? eventIsAdhd = null;
+        bool? eventCompleted = null;
+        _engine.FocusFinished += (completed) =>
+        {
+            eventIsAdhd = _engine.Current?.IsAdhd;
+            eventCompleted = completed;
+        };
+
+        _engine.Start("ADHD事件测试", 15, isAdhd: true);
+        _engine.Finish(completed: true);
+
+        Assert.True(eventIsAdhd.HasValue);
+        Assert.True(eventIsAdhd.Value);
+        Assert.True(eventCompleted.HasValue);
+        Assert.True(eventCompleted.Value);
+    }
+
+    [Fact]
+    public void Flow9_AdhdCooldownMinutes_PersistsAndUsed()
+    {
+        // 设置缓冲期时长为15分钟
+        _blocklist.SetCooldownMinutes(15);
+        Assert.Equal(15, _blocklist.GetCooldownMinutes());
+
+        // 跨实例验证
+        var blocklist2 = new BlocklistService(_db);
+        Assert.Equal(15, blocklist2.GetCooldownMinutes());
+
+        // 改回默认10分钟
+        _blocklist.SetCooldownMinutes(10);
+        Assert.Equal(10, _blocklist.GetCooldownMinutes());
+    }
+
+    [Fact]
+    public void Flow9_AdhdDeepModeMutuallyExclusive_VerifiedAtEngineLevel()
+    {
+        // 引擎层面：ADHD和深度模式是两个独立参数，UI层负责互斥
+        // 验证深度模式(plannedMinutes=0)可以和ADHD同时设置（虽然UI层互斥）
+        _engine.Start("ADHD+深度", 0, isAdhd: true);
+        Assert.True(_engine.Current!.IsAdhd);
+        Assert.Equal(0, _engine.Current.PlannedMinutes);
+        _engine.Finish(completed: true);
+
+        // 验证普通深度模式
+        _engine.Start("普通深度", 0, isAdhd: false);
+        Assert.False(_engine.Current!.IsAdhd);
+        Assert.Equal(0, _engine.Current.PlannedMinutes);
+        _engine.Finish(completed: true);
     }
 }
