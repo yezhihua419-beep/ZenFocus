@@ -108,6 +108,42 @@ public class IntegrationFlowTests : IDisposable
         Assert.True(result.ActualMinutes >= 0);
     }
 
+    [Fact]
+    public void Flow2_FocusController_WithoutScene_StillAppliesShield()
+    {
+        // 回归测试：托盘/快捷键未选场景开始专注时，屏蔽也应生效
+        // 之前的bug：FocusController.Start()未选场景分支没调Apply()，
+        // 导致IsApplied()返回false，OnFocusStarted和前台轮询都不工作
+
+        // 1. 配置屏蔽分类（模拟用户在屏蔽页保存过）
+        _blocklist.SetEnabledCategories(new[] { "短视频", "视频娱乐" });
+
+        // 2. 清除hosts.pre（模拟第一次使用或之前清除过配置）
+        HostsBlocker.ClearPreApply();
+        Assert.False(_blocklist.IsApplied());
+
+        // 3. 未选场景，通过FocusController开始专注
+        FocusContext.CurrentSceneTag = null;
+        var controller = new FocusController(_db, _engine, _blocklist);
+        var result = controller.Start();
+
+        // 4. 验证屏蔽已应用（关键断言）
+        Assert.True(controller.IsRunning);
+        Assert.True(_blocklist.IsApplied()); // hosts.pre应存在
+        Assert.Contains("未选场景", result);
+
+        // 5. 模拟App.xaml.cs的FocusStarted逻辑：写系统hosts
+        HostsBlocker.Apply(_blocklist.GetActiveDomains());
+        var hostsContent = File.ReadAllText(HostsBlocker.HostsPathOverride!);
+        Assert.Contains("douyin.com", hostsContent); // 抖音应在系统hosts里
+
+        // 6. 结束专注，清除系统hosts
+        controller.Stop();
+        HostsBlocker.Remove();
+        hostsContent = File.ReadAllText(HostsBlocker.HostsPathOverride!);
+        Assert.DoesNotContain("douyin.com", hostsContent);
+    }
+
     // ========== 操作流3：深度模式流 ==========
 
     [Fact]

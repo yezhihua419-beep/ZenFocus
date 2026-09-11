@@ -92,6 +92,26 @@ public class FocusControllerTests : IDisposable
         Assert.Equal("专注", FocusContext.CurrentWish);
         Assert.Equal(25, FocusContext.CurrentMinutes);
         Assert.Contains("未选场景", result);
+        // 关键回归测试：未选场景时也要调用Apply()，否则IsApplied()返回false，
+        // OnFocusStarted和前台轮询都不工作，抖音不会被屏蔽
+        Assert.True(_blocklist.IsApplied());
+    }
+
+    [Fact]
+    public void Start_WithoutScene_StillAppliesShieldFromSavedConfig()
+    {
+        // 模拟用户在屏蔽页保存过配置，但未选场景就通过托盘/快捷键开始专注
+        FocusContext.CurrentSceneTag = null;
+        _blocklist.SetEnabledCategories(new[] { "短视频", "视频娱乐" });
+        // 不调用Apply()，模拟用户保存了分类但还没应用屏蔽
+        HostsBlocker.ClearPreApply();
+        Assert.False(_blocklist.IsApplied());
+
+        var result = _controller.Start();
+
+        Assert.True(_controller.IsRunning);
+        Assert.True(_blocklist.IsApplied()); // Start()应自动调用Apply()
+        Assert.Contains("未选场景", result);
     }
 
     [Fact]
