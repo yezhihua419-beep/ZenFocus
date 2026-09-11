@@ -114,7 +114,7 @@
                             <Button Content="圆满结束" Click="Complete_Click"
                                     Background="{StaticResource BrushState}" Foreground="White"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button Content="放下" Click="Break_Click"
+                            <Button x:Name="BreakButton" Content="放下" Click="Break_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />

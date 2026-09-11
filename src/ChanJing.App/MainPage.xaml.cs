@@ -611,15 +611,17 @@ public sealed partial class MainPage : Page
             : "心无旁骛，只做眼前这一件事";
         if (_deepMode)
         {
-            // 深度模式：隐藏时间和进度条，只显示愿望
+            // 深度模式：隐藏时间和进度条，只显示愿望；无计划时长，"放下"无意义，隐藏
             WishShow.Text = "深度模式 · 随心而定 · 完成后手动结束";
             TimerText.Visibility = Visibility.Collapsed;
             FocusProgress.Visibility = Visibility.Collapsed;
+            BreakButton.Visibility = Visibility.Collapsed;
         }
         else
         {
             TimerText.Visibility = Visibility.Visible;
             FocusProgress.Visibility = Visibility.Visible;
+            BreakButton.Visibility = Visibility.Visible;
             TimerText.Text = "0 分钟";
             FocusProgress.Value = 0;
             if (_engine.Current?.PlannedMinutes > 0)
