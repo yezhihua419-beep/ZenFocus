@@ -36,7 +36,7 @@
                     <Button x:Name="SettingsButton" Grid.Column="1" VerticalAlignment="Top"
                             Padding="10" Background="Transparent"
                             BorderBrush="{StaticResource BrushBorder}"
-                            CornerRadius="20" ToolTipService.ToolTip="" x:Uid="MainPage_SettingsButton">
+                            CornerRadius="20" ToolTipService.ToolTip="Mode Settings" x:Uid="MainPage_SettingsButton">
                         <FontIcon Glyph="&#xE713;" FontSize="16"
                                   Foreground="{StaticResource BrushTextSecondary}" />
                         <Button.Flyout>
@@ -44,8 +44,8 @@
                                 <StackPanel Spacing="8" Padding="4" MinWidth="260">
                                     <TextBlock x:Uid="MainPage_SettingsTitle" Text="" FontSize="14" FontWeight="SemiBold"
                                                Foreground="{StaticResource BrushTextPrimary}" />
-                                    <ToggleSwitch x:Name="DeepModeSwitch" x:Uid="MainPage_DeepModeSwitch" Header="" OffContent="" OnContent="" Toggled="DeepMode_Toggled" />
-                                    <ToggleSwitch x:Name="AdhdModeSwitch" x:Uid="MainPage_AdhdModeSwitch" Header="" OffContent="" OnContent="" Toggled="AdhdMode_Toggled" />
+                                    <ToggleSwitch x:Name="DeepModeSwitch" Header="Deep Mode (untimed)" OffContent="Off" OnContent="On" Toggled="DeepMode_Toggled" />
+                                    <ToggleSwitch x:Name="AdhdModeSwitch" Header="ADHD-Friendly (15-min)" OffContent="Off" OnContent="On" Toggled="AdhdMode_Toggled" />
                                     <TextBlock x:Uid="MainPage_ModeMutexHint" Text="" FontSize="11"
                                                Foreground="{StaticResource BrushTextSecondary}" Opacity="0.8" />
                                 </StackPanel>

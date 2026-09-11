@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:ChanJing_App"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    x:Uid="MainWindow" Title=""
+    Title="ZenFocus"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -20,7 +20,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TitleBar x:Name="AppTitleBar" x:Uid="MainWindow_TitleBar" Title="" Grid.Row="0">
+        <TitleBar x:Name="AppTitleBar" Title="ZenFocus" Grid.Row="0">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="Assets/AppIcon.ico" />
             </TitleBar.IconSource>
@@ -36,17 +36,17 @@
                         IsSettingsVisible="False"
                         SelectionChanged="Nav_SelectionChanged">
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="MainWindow_NavHome" Content="" Tag="home">
+                <NavigationViewItem Content="Focus" Tag="home">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Favorite" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="MainWindow_NavShield" Content="" Tag="shield">
+                <NavigationViewItem Content="Block" Tag="shield">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="World" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="MainWindow_NavStats" Content="" Tag="stats">
+                <NavigationViewItem Content="Stats" Tag="stats">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Clock" />
                     </NavigationViewItem.Icon>

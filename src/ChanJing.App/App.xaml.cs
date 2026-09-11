@@ -3,6 +3,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -44,12 +45,33 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+        // 语言设置：默认英文（必须在 InitializeComponent 之前设置，且不能访问数据库）
+        // ApplicationLanguages.PrimaryLanguageOverride = "en-US";
+
         InitializeComponent();
         // 全局异常兜底：任何 UI 线程/后台线程异常先落盘 crash.log，再决定是否放行。
         // UI 线程异常若 Handled=false 会以 stowed exception 形式闪退，这里记录后放行。
         UnhandledException += OnUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
+    /// <summary>切换语言（需重启应用生效）。</summary>
+    public static void SetLanguage(string lang)
+    {
+        try
+        {
+            AppServices.Db?.SetSetting("app_language", lang);
+            ApplicationLanguages.PrimaryLanguageOverride = lang;
+        }
+        catch { }
+    }
+
+    /// <summary>获取当前语言。</summary>
+    public static string GetLanguage()
+    {
+        var saved = AppServices.Db?.GetSetting("app_language");
+        return string.IsNullOrEmpty(saved) ? "en-US" : saved;
     }
 
     /// <summary>

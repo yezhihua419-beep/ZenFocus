@@ -26,6 +26,7 @@ public sealed class TrayIconService : IDisposable
     private const int ID_TOGGLE_SHIELD = 4;
     private const int ID_QUICK_SHIELD = 5;
     private const int ID_REST = 6;
+    private const int ID_LANGUAGE = 7;
     private const int MAX_TIP_LENGTH = 127;
     private const uint MF_SEPARATOR = 0x00000800;
     private const uint MF_GRAYED = 0x00000001;
@@ -132,10 +133,23 @@ public sealed class TrayIconService : IDisposable
             else if (id == ID_TOGGLE_SHIELD) _onToggleShield?.Invoke();
             else if (id == ID_QUICK_SHIELD) _onQuickShield?.Invoke();
             else if (id == ID_REST) _onRest?.Invoke();
+            else if (id == ID_LANGUAGE) ToggleLanguage();
             return IntPtr.Zero;
         }
 
         return DefWindowProc(hWnd, msg, wParam, lParam);
+    }
+
+    private void ToggleLanguage()
+    {
+        var current = App.GetLanguage();
+        var next = current == "en-US" ? "zh-CN" : "en-US";
+        App.SetLanguage(next);
+        // 提示重启
+        var msg = next == "en-US"
+            ? "Language switched to English. Please restart the app to apply."
+            : "语言已切换为中文，请重启应用生效。";
+        MessageBox(IntPtr.Zero, msg, "ZenFocus", 0x40);
     }
 
     private void ShowMenu()
@@ -165,6 +179,12 @@ public sealed class TrayIconService : IDisposable
         _ = AppendMenu(menu, MF_GRAYED, 0, isShieldOn ? I18n.Get("Tray_ShieldOn", "Blocking: On") : I18n.Get("Tray_ShieldOff", "Blocking: Off"));
         _ = AppendMenu(menu, 0, ID_TOGGLE_SHIELD, isShieldOn ? I18n.Get("Tray_ShieldDisable", "Disable Blocking") : I18n.Get("Tray_ShieldEnable", "Enable Blocking"));
         _ = AppendMenu(menu, 0, ID_QUICK_SHIELD, I18n.Get("Tray_QuickShield", "Quick Block: TikTok/Bilibili"));
+        _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
+
+        // 语言切换
+        var currentLang = App.GetLanguage();
+        var langText = currentLang == "en-US" ? "Language: English (click for 中文)" : "语言：中文（点击切换 English）";
+        _ = AppendMenu(menu, 0, ID_LANGUAGE, langText);
         _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
 
         // 打开/退出
@@ -264,6 +284,9 @@ public sealed class TrayIconService : IDisposable
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern bool AppendMenu(IntPtr hMenu, uint uFlags, int uIDNewItem, string lpNewItem);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 
     [DllImport("user32.dll")]
     private static extern bool TrackPopupMenu(IntPtr hMenu, uint uFlags, int x, int y, int nReserved, IntPtr hWnd, IntPtr prcRect);

@@ -98,6 +98,29 @@
 
 ## 更新日志
 
+### v0.9.0-dev（2026-09-11，进行中）
+
+**国际化（i18n）—— 默认英文，优先海外市场**
+
+- XAML 层 134 处 x:Uid 绑定（MainPage/ShieldPage/StatsPage/FrictionOverlay/MainWindow）
+- C# 层所有用户可见文本 I18n 化（Notify/ContentDialog/托盘菜单/伴侣页）
+- 伴侣页 HTML 全部英文化
+- 新增 I18n.cs 辅助类封装 ResourceLoader
+- en-US/zh-CN 双资源文件
+- 默认语言 en-US，价格从 ¥68 改为 $19
+- 托盘菜单新增语言切换选项（英文/中文）
+- HMAC 激活码验证（CJ-XXXX-XXXXXX 格式，18个专项测试）
+- 激活码生成工具 tools/gen_license.py
+
+**已知问题（待修复）**
+- ⚠️ 应用启动后立即崩溃（Exit code -1073741189 / 0xC000027B），无崩溃日志
+- 已确认：App 构造函数中访问 AppServices.Db 会触发静态构造函数崩溃
+- 已确认：OnLaunched 中设置 ApplicationLanguages.PrimaryLanguageOverride 会抛 InvalidOperationException
+- 已确认：Window/TitleBar 元素不支持 x:Uid 绑定
+- 已确认：ToolTipService.ToolTip 附加属性不支持 x:Uid 绑定
+- 待排查：MainPage/ShieldPage/StatsPage 中剩余的 x:Uid 绑定是否还有问题
+- 构建 0 警告 0 错误，单元测试 127/127 通过，但 GUI 启动测试未通过
+
 ### v0.8.0（2026-09-11）
 
 **15项全面优化全部落地（P0 5项 + P1 5项 + P2 5项）**
