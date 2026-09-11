@@ -207,7 +207,7 @@ public class BlocklistServiceTests : IDisposable
     {
         _service.SetEnabledCategories(new[] { "短视频" });
         _service.EnableManualShield();
-        Assert.True(File.ReadAllText(HostsBlocker.HostsPathOverride!).Contains("# BEGIN CHANJING"));
+        Assert.Contains("# BEGIN CHANJING", File.ReadAllText(HostsBlocker.HostsPathOverride!));
 
         _service.DisableManualShield(focusRunning: false);
         var hostsContent = File.ReadAllText(HostsBlocker.HostsPathOverride!);
