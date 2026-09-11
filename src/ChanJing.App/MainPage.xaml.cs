@@ -40,7 +40,20 @@ public sealed partial class MainPage : Page
     protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        try { RestoreSceneHighlight(); RefreshTodayStats(); }
+        try
+        {
+            RestoreSceneHighlight();
+            RefreshTodayStats();
+            // 快捷键/托盘触发后回到首页，同步专注界面状态
+            if (_engine.IsRunning)
+            {
+                EnterFocusView();
+            }
+            else
+            {
+                EnterIdleView();
+            }
+        }
         catch (Exception ex) { App.LogCrash("MainPage.OnNavigatedTo", ex); }
     }
 

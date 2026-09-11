@@ -298,16 +298,10 @@ public sealed partial class MainWindow : Window
             {
                 if (AppServices.Engine.IsRunning)
                 {
-                    if (AppServices.Engine.IsPaused)
-                    {
-                        AppServices.Engine.Resume();
-                        App.LogAction("托盘快捷操作", "恢复专注");
-                    }
-                    else
-                    {
-                        AppServices.Engine.Pause();
-                        App.LogAction("托盘快捷操作", "暂停专注");
-                    }
+                    // 快捷键/托盘：专注中=结束（不是暂停）
+                    var done = AppServices.Engine.Finish(completed: true);
+                    AppServices.Blocklist.EmergencyPass = false;
+                    App.LogAction("快捷操作", $"结束专注 {done.ActualMinutes}分钟 分心{done.DistractionCount}次");
                 }
                 else
                 {
@@ -316,22 +310,24 @@ public sealed partial class MainWindow : Window
                     if (!string.IsNullOrEmpty(AppServices.CurrentSceneTag) && !string.IsNullOrEmpty(sceneConfig.Wish))
                     {
                         AppServices.Blocklist.SetEnabledCategories(sceneConfig.Categories);
-                        AppServices.Blocklist.Apply(); // 写 hosts.pre，专注开始时同步到系统 hosts
+                        AppServices.Blocklist.Apply();
                         AppServices.CurrentWish = sceneConfig.Wish;
                         var startMinutes = AppServices.DeepMode ? 0 : sceneConfig.Minutes;
                         AppServices.CurrentMinutes = startMinutes;
-                          AppServices.Engine.Start(sceneConfig.Wish, startMinutes);
-                        App.LogAction("托盘快捷操作", $"开始专注 {sceneConfig.Minutes}分钟（场景 {AppServices.CurrentSceneTag}）");
+                        AppServices.Engine.Start(sceneConfig.Wish, startMinutes);
+                        App.LogAction("快捷操作", $"开始专注 {sceneConfig.Minutes}分钟（场景 {AppServices.CurrentSceneTag}）");
                     }
                     else
                     {
                         AppServices.CurrentWish = "专注";
                         var startMinutes2 = AppServices.DeepMode ? 0 : 25;
                         AppServices.CurrentMinutes = startMinutes2;
-                          AppServices.Engine.Start("专注", startMinutes2);
-                        App.LogAction("托盘快捷操作", $"开始专注{startMinutes2}分钟（未选场景）");
+                        AppServices.Engine.Start("专注", startMinutes2);
+                        App.LogAction("快捷操作", $"开始专注{startMinutes2}分钟（未选场景）");
                     }
                 }
+                // 导航到首页，让用户看到专注界面/反馈
+                ContentFrame.Navigate(typeof(MainPage));
             }
             catch (Exception ex)
             {
