@@ -101,9 +101,13 @@
                                 Spacing="12" MaxWidth="440" MinWidth="280">
                         <TextBlock Text="心已定" FontSize="14" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushState}" />
-                        <TextBlock x:Name="TimerText" FontSize="48" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center" Text="00:00"
-                                   Foreground="{StaticResource BrushTextPrimary}" />
+                        <!-- 非深度模式：进度条 + 小字号分钟数；深度模式：隐藏时间 -->
+                        <ProgressBar x:Name="FocusProgress" Maximum="100" Value="0"
+                                     Width="240" Height="6" HorizontalAlignment="Center"
+                                     Foreground="{StaticResource BrushState}" Background="{StaticResource BrushBorder}"
+                                     CornerRadius="3" />
+                        <TextBlock x:Name="TimerText" FontSize="13" HorizontalAlignment="Center" Text="0 分钟"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
                         <TextBlock x:Name="WishShow" FontSize="13" HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12" Margin="0,12,0,0">

@@ -86,7 +86,15 @@ public sealed partial class MainPage : Page
     }
     private void OnTick(object? sender, object e)
     {
-        TimerText.Text = FormatElapsed(_engine.Elapsed);
+        var elapsed = _engine.Elapsed;
+        var minutes = (int)elapsed.TotalMinutes;
+        TimerText.Text = $"{minutes} 分钟";
+        // 非深度模式：更新进度条
+        if (!_deepMode && _engine.Current?.PlannedMinutes > 0)
+        {
+            FocusProgress.Maximum = _engine.Current.PlannedMinutes;
+            FocusProgress.Value = Math.Min(minutes, _engine.Current.PlannedMinutes);
+        }
     }
 
     // ---------- 开始流程：存愿 → 呼吸 → 专注 ----------
@@ -437,7 +445,7 @@ public sealed partial class MainPage : Page
                 App.LogAction("继续专注");
                 PauseButton.Content = "暂停";
                 PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextSecondary"];
-                TimerText.Text = FormatElapsed(_engine.Elapsed);
+                TimerText.Text = $"{(int)_engine.Elapsed.TotalMinutes} 分钟";
             }
             else
             {
@@ -601,8 +609,22 @@ public sealed partial class MainPage : Page
         WishShow.Text = _engine.Current?.Wish is { Length: > 0 } w
             ? $"今日一愿：{w}"
             : "心无旁骛，只做眼前这一件事";
-        TimerText.Text = "00:00";
-        if (_deepMode) WishShow.Text = "深度模式 · 随心而定 · 完成后手动结束";
+        if (_deepMode)
+        {
+            // 深度模式：隐藏时间和进度条，只显示愿望
+            WishShow.Text = "深度模式 · 随心而定 · 完成后手动结束";
+            TimerText.Visibility = Visibility.Collapsed;
+            FocusProgress.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            TimerText.Visibility = Visibility.Visible;
+            FocusProgress.Visibility = Visibility.Visible;
+            TimerText.Text = "0 分钟";
+            FocusProgress.Value = 0;
+            if (_engine.Current?.PlannedMinutes > 0)
+                FocusProgress.Maximum = _engine.Current.PlannedMinutes;
+        }
     }
 
     private void EnterIdleView()
