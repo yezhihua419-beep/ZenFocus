@@ -111,6 +111,8 @@ public partial class App : Application
         {
             try
             {
+                // 标记专注中（用于FocusOnlyCommunication判断）
+                AppServices.Blocklist.IsFocusRunning = true;
                 // 重置暂离模式（防止上一次专注未正确重置）
                 AppServices.Blocklist.EmergencyPass = false;
                 // 写hosts异步执行，避免UAC提权等待阻塞UI线程（桌面App屏蔽由WindowActivityService同步立即执行）
@@ -157,6 +159,8 @@ public partial class App : Application
         {
             try
             {
+                // 标记非专注中
+                AppServices.Blocklist.IsFocusRunning = false;
                 // 重置暂离模式（所有结束专注路径统一重置）
                 AppServices.Blocklist.EmergencyPass = false;
                 if (AppServices.Blocklist.IsManualShieldActive())

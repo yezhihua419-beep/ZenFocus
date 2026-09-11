@@ -83,6 +83,8 @@ public sealed class BlocklistService
 
         foreach (var kv in DefaultAppCategories)
         {
+            // FocusOnlyCommunication：非专注中时排除沟通工具分类
+            if (IsFocusOnlyCommunication() && !IsFocusRunning && kv.Key == "沟通工具") continue;
             if (enabled.Contains(kv.Key) &&
                 kv.Value.Any(p => string.Equals(p, processName, StringComparison.OrdinalIgnoreCase)))
             {
@@ -199,6 +201,9 @@ public sealed class BlocklistService
 
     /// <summary>是否已激活（买断/订阅）。V1 为占位，支付上线后接入。</summary>
     public bool IsActivated() => _db.GetSetting(SettingKeyActivated) == "true";
+
+    /// <summary>当前是否在专注中（由App.xaml.cs在FocusStarted/FocusFinished时设置）。用于FocusOnlyCommunication判断。</summary>
+    public bool IsFocusRunning { get; set; }
 
     // ---------- 手动屏蔽总开关（独立于专注计时） ----------
 
@@ -343,6 +348,8 @@ public sealed class BlocklistService
         var result = new List<string>();
         foreach (var category in GetEnabledCategories())
         {
+            // FocusOnlyCommunication：非专注中时排除沟通工具分类
+            if (IsFocusOnlyCommunication() && !IsFocusRunning && category == "沟通工具") continue;
             if (DefaultCategories.TryGetValue(category, out var domains))
             {
                 result.AddRange(domains.Where(d => !allowed.Contains(d)));
@@ -372,6 +379,20 @@ public sealed class BlocklistService
     public void Remove()
     {
         HostsBlocker.ClearPreApply();
+    }
+
+    /// <summary>重置所有屏蔽配置：清除启用分类/自定义域名/自定义应用/每日限额/临时放行/hosts.pre。场景配置不受影响（需单独重置场景）。</summary>
+    public void ResetAll()
+    {
+        _db.SetSetting(SettingKeyCategories, "");
+        _db.SetSetting(SettingKeyCustomDomains, "");
+        _db.SetSetting(SettingKeyCustomApps, "");
+        _db.SetSetting("daily_limits", "");
+        _db.SetSetting(SettingKeyTempAllow, "");
+        _db.SetSetting(SettingKeyManualShield, "false");
+        HostsBlocker.ClearPreApply();
+        try { HostsBlocker.Remove(); }
+        catch (UnauthorizedAccessException) { }
     }
 
     /// <summary>屏蔽是否已生效。</summary>

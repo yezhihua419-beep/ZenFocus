@@ -384,8 +384,9 @@ public sealed partial class ShieldPage : Page
             };
             var result = await confirm.ShowAsync();
             if (result != ContentDialogResult.Primary) return;
-            _blocklist.Remove();
-            RefreshStatus("配置已清除。");
+            _blocklist.ResetAll();
+            RefreshAll();
+            RefreshStatus("所有屏蔽配置已清除（场景配置保留，可在首页右键场景单独重置）。");
             App.LogAction("清除屏蔽配置", "成功");
         }
         catch (Exception ex)
