@@ -31,10 +31,19 @@
                     <Button Content="继续专注" Click="ContinueFocus_Click"
                             Background="#7A7265" Foreground="White"
                             Padding="28,12" CornerRadius="24" FontSize="14" />
-                    <Button Content="我就要分心" Click="GiveIn_Click"
+                    <Button x:Name="GiveInButton" Content="我就要分心"
                             Background="Transparent" BorderBrush="#7A7265"
                             Foreground="#7A7265"
-                            Padding="28,12" CornerRadius="24" FontSize="14" />
+                            Padding="28,12" CornerRadius="24" FontSize="14">
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="临时放行 5 分钟" Click="GiveIn5Min_Click" />
+                                <MenuFlyoutItem Text="临时放行 15 分钟" Click="GiveIn15Min_Click" />
+                                <MenuFlyoutItem Text="临时放行 30 分钟" Click="GiveIn30Min_Click" />
+                                <MenuFlyoutItem Text="本次专注期间都放行" Click="GiveInSession_Click" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </Grid>

@@ -100,6 +100,7 @@ public sealed class WindowActivityService : IDisposable
             {
                 var name = p.ProcessName;
                 if (processed.Contains(name)) continue;
+                if (_blocklist.IsTempAllowed(name)) continue; // 临时放行的应用不拦截
                 var cat = _blocklist.MatchBlockedApp(name);
                 if (cat is not null)
                 {
@@ -200,18 +201,21 @@ public sealed class WindowActivityService : IDisposable
             // 专注中持续拦截（2 秒冷却，最小化后用户再点回会再次拦截）。
             if ((_engine.IsRunning || _blocklist.IsManualShieldActive()) && _blocklist.IsApplied() && !_blocklist.EmergencyPass && info.Hwnd != IntPtr.Zero)
             {
-                var cat = _blocklist.MatchBlockedApp(info.ProcessName);
-                if (cat is not null)
+                if (!_blocklist.IsTempAllowed(info.ProcessName)) // 临时放行的应用不拦截
                 {
-                    lock (_lock)
+                    var cat = _blocklist.MatchBlockedApp(info.ProcessName);
+                    if (cat is not null)
                     {
-                        var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
-                        if (DateTime.UtcNow - last > TimeSpan.FromSeconds(2))
+                        lock (_lock)
                         {
-                            _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
-                            // 直接对该进程所有主窗口最小化（Process.MainWindowHandle对Electron应用可靠，EnumWindows找不到抖音窗口）
-                            MinimizeProcessWindows(info.ProcessName);
-                            AppBlocked?.Invoke(info.ProcessName, cat);
+                            var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
+                            if (DateTime.UtcNow - last > TimeSpan.FromSeconds(2))
+                            {
+                                _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
+                                // 直接对该进程所有主窗口最小化（Process.MainWindowHandle对Electron应用可靠，EnumWindows找不到抖音窗口）
+                                MinimizeProcessWindows(info.ProcessName);
+                                AppBlocked?.Invoke(info.ProcessName, cat);
+                            }
                         }
                     }
                 }

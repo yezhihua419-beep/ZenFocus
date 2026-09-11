@@ -163,6 +163,8 @@ public partial class App : Application
                 AppServices.Blocklist.IsFocusRunning = false;
                 // 重置暂离模式（所有结束专注路径统一重置）
                 AppServices.Blocklist.EmergencyPass = false;
+                // 清除所有临时放行（"本次专注期间"放行的应用在专注结束后重新生效屏蔽）
+                AppServices.Blocklist.ClearAllTempAllows();
                 if (AppServices.Blocklist.IsManualShieldActive())
                 {
                     LogAction("focus-finish", "manual shield active, keep hosts");

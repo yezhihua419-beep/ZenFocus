@@ -266,12 +266,15 @@ public sealed partial class MainWindow : Window
                             _frictionOverlay = null;
                             App.LogAction("摩擦拦截结果", $"{processName} 用户选择继续专注");
                         };
-                        _frictionOverlay.GiveIn += (_, _) =>
+                        _frictionOverlay.GiveIn += (_, minutes) =>
                         {
                             _frictionOverlay = null;
-                            // 用户选择分心：临时放行该应用5分钟
-                            AppServices.Blocklist.AddTempAllow(processName, 5);
-                            App.LogAction("摩擦拦截结果", $"{processName} 用户选择分心，临时放行5分钟");
+                            var desc = minutes == 0 ? "本次专注期间" : $"{minutes}分钟";
+                            // 本次专注期间：用24小时（足够长），专注结束时统一清除
+                            var actualMinutes = minutes == 0 ? 1440 : minutes;
+                            AppServices.Blocklist.AddTempAllow(processName, actualMinutes);
+                            AppServices.Notify($"已临时放行「{processName}」{desc}，超时后重新屏蔽");
+                            App.LogAction("摩擦拦截结果", $"{processName} 用户选择分心，临时放行{desc}");
                         };
                         _frictionOverlay.Closed += (_, _) => { _frictionOverlay = null; };
                     }

@@ -18,7 +18,7 @@ public sealed partial class FrictionOverlay : Window
     private readonly string _category;
 
     public event EventHandler? ContinueFocus;
-    public event EventHandler? GiveIn;
+    public event EventHandler<int>? GiveIn; // int = 临时放行分钟数，0表示本次专注期间
 
     public FrictionOverlay(string processName, string category)
     {
@@ -55,7 +55,7 @@ public sealed partial class FrictionOverlay : Window
             {
                 _timer.Stop();
                 CountdownText.Text = "";
-                HintText.Text = $"「{_processName}」属于{_category}，真的要分心吗？";
+                HintText.Text = $"「{_processName}」属于{_category}，真的要分心吗？选择放行时长";
                 ButtonPanel.Visibility = Visibility.Visible;
             }
             else
@@ -75,10 +75,16 @@ public sealed partial class FrictionOverlay : Window
         Close();
     }
 
-    private void GiveIn_Click(object sender, RoutedEventArgs e)
+    private void GiveIn5Min_Click(object sender, RoutedEventArgs e) => GiveInWithMinutes(5);
+    private void GiveIn15Min_Click(object sender, RoutedEventArgs e) => GiveInWithMinutes(15);
+    private void GiveIn30Min_Click(object sender, RoutedEventArgs e) => GiveInWithMinutes(30);
+    private void GiveInSession_Click(object sender, RoutedEventArgs e) => GiveInWithMinutes(0); // 0=本次专注期间
+
+    private void GiveInWithMinutes(int minutes)
     {
-        App.LogAction("摩擦拦截", $"{_processName} 用户选择分心，临时放行5分钟");
-        GiveIn?.Invoke(this, EventArgs.Empty);
+        var desc = minutes == 0 ? "本次专注期间" : $"{minutes}分钟";
+        App.LogAction("摩擦拦截", $"{_processName} 用户选择分心，临时放行{desc}");
+        GiveIn?.Invoke(this, minutes);
         Close();
     }
 }

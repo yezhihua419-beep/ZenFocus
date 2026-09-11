@@ -336,6 +336,20 @@ public sealed class BlocklistService
         SaveTempAllows(active);
     }
 
+    /// <summary>检查进程名是否在临时放行列表中（桌面应用拦截用）。</summary>
+    public bool IsTempAllowed(string processName)
+    {
+        if (string.IsNullOrWhiteSpace(processName)) return false;
+        return GetTempAllows().Any(a =>
+            string.Equals(a.Domain, processName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>清除所有临时放行（专注结束时调用）。</summary>
+    public void ClearAllTempAllows()
+    {
+        SaveTempAllows(new List<(string, DateTime)>());
+    }
+
     // ---------- 生效集合 ----------
 
     /// <summary>当前应生效的域名（启用分类 + 自定义 − 未过期临时放行）。</summary>
