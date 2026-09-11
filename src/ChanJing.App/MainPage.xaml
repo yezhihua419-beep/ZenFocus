@@ -29,26 +29,28 @@
                 </StackPanel>
 
                 <!-- 场景标签（顶部一行） -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,12,0,4">
-                    <Button x:Name="SceneWork" Content="工作" Tag="work" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                            Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="16,5" CornerRadius="16" FontSize="12" />
-                    <Button x:Name="SceneWrite" Content="写作" Tag="write" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                            Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="16,5" CornerRadius="16" FontSize="12" />
-                    <Button x:Name="SceneStudy" Content="学习" Tag="study" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                            Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="16,5" CornerRadius="16" FontSize="12" />
-                    <Button x:Name="SceneMeeting" Content="会议" Tag="meeting" Click="Scene_Click" RightTapped="Scene_RightTapped"
-                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                            Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="16,5" CornerRadius="16" FontSize="12" />
+                <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Spacing="4" Margin="0,12,0,4">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                        <Button x:Name="SceneWork" Content="工作" Tag="work" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="16,5" CornerRadius="16" FontSize="12" />
+                        <Button x:Name="SceneWrite" Content="写作" Tag="write" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="16,5" CornerRadius="16" FontSize="12" />
+                        <Button x:Name="SceneStudy" Content="学习" Tag="study" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="16,5" CornerRadius="16" FontSize="12" />
+                        <Button x:Name="SceneMeeting" Content="会议" Tag="meeting" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                                Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                                Foreground="{StaticResource BrushTextSecondary}"
+                                Padding="16,5" CornerRadius="16" FontSize="12" />
+                    </StackPanel>
+                    <TextBlock x:Name="SceneConfigHint" Text="选择场景一键进入 · 右键可自定义" FontSize="11" HorizontalAlignment="Center"
+                               Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" />
                 </StackPanel>
-                <TextBlock Grid.Row="1" x:Name="SceneConfigHint" Text="选择场景一键进入 · 右键可自定义" FontSize="11" HorizontalAlignment="Center"
-                           Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" Margin="0,36,0,0" />
 
                 <!-- 中间区域：空闲态/呼吸态/专注态/反馈态 -->
                 <Grid Grid.Row="2" VerticalAlignment="Center">

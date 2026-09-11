@@ -349,6 +349,17 @@ public sealed partial class ShieldPage : Page
         try
         {
             _blocklist.Apply();
+            // 同时保存到当前场景配置（如果有选中场景），这样回到首页后场景摘要会显示最新配置
+            var sceneTag = AppServices.CurrentSceneTag;
+            if (!string.IsNullOrEmpty(sceneTag))
+            {
+                var cats = _blocklist.GetEnabledCategories().ToArray();
+                // 用当前场景的愿望和时长，只更新屏蔽分类
+                var existing = ChanJing.Core.Services.SceneManager.GetSceneConfig(AppServices.Db, sceneTag);
+                ChanJing.Core.Services.SceneManager.SaveSceneConfig(AppServices.Db, sceneTag,
+                    new ChanJing.Core.Services.SceneManager.SceneConfig(existing.Wish, existing.Minutes, cats));
+                App.LogAction("保存场景配置", $"{sceneTag} 屏蔽=[{string.Join("/", cats)}]");
+            }
             RefreshStatus("配置已保存，开始专注时自动生效。");
             App.LogAction("保存屏蔽配置", "成功");
         }
