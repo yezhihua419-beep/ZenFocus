@@ -326,10 +326,10 @@ public sealed partial class MainWindow : Window
                     else
                     {
                         AppServices.CurrentWish = "专注";
-                        AppServices.CurrentMinutes = 25;
                         var startMinutes2 = AppServices.DeepMode ? 0 : 25;
+                        AppServices.CurrentMinutes = startMinutes2;
                           AppServices.Engine.Start("专注", startMinutes2);
-                        App.LogAction("托盘快捷操作", "开始专注25分钟（未选场景）");
+                        App.LogAction("托盘快捷操作", $"开始专注{startMinutes2}分钟（未选场景）");
                     }
                 }
             }
