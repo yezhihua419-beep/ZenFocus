@@ -26,6 +26,9 @@ public partial class App : Application
     private System.Threading.Mutex? _mutex;
     private CompanionHttpServer? _companionServer;
 
+    /// <summary>主窗口引用（供 FileSavePicker 等需要窗口句柄的场景使用）。</summary>
+    public static Window? MainWindow { get; private set; }
+
     /// <summary>提权重启时主动释放单实例锁（仅在管理员进程已启动成功后调用，UAC取消不会走到这里）。</summary>
     public void ReleaseSingleInstanceMutex()
     {
@@ -71,6 +74,7 @@ public partial class App : Application
         }
 
         _window = new MainWindow();
+        MainWindow = _window;
         _window.Activate();
         LogAction("应用启动");
 

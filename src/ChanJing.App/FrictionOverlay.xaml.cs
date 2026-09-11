@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using Windows.Graphics;
@@ -43,6 +43,23 @@ public sealed partial class FrictionOverlay : Window
                 (int)Microsoft.UI.Xaml.Application.Current.Resources["ScreenWidth"] as int? ?? 1920,
                 (int)Microsoft.UI.Xaml.Application.Current.Resources["ScreenHeight"] as int? ?? 1080));
             AppWindow.Move(new PointInt32(0, 0));
+        }
+        catch { }
+
+        // 淡入动画（遮罩过渡，300ms）
+        try
+        {
+            var fade = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = new Duration(TimeSpan.FromMilliseconds(300))
+            };
+            var sb = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+            sb.Children.Add(fade);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fade, RootGrid);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fade, "Opacity");
+            sb.Begin();
         }
         catch { }
 

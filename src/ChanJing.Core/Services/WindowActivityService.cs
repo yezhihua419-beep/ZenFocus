@@ -163,6 +163,8 @@ public sealed class WindowActivityService : IDisposable
                 _dailyLimits.AddUsage(domain, TickSeconds);
                 if (_dailyLimits.IsExceeded(domain))
                 {
+                    // 临时放行中：跳过提醒和强制最小化
+                    if (_dailyLimits.IsTempAllowed(domain)) continue;
                     if (_notifiedLimits.Add(domain))
                     {
                         LimitExceeded?.Invoke(domain);
@@ -191,7 +193,7 @@ public sealed class WindowActivityService : IDisposable
                     var key = $"{_engine.Current!.StartedAt:o}|{domain}";
                     if (_notifiedDistractionKey == key) continue;
                     _notifiedDistractionKey = key;
-                    _engine.RegisterDistraction();
+                    _engine.RegisterDistraction(domain);
                     DistractionDetected?.Invoke(domain);
                 }
             }
@@ -214,6 +216,8 @@ public sealed class WindowActivityService : IDisposable
                                 _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
                                 // 直接对该进程所有主窗口最小化（Process.MainWindowHandle对Electron应用可靠，EnumWindows找不到抖音窗口）
                                 MinimizeProcessWindows(info.ProcessName);
+                                // 专注中拦截桌面分心应用也记分心来源
+                                if (_engine.IsRunning) _engine.RegisterDistraction(info.ProcessName);
                                 AppBlocked?.Invoke(info.ProcessName, cat);
                             }
                         }

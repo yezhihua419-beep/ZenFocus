@@ -51,23 +51,29 @@ public sealed partial class MainWindow : Window
         // 前台窗口采集常驻（进程名 + 标题哈希，本地存储）。
         AppServices.Activity.Start();
 
-        _tray = new TrayIconService(ShowMain, ExitApp, ToggleFocus, ToggleShield, QuickShield);
+        _tray = new TrayIconService(ShowMain, ExitApp, ToggleFocus, ToggleShield, QuickShield, RestBreak);
         _tray.Show("禅净 — 先管住手，再看清时间");
 
         // 全局快捷键检测：Ctrl+Alt+F 开始/结束专注
         var hotkeyTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
-        hotkeyTimer.Tick += (s, e) =>
+        hotkeyTimer.Tick += (_, _) =>
         {
-            // VK_CONTROL=0x11, VK_MENU=0x12(Alt), VK_F=0x46
+            // Ctrl+Alt+F 开始/结束专注；Ctrl+Alt+P 暂停/恢复；Ctrl+Alt+R 休息3分钟；Ctrl+Alt+S 打开设置
+            // VK_CONTROL=0x11, VK_MENU=0x12(Alt), VK_F=0x46, VK_P=0x50, VK_R=0x52, VK_S=0x53
             bool ctrl = (GetAsyncKeyState(0x11) & 0x8000) != 0;
             bool alt = (GetAsyncKeyState(0x12) & 0x8000) != 0;
             bool f = (GetAsyncKeyState(0x46) & 0x8000) != 0;
-            if (ctrl && alt && f && !_hotkeyPressed)
+            bool p = (GetAsyncKeyState(0x50) & 0x8000) != 0;
+            bool r = (GetAsyncKeyState(0x52) & 0x8000) != 0;
+            bool s = (GetAsyncKeyState(0x53) & 0x8000) != 0;
+            if (ctrl && alt && !_hotkeyPressed)
             {
-                _hotkeyPressed = true;
-                ToggleFocus();
+                if (f) { _hotkeyPressed = true; ToggleFocus(); }
+                else if (p) { _hotkeyPressed = true; TogglePause(); }
+                else if (r) { _hotkeyPressed = true; RestBreak(); }
+                else if (s) { _hotkeyPressed = true; ShowSettings(); }
             }
-            else if (!f)
+            else if (!(ctrl && alt) || (!f && !p && !r && !s))
             {
                 _hotkeyPressed = false;
             }
@@ -97,6 +103,16 @@ public sealed partial class MainWindow : Window
     {
         try
         {
+            // 最小窗口尺寸：防止缩放过小导致页面内容叠加
+            if (args.DidSizeChange)
+            {
+                var s = sender.Size;
+                if (s.Width < 780 || s.Height < 600)
+                {
+                    sender.Resize(new SizeInt32(Math.Max(s.Width, 780), Math.Max(s.Height, 600)));
+                }
+            }
+
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             if (IsIconic(hWnd))
             {
@@ -154,21 +170,61 @@ public sealed partial class MainWindow : Window
         });
     }
 
-    /// <summary>每日限额超限强制最小化（后台线程，调度回 UI 弹托盘气泡）。</summary>
+    /// <summary>每日限额超限强制最小化（后台线程，调度回 UI 弹对话框让用户选择）。</summary>
+    private bool _limitDialogOpen;
     private void OnLimitBlocked(string domain)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
             try
             {
-                _tray.ShowBalloon($"{domain} 已达今日上限，窗口已自动最小化。明天再会。", "禅净 · 限额阻断");
+                if (_limitDialogOpen) return;
+                _limitDialogOpen = true;
                 App.LogAction("限额强制阻断", domain);
+                _ = ShowLimitDialogAsync(domain);
             }
             catch (Exception ex)
             {
-                App.LogCrash("MainWindow.LimitBlockBalloon", ex);
+                App.LogCrash("MainWindow.LimitBlockDialog", ex);
             }
         });
+    }
+
+    /// <summary>限额超限对话框：可选择临时放行5分钟或就此打住。</summary>
+    private async Task ShowLimitDialogAsync(string domain)
+    {
+        try
+        {
+            ShowMain();
+            var dialog = new ContentDialog
+            {
+                Title = "已达今日限额",
+                Content = $"「{domain}」今日已用满限额，窗口已自动最小化。\n\n休息一下，或者选择继续？",
+                PrimaryButtonText = "我就要继续（放行5分钟）",
+                CloseButtonText = "今天就到这里",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = ContentFrame.XamlRoot
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                AppServices.DailyLimits.AddTempAllow(domain, 5);
+                AppServices.Notify($"已临时放行「{domain}」5分钟，到点后重新阻断。");
+                App.LogAction("限额临时放行", $"{domain} 5分钟");
+            }
+            else
+            {
+                App.LogAction("限额就此打住", domain);
+            }
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("MainWindow.ShowLimitDialog", ex);
+        }
+        finally
+        {
+            _limitDialogOpen = false;
+        }
     }
 
     /// <summary>专注中打开被屏蔽站点（同一会话每域名只提醒一次）。</summary>
@@ -375,6 +431,70 @@ public sealed partial class MainWindow : Window
             catch (Exception ex)
             {
                 App.LogCrash("MainWindow.QuickShield", ex);
+            }
+        });
+    }
+
+    /// <summary>快捷键：暂停/恢复专注（暂停期间不计入定心时长）。</summary>
+    private void TogglePause()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                if (!AppServices.Engine.IsRunning) return;
+                if (AppServices.Engine.IsPaused)
+                {
+                    AppServices.Engine.Resume();
+                    AppServices.Notify("已恢复定心");
+                    App.LogAction("快捷键", "恢复专注");
+                }
+                else
+                {
+                    AppServices.Engine.Pause();
+                    AppServices.Notify("已暂停计时 · 暂停期间不计入定心时长");
+                    App.LogAction("快捷键", "暂停专注");
+                }
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.TogglePause", ex);
+            }
+        });
+    }
+
+    /// <summary>快捷键：打开设置（显示主窗口并导航到屏蔽页）。</summary>
+    private void ShowSettings()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                ShowMain();
+                ContentFrame.Navigate(typeof(ShieldPage));
+                App.LogAction("快捷键", "打开设置");
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.ShowSettings", ex);
+            }
+        });
+    }
+
+    /// <summary>托盘快捷：休息3分钟（暂离），桌面应用暂停拦截。</summary>
+    private void RestBreak()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                if (!AppServices.Engine.IsRunning) return;
+                AppServices.StartRestBreak(3);
+                ContentFrame.Navigate(typeof(MainPage));
+            }
+            catch (Exception ex)
+            {
+                App.LogCrash("MainWindow.RestBreak", ex);
             }
         });
     }

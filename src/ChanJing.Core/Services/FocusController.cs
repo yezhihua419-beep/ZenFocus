@@ -76,4 +76,15 @@ public class FocusController
         _blocklist.EmergencyPass = false;
         return $"结束专注 {done.ActualMinutes}分钟 分心{done.DistractionCount}次";
     }
+
+    /// <summary>
+    /// 提前结束专注（破功/伴侣远程喊停）。重置暂离模式。
+    /// 返回操作描述。
+    /// </summary>
+    public string StopEarly()
+    {
+        var done = _engine.Finish(completed: false);
+        _blocklist.EmergencyPass = false;
+        return $"提前结束专注 {done.ActualMinutes}分钟 分心{done.DistractionCount}次";
+    }
 }

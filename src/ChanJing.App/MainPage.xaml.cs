@@ -23,7 +23,9 @@ public sealed partial class MainPage : Page
     private readonly DispatcherTimer _breathTimer;
     private string? _pendingWish;
     private int _pendingMinutes = 25;
-    private bool _breathing;
+    /// <summary>首页主视图状态机：所有Panel切换统一走 SetUiState，避免状态与视图不一致。</summary>
+    private enum MainUiState { Idle, Breathing, Focusing, Cooldown, SoftLanding, Feedback }
+    private MainUiState _uiState = MainUiState.Idle;
     private bool _deepMode;
     private bool _adhdMode;
     private bool _adhdOnboarded;
@@ -85,23 +87,26 @@ public sealed partial class MainPage : Page
         }
     }
 
-    /// <summary>首启3步引导：专注 → 屏蔽 → 统计与托盘。</summary>
-    private async void ShowFirstRunGuideIfNeeded()
+    /// <summary>首启3步引导：显示浮层卡片（专注 → 屏蔽 → 统计与托盘），关闭后不再出现。</summary>
+    private void ShowFirstRunGuideIfNeeded()
     {
         try
         {
             if (_db.GetSetting("onboarded") is not null) return;
-            _db.SetSetting("onboarded", "true");
-            var step1 = new ContentDialog { Title = "欢迎使用禅净 · 1/3", Content = "先管住手，再看清时间。\n\n【专注】\n在首页写下「今日一愿」→ 点「开始专注」→ 3秒呼吸引导后进入正计时（不显示剩余时间，减少焦虑）。\n\n支持场景快捷选择：工作50分钟 / 写作45分钟 / 学习25分钟 / 会议30分钟。", PrimaryButtonText = "下一步", XamlRoot = XamlRoot };
-            await step1.ShowAsync();
-            var step2 = new ContentDialog { Title = "欢迎使用禅净 · 2/3", Content = "【屏蔽】\n到「屏蔽」页勾选分类 → 点底部「保存配置」，开始专注时浏览器将打不开这些网站（含隐身窗口）。\n\n网站屏蔽在专注开始时自动写入系统hosts，如需管理员权限会提示。\n\n桌面 App（抖音客户端等）需在「桌面应用拦截」区单独配置，支持自动最小化或结束进程。", PrimaryButtonText = "下一步", XamlRoot = XamlRoot };
-            await step2.ShowAsync();
-            var step3 = new ContentDialog { Title = "欢迎使用禅净 · 3/3", Content = "【统计与托盘】\n「统计」页查看今日专注次数、分钟数、连续天数、24小时分布、分心来源。\n\n点窗口 ✕ 或 — 是最小化到托盘（不退出），想彻底退出请右键托盘图标选「退出」。\n\n托盘菜单可快速开始/暂停专注、查看今日分钟、打开屏蔽设置。", PrimaryButtonText = "去设置屏蔽", CloseButtonText = "开始使用", DefaultButton = ContentDialogButton.Primary, XamlRoot = XamlRoot };
-            var result = await step3.ShowAsync();
-            if (result == ContentDialogResult.Primary && Frame is not null) { App.LogAction("首启引导", "去设置屏蔽"); Frame.Navigate(typeof(ShieldPage)); }
-            else { App.LogAction("首启引导", "开始使用"); }
+            GuidePanel.Visibility = Visibility.Visible;
         }
         catch (Exception ex) { App.LogCrash("MainPage.FirstRunGuide", ex); }
+    }
+
+    private void GuideClose_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _db.SetSetting("onboarded", "true");
+            GuidePanel.Visibility = Visibility.Collapsed;
+            App.LogAction("首启引导", "开始使用");
+        }
+        catch (Exception ex) { App.LogCrash("MainPage.GuideClose", ex); }
     }
     private void OnTick(object? sender, object e)
     {
@@ -418,11 +423,7 @@ public sealed partial class MainPage : Page
     }
     private void StartBreathing()
     {
-        _breathing = true;
-        IdlePanel.Visibility = Visibility.Collapsed;
-        FocusPanel.Visibility = Visibility.Collapsed;
-        FeedbackPanel.Visibility = Visibility.Collapsed;
-        BreathingPanel.Visibility = Visibility.Visible;
+        SetUiState(MainUiState.Breathing);
         BreathText.Text = "吸气…";
         _breathTimer.Start();
 
@@ -445,8 +446,7 @@ public sealed partial class MainPage : Page
     /// <summary>呼吸引导结束（自动或跳过），真正开始专注。</summary>
     private void FinishBreathing()
     {
-        if (!_breathing) return;
-        _breathing = false;
+        if (_uiState != MainUiState.Breathing) return;
         _breathTimer.Stop();
         var startMinutes = _deepMode ? 0 : _pendingMinutes;
         _softTargetReached = false;
@@ -505,7 +505,6 @@ public sealed partial class MainPage : Page
     {
         try
         {
-            _emergencyTimer?.Stop();
             AppServices.Blocklist.EmergencyPass = false;
             var done = _engine.Finish(completed: true);
             App.LogAction("圆满结束", $"专注 {done.ActualMinutes} 分钟 分心 {done.DistractionCount} 次");
@@ -554,24 +553,18 @@ public sealed partial class MainPage : Page
     private void ShowAdhdFeedback(ChanJing.Core.Models.FocusSession done)
     {
         _timer.Stop();
-        FocusPanel.Visibility = Visibility.Collapsed;
-        IdlePanel.Visibility = Visibility.Collapsed;
-        BreathingPanel.Visibility = Visibility.Collapsed;
-        CooldownPanel.Visibility = Visibility.Collapsed;
-        SoftLandingPanel.Visibility = Visibility.Collapsed;
+        SetUiState(MainUiState.Feedback);
 
         var streak = GetTodayStreak();
-        FeedbackStreak.Text = streak > 1 ? $"🔥 连续第 {streak} 次" : "";
+        FeedbackStreak.Text = streak > 1 ? $"✨ 今日已完成 {streak} 次定心" : "";
         FeedbackStreak.Visibility = streak > 1 ? Visibility.Visible : Visibility.Collapsed;
 
-        var encouragement = streak >= 5 ? "太强了，继续保持！" :
-                           streak >= 3 ? "状态不错，继续保持！" :
-                           streak >= 1 ? "好的开始，继续加油！" : "";
-        FeedbackText.Text = $"你完成了 {done.ActualMinutes} 分钟专注\n{encouragement}";
+        var encouragement = streak >= 5 ? "心已定，功自成，继续保持" :
+                           streak >= 3 ? "状态渐入佳境，继续保持" :
+                           streak >= 1 ? "好的开始，念念不忘必有回响" : "";
+        FeedbackText.Text = $"今日定心 {done.ActualMinutes} 分钟\n{encouragement}";
         FeedbackAgainButton.Content = "再来 15 分钟";
         FeedbackRestButton.Visibility = Visibility.Visible;
-
-        FeedbackPanel.Visibility = Visibility.Visible;
         RefreshTodayStats();
     }
 
@@ -581,9 +574,7 @@ public sealed partial class MainPage : Page
     private void StartCooldown()
     {
         _cooldownRemaining = _blocklist.GetCooldownMinutes(); // 从设置读取，默认10分钟
-        FeedbackPanel.Visibility = Visibility.Collapsed;
-        CooldownPanel.Visibility = Visibility.Visible;
-        SoftLandingPanel.Visibility = Visibility.Collapsed;
+        SetUiState(MainUiState.Cooldown);
         UpdateCooldownText();
 
         _cooldownTimer?.Stop();
@@ -646,8 +637,7 @@ public sealed partial class MainPage : Page
     /// <summary>进入软着陆：缓冲期到了，屏蔽仍保持，用户选择后才解除。</summary>
     private void EnterSoftLanding()
     {
-        CooldownPanel.Visibility = Visibility.Collapsed;
-        SoftLandingPanel.Visibility = Visibility.Visible;
+        SetUiState(MainUiState.SoftLanding);
         App.LogAction("软着陆", "缓冲期到期，等待用户选择");
     }
 
@@ -738,9 +728,6 @@ public sealed partial class MainPage : Page
         }
     }
 
-    /// <summary>摩擦式退出：破功前给 3 秒冷静期，按钮倒计时后才可结束。</summary>
-    private DispatcherTimer? _emergencyTimer;
-
     private async void EmergencyPass_Click(object sender, RoutedEventArgs e)
     {
         var restMinutes = _adhdMode ? 3 : 5;
@@ -756,18 +743,7 @@ public sealed partial class MainPage : Page
         var result = await dialog.ShowAsync();
         if (result != ContentDialogResult.Primary) return;
         App.LogAction(restLabel, $"桌面应用暂停拦截{restMinutes}分钟");
-        AppServices.Blocklist.EmergencyPass = true;
-            AppServices.Notify($"{restLabel}已开启 · 桌面应用暂停拦截 · {restMinutes}分钟后自动恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
-        _emergencyTimer?.Stop();
-        _emergencyTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(restMinutes) };
-        _emergencyTimer.Tick += (s, e) =>
-        {
-            _emergencyTimer?.Stop();
-            App.LogAction($"{restLabel}结束", "自动恢复桌面应用拦截");
-            AppServices.Blocklist.EmergencyPass = false;
-                AppServices.Notify($"{restLabel}结束 · 桌面应用拦截已恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
-        };
-        _emergencyTimer.Start();
+        AppServices.StartRestBreak(restMinutes);
     }
 
     private async void Break_Click(object sender, RoutedEventArgs e)
@@ -831,7 +807,6 @@ public sealed partial class MainPage : Page
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.None) // 用户确认结束
             {
-                _emergencyTimer?.Stop();
                 AppServices.Blocklist.EmergencyPass = false;
                 App.LogAction("破功", $"专注 {_engine.Elapsed.TotalMinutes:0.#} 分钟");
                 var done = _engine.Finish(completed: false);
@@ -859,12 +834,7 @@ public sealed partial class MainPage : Page
     private void EnterFocusView()
     {
         _timer.Start();
-        IdlePanel.Visibility = Visibility.Collapsed;
-        FeedbackPanel.Visibility = Visibility.Collapsed;
-        BreathingPanel.Visibility = Visibility.Collapsed;
-        CooldownPanel.Visibility = Visibility.Collapsed;
-        SoftLandingPanel.Visibility = Visibility.Collapsed;
-        FocusPanel.Visibility = Visibility.Visible;
+        SetUiState(MainUiState.Focusing);
         WishShow.Text = _engine.Current?.Wish is { Length: > 0 } w
             ? $"今日一愿：{w}"
             : "心无旁骛，只做眼前这一件事";
@@ -892,23 +862,58 @@ public sealed partial class MainPage : Page
     {
         _timer.Stop();
         _cooldownTimer?.Stop();
-        FocusPanel.Visibility = Visibility.Collapsed;
-        FeedbackPanel.Visibility = Visibility.Collapsed;
-        BreathingPanel.Visibility = Visibility.Collapsed;
-        CooldownPanel.Visibility = Visibility.Collapsed;
-        SoftLandingPanel.Visibility = Visibility.Collapsed;
-        IdlePanel.Visibility = Visibility.Visible;
+        SetUiState(MainUiState.Idle);
     }
 
     private void ShowFeedback(string text)
     {
         _timer.Stop();
-        FocusPanel.Visibility = Visibility.Collapsed;
-        IdlePanel.Visibility = Visibility.Collapsed;
-        BreathingPanel.Visibility = Visibility.Collapsed;
+        SetUiState(MainUiState.Feedback);
         FeedbackText.Text = text;
-        FeedbackPanel.Visibility = Visibility.Visible;
         RefreshTodayStats();
+    }
+
+    /// <summary>统一状态切换：隐藏全部面板，只显示目标状态面板。</summary>
+    private void SetUiState(MainUiState state)
+    {
+        _uiState = state;
+        IdlePanel.Visibility = state == MainUiState.Idle ? Visibility.Visible : Visibility.Collapsed;
+        BreathingPanel.Visibility = state == MainUiState.Breathing ? Visibility.Visible : Visibility.Collapsed;
+        FocusPanel.Visibility = state == MainUiState.Focusing ? Visibility.Visible : Visibility.Collapsed;
+        CooldownPanel.Visibility = state == MainUiState.Cooldown ? Visibility.Visible : Visibility.Collapsed;
+        SoftLandingPanel.Visibility = state == MainUiState.SoftLanding ? Visibility.Visible : Visibility.Collapsed;
+        FeedbackPanel.Visibility = state == MainUiState.Feedback ? Visibility.Visible : Visibility.Collapsed;
+        // 微交互：专注结束的反馈界面"绽放"（淡入+轻微放大）
+        if (state == MainUiState.Feedback) PlayFeedbackBloom();
+    }
+
+    /// <summary>反馈界面绽放动画：淡入 + 轻微放大（320ms）。</summary>
+    private void PlayFeedbackBloom()
+    {
+        try
+        {
+            var fade = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = new Duration(TimeSpan.FromMilliseconds(320))
+            };
+            var scale = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+            {
+                From = 0.96,
+                To = 1.0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(320))
+            };
+            var sb = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+            sb.Children.Add(fade);
+            sb.Children.Add(scale);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fade, FeedbackPanel);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fade, "Opacity");
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(scale, FeedbackPanel);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(scale, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
+            sb.Begin();
+        }
+        catch { }
     }
 
     private static string FormatElapsed(TimeSpan elapsed)

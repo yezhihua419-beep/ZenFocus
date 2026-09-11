@@ -25,6 +25,7 @@ public sealed class TrayIconService : IDisposable
     private const int ID_TOGGLE_FOCUS = 3;
     private const int ID_TOGGLE_SHIELD = 4;
     private const int ID_QUICK_SHIELD = 5;
+    private const int ID_REST = 6;
     private const int MAX_TIP_LENGTH = 127;
     private const uint MF_SEPARATOR = 0x00000800;
     private const uint MF_GRAYED = 0x00000001;
@@ -34,6 +35,7 @@ public sealed class TrayIconService : IDisposable
     private readonly Action? _onToggleFocus;
     private readonly Action? _onToggleShield;
     private readonly Action? _onQuickShield;
+    private readonly Action? _onRest;
     private IntPtr _hwnd;
     private IntPtr _icon;
     private NOTIFYICONDATA _nid;
@@ -41,13 +43,14 @@ public sealed class TrayIconService : IDisposable
 
     private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-    public TrayIconService(Action onOpen, Action onExit, Action? onToggleFocus = null, Action? onToggleShield = null, Action? onQuickShield = null)
+    public TrayIconService(Action onOpen, Action onExit, Action? onToggleFocus = null, Action? onToggleShield = null, Action? onQuickShield = null, Action? onRest = null)
     {
         _onOpen = onOpen;
         _onExit = onExit;
         _onToggleFocus = onToggleFocus;
         _onToggleShield = onToggleShield;
         _onQuickShield = onQuickShield;
+        _onRest = onRest;
     }
 
     public void Show(string tooltip)
@@ -128,6 +131,7 @@ public sealed class TrayIconService : IDisposable
             else if (id == ID_TOGGLE_FOCUS) _onToggleFocus?.Invoke();
             else if (id == ID_TOGGLE_SHIELD) _onToggleShield?.Invoke();
             else if (id == ID_QUICK_SHIELD) _onQuickShield?.Invoke();
+            else if (id == ID_REST) _onRest?.Invoke();
             return IntPtr.Zero;
         }
 
@@ -146,7 +150,11 @@ public sealed class TrayIconService : IDisposable
         var isFocusing = AppServices.Engine.IsRunning;
         var todayMinutes = AppServices.Engine.GetTodayTotalMinutes();
         _ = AppendMenu(menu, MF_GRAYED, 0, isFocusing ? $"专注中 · 今日 {todayMinutes} 分钟" : $"空闲 · 今日 {todayMinutes} 分钟");
-        _ = AppendMenu(menu, 0, ID_TOGGLE_FOCUS, isFocusing ? "暂停专注" : "开始专注");
+        _ = AppendMenu(menu, 0, ID_TOGGLE_FOCUS, isFocusing ? "结束专注" : "开始专注");
+        if (isFocusing)
+        {
+            _ = AppendMenu(menu, 0, ID_REST, "休息3分钟（暂离）");
+        }
         _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
 
         // 屏蔽状态

@@ -41,4 +41,7 @@ public sealed class FocusSession
 
     /// <summary>是否ADHD模式下的会话。</summary>
     public bool IsAdhd { get; set; }
+
+    /// <summary>分心来源统计（来源名→次数，只保留TOP3，格式"来源:次数;来源:次数"）。</summary>
+    public string? DistractionSources { get; set; }
 }

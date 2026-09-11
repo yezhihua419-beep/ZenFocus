@@ -8,11 +8,71 @@ public sealed class DailyLimitService
 {
     public const string SettingKeyLimits = "daily_limits";
     public const string SettingKeyUsage = "daily_limit_usage";
+    public const string SettingKeyTempAllow = "daily_limit_temp_allow";
 
     private readonly AppDatabase _db;
     private readonly object _lock = new();
 
     public DailyLimitService(AppDatabase db) => _db = db;
+
+    /// <summary>临时放行某域名（分钟）：超限后用户选"我就要继续"时调用，到点自动恢复阻断。</summary>
+    public void AddTempAllow(string domain, int minutes)
+    {
+        lock (_lock)
+        {
+            var allows = ParseTempAllows();
+            allows[DomainUtil.Clean(domain)] = DateTime.UtcNow.AddMinutes(minutes);
+            SaveTempAllows(allows);
+        }
+    }
+
+    /// <summary>该域名当前是否在临时放行中。</summary>
+    public bool IsTempAllowed(string domain)
+    {
+        lock (_lock)
+        {
+            var key = DomainUtil.Clean(domain);
+            var allows = ParseTempAllows();
+            return allows.TryGetValue(key, out var expire) && expire > DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>清除某域名临时放行。</summary>
+    public void ClearTempAllow(string domain)
+    {
+        lock (_lock)
+        {
+            var allows = ParseTempAllows();
+            if (allows.Remove(DomainUtil.Clean(domain)))
+            {
+                SaveTempAllows(allows);
+            }
+        }
+    }
+
+    // 存储格式：domain=ISO时间;domain=ISO时间;…（过期项自动丢弃）
+    private Dictionary<string, DateTime> ParseTempAllows()
+    {
+        var result = new Dictionary<string, DateTime>();
+        var raw = _db.GetSetting(SettingKeyTempAllow);
+        if (string.IsNullOrWhiteSpace(raw)) return result;
+        var now = DateTime.UtcNow;
+        foreach (var item in raw.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kv = item.Split('=');
+            if (kv.Length == 2 && DateTime.TryParse(kv[1], null, System.Globalization.DateTimeStyles.RoundtripKind, out var expire) && expire > now)
+            {
+                result[kv[0]] = expire;
+            }
+        }
+        return result;
+    }
+
+    private void SaveTempAllows(Dictionary<string, DateTime> allows)
+    {
+        var body = string.Join(";", allows.Select(kv => $"{kv.Key}={kv.Value:o}"));
+        _db.SetSetting(SettingKeyTempAllow, body);
+    }
 
     /// <summary>所有限额：domain → 每日分钟上限。</summary>
     public IReadOnlyDictionary<string, int> GetLimits()

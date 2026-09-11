@@ -90,10 +90,13 @@ public sealed partial class StatsPage : Page
             // 空状态引导：无记录时显示提示并隐藏图表区
             var isEmpty = sessions.Count == 0;
             EmptyHint.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+            ChartExpander.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
             WeekSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
             HourSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
             MonthSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
             UsageSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            DistractionSourcesSection.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            LoadDistractionSources();
             if (isEmpty) { App.LogAction("统计刷新", "空状态：无专注记录"); return; }
             DrawWeekChart();
             DrawHourlyChart();
@@ -375,7 +378,116 @@ public sealed partial class StatsPage : Page
             .ToList();
     }
 
+    // ---------- 分心来源TOP3 ----------
+
+    private void LoadDistractionSources()
+    {
+        try
+        {
+            var week = _db.GetSessions(DateTime.Today.AddDays(-6), DateTime.Today.AddDays(1));
+            var totals = new Dictionary<string, int>();
+            foreach (var session in week)
+            {
+                if (string.IsNullOrWhiteSpace(session.DistractionSources)) continue;
+                foreach (var pair in session.DistractionSources.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var kv = pair.Split(':', 2);
+                    if (kv.Length == 2 && int.TryParse(kv[1], out var count))
+                    {
+                        totals[kv[0]] = totals.GetValueOrDefault(kv[0]) + count;
+                    }
+                }
+            }
+            var top3 = totals.OrderByDescending(kv => kv.Value).Take(3).ToList();
+            DistractionSourcesText.Text = top3.Count == 0
+                ? "近7天没有分心记录，定心状态很好"
+                : string.Join(" · ", top3.Select(kv => $"{kv.Key} {kv.Value}次"));
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("StatsPage.LoadDistractionSources", ex);
+            DistractionSourcesText.Text = "";
+        }
+    }
+
     // ---------- 今日分享卡片 ----------
+
+    /// <summary>导出近90天专注数据（CSV/JSON），保存位置由用户选择。</summary>
+    private async void ExportData_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var picker = new Windows.Storage.Pickers.FileSavePicker();
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+            picker.FileTypeChoices.Add("CSV 表格", new List<string> { ".csv" });
+            picker.FileTypeChoices.Add("JSON 数据", new List<string> { ".json" });
+            picker.SuggestedFileName = $"禅净专注数据_{DateTime.Today:yyyyMMdd}";
+            if (App.MainWindow is not null)
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+                WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            }
+            var file = await picker.PickSaveFileAsync();
+            if (file is null) return;
+
+            var sessions = _db.GetSessions(DateTime.Today.AddDays(-89), DateTime.Today.AddDays(1));
+            var isCsv = file.FileType.Equals(".csv", StringComparison.OrdinalIgnoreCase);
+            var content = isCsv ? BuildCsv(sessions) : BuildJson(sessions);
+            await Windows.Storage.FileIO.WriteTextAsync(file, content);
+            App.LogAction("数据导出", $"{file.Name}（{(isCsv ? "CSV" : "JSON")}，{sessions.Count}条会话）");
+            AppServices.Notify($"已导出 {sessions.Count} 条专注记录到 {file.Name}");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("StatsPage.ExportData", ex);
+            AppServices.Notify("导出失败，请重试", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error);
+        }
+    }
+
+    private static string BuildCsv(IReadOnlyList<ChanJing.Core.Models.FocusSession> sessions)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("开始时间,结束时间,计划分钟,实际分钟,状态,今日一愿,分心次数,分心来源TOP3,ADHD");
+        foreach (var s in sessions)
+        {
+            var state = s.State switch
+            {
+                ChanJing.Core.Models.FocusSessionState.Completed => "圆满结束",
+                ChanJing.Core.Models.FocusSessionState.Broken => "破功",
+                _ => "进行中"
+            };
+            sb.Append('"').Append(s.StartedAt.ToString("yyyy-MM-dd HH:mm")).Append("\",");
+            sb.Append('"').Append(s.EndedAt?.ToString("yyyy-MM-dd HH:mm") ?? "").Append("\",");
+            sb.Append(s.PlannedMinutes).Append(',');
+            sb.Append(s.ActualMinutes).Append(',');
+            sb.Append('"').Append(state).Append("\",");
+            sb.Append('"').Append((s.Wish ?? "").Replace("\"", "\"\"")).Append("\",");
+            sb.Append(s.DistractionCount).Append(',');
+            sb.Append('"').Append((s.DistractionSources ?? "").Replace("\"", "\"\"")).Append("\",");
+            sb.Append(s.IsAdhd ? "是" : "否");
+            sb.AppendLine();
+        }
+        return sb.ToString();
+    }
+
+    private static string BuildJson(IReadOnlyList<ChanJing.Core.Models.FocusSession> sessions)
+    {
+        var list = sessions.Select(s => new
+        {
+            startedAt = s.StartedAt.ToString("yyyy-MM-dd HH:mm"),
+            endedAt = s.EndedAt?.ToString("yyyy-MM-dd HH:mm"),
+            plannedMinutes = s.PlannedMinutes,
+            actualMinutes = s.ActualMinutes,
+            state = s.State.ToString(),
+            wish = s.Wish,
+            distractionCount = s.DistractionCount,
+            distractionSources = s.DistractionSources,
+            isAdhd = s.IsAdhd
+        });
+        return System.Text.Json.JsonSerializer.Serialize(
+            new { exportedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm"), count = sessions.Count, sessions = list },
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+    }
 
     private async void ShareCard_Click(object sender, RoutedEventArgs e)
     {

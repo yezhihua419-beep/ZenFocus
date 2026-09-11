@@ -75,4 +75,33 @@ public static class AppServices
     {
         try { NotifyHandler?.Invoke(message, severity); } catch { }
     }
+
+    /// <summary>开启暂离/喘口气：桌面应用暂停拦截N分钟，到点自动恢复。托盘/首页/快捷键共用。</summary>
+    private static Microsoft.UI.Dispatching.DispatcherQueueTimer? _restTimer;
+    public static void StartRestBreak(int minutes)
+    {
+        try
+        {
+            var label = minutes <= 3 ? "喘口气" : "暂离模式";
+            Blocklist.EmergencyPass = true;
+            Notify($"{label}已开启 · 桌面应用暂停拦截 · {minutes}分钟后自动恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
+            _restTimer?.Stop();
+            _restTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();
+            _restTimer.Interval = TimeSpan.FromMinutes(minutes);
+            _restTimer.IsRepeating = false;
+            _restTimer.Tick += (s, e) =>
+            {
+                _restTimer?.Stop();
+                Blocklist.EmergencyPass = false;
+                Notify($"{label}结束 · 桌面应用拦截已恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
+                App.LogAction($"{label}结束", "自动恢复桌面应用拦截");
+            };
+            _restTimer.Start();
+            App.LogAction(label, $"桌面应用暂停拦截{minutes}分钟");
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("AppServices.StartRestBreak", ex);
+        }
+    }
 }

@@ -13,10 +13,18 @@
             <StackPanel Padding="48,24,48,28" Spacing="16">
 
                 <!-- 标题 -->
-                <StackPanel Spacing="4">
-                    <TextBlock Text="统计" FontSize="26" FontWeight="SemiBold"
-                               Foreground="{StaticResource BrushTextPrimary}" />
-                </StackPanel>
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="统计" FontSize="26" FontWeight="SemiBold"
+                                   Foreground="{StaticResource BrushTextPrimary}" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="导出数据" Click="ExportData_Click"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource BrushPanel}"
+                            Foreground="{StaticResource BrushTextPrimary}"
+                            BorderBrush="{StaticResource BrushTextSecondary}" Padding="14,6"
+                            FontSize="12" />
+                </Grid>
 
                 <!-- 洞察文字区：分心模式识别 + 今日反馈，垂直排列不重叠 -->
                 <StackPanel Spacing="4" Margin="0,0,0,0">
@@ -25,44 +33,45 @@
                     <TextBlock x:Name="InsightText" FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushState}" Text="今日已专注 0 分钟 · 每一次定心都是进步" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="32" Margin="0,0,0,0"
-                            HorizontalAlignment="Left">
-                    <StackPanel Spacing="2" MinWidth="80">
+                <!-- 核心数字区：自动换行，窗口缩小时不叠加 -->
+                <ItemsWrapGrid Orientation="Horizontal" ItemWidth="108" ItemHeight="66"
+                            HorizontalAlignment="Left" Margin="0,-4,0,0">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="TodayCount" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
                         <TextBlock Text="今日定心（次）" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
-                    <StackPanel Spacing="2" MinWidth="80">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="TodayMinutes" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
                         <TextBlock Text="今日专注（分）" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
-                    <StackPanel Spacing="2" MinWidth="80">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="StreakDays" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
                         <TextBlock Text="连续定心（天）" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
-                    <StackPanel Spacing="2" MinWidth="80">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="DistractionCount" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}" />
                         <TextBlock Text="起身活动（次）" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
-                    <StackPanel Spacing="2" MinWidth="80">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="QualityScore" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
                         <TextBlock Text="专注质量（分）" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <Button Content="生成今日卡片" Click="ShareCard_Click"
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Center" HorizontalAlignment="Center"
                             Background="{StaticResource BrushPanel}"
                             Foreground="{StaticResource BrushTextPrimary}"
                             BorderBrush="{StaticResource BrushTextSecondary}" Padding="16,8" />
-                </StackPanel>
+                </ItemsWrapGrid>
 
                 <!-- 付费功能预览钩子 -->
                 <Border Background="{StaticResource BrushPanel}" CornerRadius="8" Padding="16,12" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PremiumPreview">
@@ -93,90 +102,116 @@
                            Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
                            Text="还没有专注记录。回到「禅定」页点击开始专注，完成后这里会显示近 7 天、24 小时分布、本月热力和今日使用分布。" />
 
-                <!-- 近 7 天柱状 -->
-                <StackPanel x:Name="WeekSection" Margin="0,0,0,0" Spacing="0">
-                    <TextBlock Text="近 7 天专注（分钟）" FontSize="13"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <Grid x:Name="WeekChart" Height="110" Margin="0,0,0,0" />
-                    <Grid x:Name="WeekLabels" Height="18" />
-                </StackPanel>
+                <!-- 详细图表区：默认折叠，保持首页简洁 -->
+                <Expander x:Name="ChartExpander" Margin="0,0,0,0" HorizontalAlignment="Stretch"
+                          Background="{StaticResource BrushPanel}"
+                          BorderBrush="{StaticResource BrushBorder}"
+                          Foreground="{StaticResource BrushTextPrimary}">
+                    <Expander.Header>
+                        <TextBlock Text="查看详细图表" FontSize="13" Foreground="{StaticResource BrushTextPrimary}" />
+                    </Expander.Header>
+                    <StackPanel Spacing="16" Padding="0,12,0,4">
+                        <!-- 近 7 天柱状 -->
+                        <StackPanel x:Name="WeekSection" Spacing="0">
+                            <TextBlock Text="近 7 天专注（分钟）" FontSize="13"
+                                       Foreground="{StaticResource BrushTextSecondary}" />
+                            <Grid x:Name="WeekChart" Height="110" Margin="0,4,0,0" />
+                            <Grid x:Name="WeekLabels" Height="18" />
+                        </StackPanel>
 
-                <!-- 今日 24 小时时间轴 -->
-                <StackPanel x:Name="HourSection" Margin="0,0,0,0" Spacing="0">
-                    <TextBlock Text="今日 24 小时专注分布" FontSize="13"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <Grid x:Name="HourlyChart" Height="90" Margin="0,0,0,0" />
-                    <Grid x:Name="HourlyLabels" Height="16" />
-                </StackPanel>
+                        <!-- 今日 24 小时时间轴 -->
+                        <StackPanel x:Name="HourSection" Spacing="0">
+                            <TextBlock Text="今日 24 小时专注分布" FontSize="13"
+                                       Foreground="{StaticResource BrushTextSecondary}" />
+                            <Grid x:Name="HourlyChart" Height="90" Margin="0,4,0,0" />
+                            <Grid x:Name="HourlyLabels" Height="16" />
+                        </StackPanel>
 
-                <!-- 本月热力 -->
-                <StackPanel x:Name="MonthSection" Margin="0,0,0,0" Spacing="0">
-                    <TextBlock Text="本月专注热力" FontSize="13"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <Grid x:Name="MonthChart" Margin="0,0,0,0" HorizontalAlignment="Left" />
-                </StackPanel>
+                        <!-- 本月热力 -->
+                        <StackPanel x:Name="MonthSection" Spacing="0">
+                            <TextBlock Text="本月专注热力" FontSize="13"
+                                       Foreground="{StaticResource BrushTextSecondary}" />
+                            <Grid x:Name="MonthChart" Margin="0,4,0,0" HorizontalAlignment="Left" />
+                        </StackPanel>
 
-                <!-- 今日使用分布 -->
-                <StackPanel x:Name="UsageSection" Margin="0,0,0,0" Spacing="0">
-                    <TextBlock Text="今日使用分布" FontSize="13"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                    <ItemsControl x:Name="UsageList" Margin="0,0,0,0">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid ColumnDefinitions="130,*,70" Margin="0,5">
-                                    <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis"
-                                               Foreground="{Binding NameBrush}" />
-                                    <ProgressBar Grid.Column="1" Maximum="{Binding Max}" Value="{Binding Value}"
-                                                 Height="8" VerticalAlignment="Center"
-                                                 Foreground="{StaticResource BrushState}"
-                                                 Background="{StaticResource BrushPanel}" />
-                                    <TextBlock Grid.Column="2" Text="{Binding Text}" FontSize="12"
-                                               HorizontalAlignment="Right"
-                                               Foreground="{StaticResource BrushTextSecondary}" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                        <!-- 分心来源TOP3 -->
+                        <StackPanel x:Name="DistractionSourcesSection" Spacing="0">
+                            <TextBlock Text="分心来源 TOP3（近7天）" FontSize="13"
+                                       Foreground="{StaticResource BrushTextSecondary}" />
+                            <TextBlock x:Name="DistractionSourcesText" FontSize="13" TextWrapping="Wrap"
+                                       Foreground="{StaticResource BrushWarning}" Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <!-- 今日使用分布 -->
+                        <StackPanel x:Name="UsageSection" Spacing="0">
+                            <TextBlock Text="今日使用分布" FontSize="13"
+                                       Foreground="{StaticResource BrushTextSecondary}" />
+                            <ItemsControl x:Name="UsageList" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="130,*,70" Margin="0,5">
+                                            <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis"
+                                                       Foreground="{Binding NameBrush}" />
+                                            <ProgressBar Grid.Column="1" Maximum="{Binding Max}" Value="{Binding Value}"
+                                                         Height="8" VerticalAlignment="Center"
+                                                         Foreground="{StaticResource BrushState}"
+                                                         Background="{StaticResource BrushPanel}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Text}" FontSize="12"
+                                                       HorizontalAlignment="Right"
+                                                       Foreground="{StaticResource BrushTextSecondary}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- 分享卡片（离屏渲染用，平时隐藏，不占布局位） -->
-        <Grid x:Name="ShareCard" Visibility="Collapsed" Width="560" Padding="36,28"
-              Background="{StaticResource BrushBackground}" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <StackPanel Spacing="8">
+        <!-- 分享卡片（离屏渲染用，平时隐藏，不占布局位）：墨色底 + 金色"定"字禅意风格 -->
+        <Grid x:Name="ShareCard" Visibility="Collapsed" Width="560" Padding="40,32"
+              Background="#2B2925" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!-- 左侧大"定"字 -->
+            <TextBlock Text="定" FontSize="96" FontWeight="Light"
+                       Foreground="#C9A84C" Margin="0,0,28,0"
+                       VerticalAlignment="Center" />
+            <!-- 右侧数据 -->
+            <StackPanel Grid.Column="1" Spacing="8">
                 <TextBlock Text="禅净 · 今日定心" FontSize="14"
-                           Foreground="{StaticResource BrushState}" />
-                <StackPanel Orientation="Horizontal" Spacing="44" Margin="0,0,0,0">
+                           Foreground="#C9A84C" />
+                <StackPanel Orientation="Horizontal" Spacing="36" Margin="0,4,0,0">
                     <StackPanel Spacing="2">
-                        <TextBlock x:Name="ShareCount" FontSize="40" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock x:Name="ShareCount" FontSize="36" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="#F4F1E8" />
                         <TextBlock Text="次定心" FontSize="12" HorizontalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextSecondary}" />
+                                   Foreground="#A8A092" />
                     </StackPanel>
                     <StackPanel Spacing="2">
-                        <TextBlock x:Name="ShareMinutes" FontSize="40" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock Text="分钟专注" FontSize="12" HorizontalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock x:Name="ShareMinutes" FontSize="36" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="#F4F1E8" />
+                        <TextBlock Text="分钟定心" FontSize="12" HorizontalAlignment="Center"
+                                   Foreground="#A8A092" />
                     </StackPanel>
                     <StackPanel Spacing="2">
-                        <TextBlock x:Name="ShareStreak" FontSize="40" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
+                        <TextBlock x:Name="ShareStreak" FontSize="36" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="#C9A84C" />
                         <TextBlock Text="连续定心天数" FontSize="12" HorizontalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextSecondary}" />
+                                   Foreground="#A8A092" />
                     </StackPanel>
                     <StackPanel Spacing="2">
-                        <TextBlock x:Name="ShareQuality" FontSize="40" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center" Foreground="{StaticResource BrushAccent}" />
-                        <TextBlock Text="专注质量分" FontSize="12" HorizontalAlignment="Center"
-                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock x:Name="ShareQuality" FontSize="36" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="#9AB08A" />
+                        <TextBlock Text="定心质量分" FontSize="12" HorizontalAlignment="Center"
+                                   Foreground="#A8A092" />
                     </StackPanel>
                 </StackPanel>
-                <TextBlock x:Name="ShareQuote" FontSize="13" Margin="0,0,0,0" TextWrapping="Wrap"
-                           Foreground="{StaticResource BrushTextSecondary}" />
+                <TextBlock x:Name="ShareQuote" FontSize="13" Margin="0,4,0,0" TextWrapping="Wrap"
+                           Foreground="#A8A092" />
             </StackPanel>
         </Grid>
     </Grid>

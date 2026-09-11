@@ -15,6 +15,7 @@ public sealed class FocusEngine
     private long _pausedMs;
     private long? _pauseStartTicks;
     private int _distractionCount;
+    private readonly Dictionary<string, int> _distractionSources = new();
 
     public FocusEngine(AppDatabase db) => _db = db;
 
@@ -59,6 +60,7 @@ public sealed class FocusEngine
         _pausedMs = 0;
         _pauseStartTicks = null;
         _distractionCount = 0;
+        _distractionSources.Clear();
         FocusStarted?.Invoke();
     }
 
@@ -84,7 +86,19 @@ public sealed class FocusEngine
     /// <summary>记录一次分心信号（如访问被屏蔽站点）。同源去重由调用方负责。</summary>
     public void RegisterDistraction()
     {
-        if (IsRunning) _distractionCount++;
+        RegisterDistraction(null);
+    }
+
+    /// <summary>记录一次分心信号，附带来源（域名/进程名），用于统计"分心来源TOP3"。</summary>
+    public void RegisterDistraction(string? source)
+    {
+        if (!IsRunning) return;
+        _distractionCount++;
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            var key = source.Length > 40 ? source[..40] : source;
+            _distractionSources[key] = _distractionSources.GetValueOrDefault(key) + 1;
+        }
     }
 
     /// <summary>结束当前专注（completed=true 按计划完成，false 为破功）。返回落库的会话。</summary>
@@ -99,6 +113,13 @@ public sealed class FocusEngine
         Current.ActualMinutes = Math.Max(1, (int)Math.Round(Elapsed.TotalMinutes));
         Current.State = completed ? FocusSessionState.Completed : FocusSessionState.Broken;
         Current.DistractionCount = _distractionCount;
+        // 分心来源TOP3（格式"来源:次数;来源:次数"，供统计页展示）
+        if (_distractionSources.Count > 0)
+        {
+            Current.DistractionSources = string.Join(";",
+                _distractionSources.OrderByDescending(kv => kv.Value).Take(3)
+                    .Select(kv => $"{kv.Key}:{kv.Value}"));
+        }
 
         var done = Current;
         _db.SaveFocusSession(done);

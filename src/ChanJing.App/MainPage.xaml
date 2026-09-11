@@ -21,12 +21,38 @@
                 </Grid.RowDefinitions>
 
                 <!-- 头部 -->
-                <StackPanel Grid.Row="0" Spacing="2">
-                    <TextBlock Text="禅定" FontSize="24" FontWeight="SemiBold"
-                               Foreground="{StaticResource BrushTextPrimary}" />
-                    <TextBlock x:Name="DateText" FontSize="12"
-                               Foreground="{StaticResource BrushTextSecondary}" />
-                </StackPanel>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="禅定" FontSize="24" FontWeight="SemiBold"
+                                   Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock x:Name="DateText" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                    </StackPanel>
+                    <!-- 设置齿轮：收纳深度模式/ADHD模式开关 -->
+                    <Button x:Name="SettingsButton" Grid.Column="1" VerticalAlignment="Top"
+                            Padding="10" Background="Transparent"
+                            BorderBrush="{StaticResource BrushBorder}"
+                            CornerRadius="20" ToolTipService.ToolTip="模式设置">
+                        <FontIcon Glyph="&#xE713;" FontSize="16"
+                                  Foreground="{StaticResource BrushTextSecondary}" />
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                <StackPanel Spacing="8" Padding="4" MinWidth="260">
+                                    <TextBlock Text="模式设置" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource BrushTextPrimary}" />
+                                    <ToggleSwitch x:Name="DeepModeSwitch" Header="深度模式（不计时，随心而定）" OffContent="关" OnContent="开" Toggled="DeepMode_Toggled" />
+                                    <ToggleSwitch x:Name="AdhdModeSwitch" Header="ADHD友好模式（15分钟短周期·视觉化时间）" OffContent="关" OnContent="开" Toggled="AdhdMode_Toggled" />
+                                    <TextBlock Text="深度与ADHD互斥，只能开启一个。" FontSize="11"
+                                               Foreground="{StaticResource BrushTextSecondary}" Opacity="0.8" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </Grid>
 
                 <!-- 场景标签（顶部一行） -->
                 <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Spacing="4" Margin="0,12,0,4">
@@ -52,6 +78,26 @@
                                Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" />
                 </StackPanel>
 
+                <!-- 首启3步引导浮层（首次启动显示，关闭后不再出现） -->
+                <Border x:Name="GuidePanel" Grid.Row="1" Visibility="Collapsed" Margin="0,4,0,0"
+                        Background="{StaticResource BrushCard}" CornerRadius="12"
+                        BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                        Padding="20,14" MaxWidth="560" HorizontalAlignment="Center">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="欢迎使用禅净 · 三步上手" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock Text="① 写下「今日一愿」，点开始定心（或直接点上方场景快捷进入）" FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock Text="② 到「屏蔽」页勾选想拦的网站/应用，开始专注时自动生效" FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock Text="③ 到「统计」页回看定心数据；关窗口只是最小化到托盘，不会退出" FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <Button Content="开始使用" Click="GuideClose_Click" HorizontalAlignment="Right"
+                                Background="{StaticResource BrushState}" Foreground="White"
+                                Padding="20,6" CornerRadius="16" FontSize="12" />
+                    </StackPanel>
+                </Border>
+
                 <!-- 中间区域：空闲态/呼吸态/专注态/反馈态 -->
                 <Grid Grid.Row="2" VerticalAlignment="Center">
 
@@ -71,8 +117,7 @@
                         <TextBlock x:Name="SessionHint" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    Text="默认定心 25 分钟 · 正计时 · 心无旁骛" />
-                        <ToggleSwitch x:Name="DeepModeSwitch" Header="深度模式（不计时，随心而定）" OffContent="关" OnContent="开" Toggled="DeepMode_Toggled" Margin="0,8,0,0" HorizontalAlignment="Center" />
-                        <ToggleSwitch x:Name="AdhdModeSwitch" Header="ADHD友好模式（15分钟短周期·视觉化时间）" OffContent="关" OnContent="开" Toggled="AdhdMode_Toggled" Margin="0,4,0,0" HorizontalAlignment="Center" />
+
                     </StackPanel>
 
                     <!-- 呼吸引导：开始前的 3 秒静心 -->
