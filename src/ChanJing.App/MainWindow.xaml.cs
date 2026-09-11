@@ -296,36 +296,9 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                if (AppServices.Engine.IsRunning)
-                {
-                    // 快捷键/托盘：专注中=结束（不是暂停）
-                    var done = AppServices.Engine.Finish(completed: true);
-                    AppServices.Blocklist.EmergencyPass = false;
-                    App.LogAction("快捷操作", $"结束专注 {done.ActualMinutes}分钟 分心{done.DistractionCount}次");
-                }
-                else
-                {
-                    // 走当前场景配置（愿望+时长+屏蔽分类），与首页「开始专注」一致
-                    var sceneConfig = SceneManager.GetSceneConfig(AppServices.Db, AppServices.CurrentSceneTag);
-                    if (!string.IsNullOrEmpty(AppServices.CurrentSceneTag) && !string.IsNullOrEmpty(sceneConfig.Wish))
-                    {
-                        AppServices.Blocklist.SetEnabledCategories(sceneConfig.Categories);
-                        AppServices.Blocklist.Apply();
-                        AppServices.CurrentWish = sceneConfig.Wish;
-                        var startMinutes = AppServices.DeepMode ? 0 : sceneConfig.Minutes;
-                        AppServices.CurrentMinutes = startMinutes;
-                        AppServices.Engine.Start(sceneConfig.Wish, startMinutes);
-                        App.LogAction("快捷操作", $"开始专注 {sceneConfig.Minutes}分钟（场景 {AppServices.CurrentSceneTag}）");
-                    }
-                    else
-                    {
-                        AppServices.CurrentWish = "专注";
-                        var startMinutes2 = AppServices.DeepMode ? 0 : 25;
-                        AppServices.CurrentMinutes = startMinutes2;
-                        AppServices.Engine.Start("专注", startMinutes2);
-                        App.LogAction("快捷操作", $"开始专注{startMinutes2}分钟（未选场景）");
-                    }
-                }
+                // 统一通过FocusController处理开始/结束逻辑，避免散落在多处导致改漏
+                var result = AppServices.Focus.Toggle();
+                App.LogAction("快捷操作", result);
                 // 导航到首页，让用户看到专注界面/反馈
                 ContentFrame.Navigate(typeof(MainPage));
             }

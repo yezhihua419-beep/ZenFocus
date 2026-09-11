@@ -34,19 +34,38 @@ public static class AppServices
     public static readonly BlocklistService Blocklist = new(Db);
     public static readonly DailyLimitService DailyLimits = new(Db);
     public static readonly WindowActivityService Activity = new(Db, DailyLimits, Engine, Blocklist);
+    public static readonly FocusController Focus = new(Db, Engine, Blocklist);
 
     /// <summary>局域网伴侣页HTTP服务（App启动时初始化）。</summary>
     public static CompanionHttpServer? Companion { get; set; }
 
     /// <summary>当前选中的场景标签（跨页面共享：首页选中后，屏蔽页顶部显示当前场景摘要）。</summary>
-    public static string? CurrentSceneTag { get; set; }
+    public static string? CurrentSceneTag
+    {
+        get => FocusContext.CurrentSceneTag;
+        set => FocusContext.CurrentSceneTag = value;
+    }
 
     /// <summary>当前待专注的愿望（跨路径共享：首页/托盘/伴侣页开始专注前设置，FocusStarted 时统一保存到场景）。</summary>
-    public static string? CurrentWish { get; set; }
+    public static string? CurrentWish
+    {
+        get => FocusContext.CurrentWish;
+        set => FocusContext.CurrentWish = value;
+    }
 
     /// <summary>当前待专注的时长（分钟）（跨路径共享）。</summary>
-    public static int CurrentMinutes { get; set; } = 25;
-    public static bool DeepMode { get; set; }
+    public static int CurrentMinutes
+    {
+        get => FocusContext.CurrentMinutes;
+        set => FocusContext.CurrentMinutes = value;
+    }
+
+    /// <summary>是否深度模式（不计时，手动结束）。</summary>
+    public static bool DeepMode
+    {
+        get => FocusContext.DeepMode;
+        set => FocusContext.DeepMode = value;
+    }
 
     /// <summary>全局通知（MainWindow 的 InfoBar 承载）：消息 + 严重级别。</summary>
     public static Action<string, Microsoft.UI.Xaml.Controls.InfoBarSeverity>? NotifyHandler { get; set; }
