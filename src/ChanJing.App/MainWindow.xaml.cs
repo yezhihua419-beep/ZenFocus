@@ -198,10 +198,10 @@ public sealed partial class MainWindow : Window
             ShowMain();
             var dialog = new ContentDialog
             {
-                Title = "已达今日限额",
-                Content = $"「{domain}」今日已用满限额，窗口已自动最小化。\n\n休息一下，或者选择继续？",
-                PrimaryButtonText = "我就要继续（放行5分钟）",
-                CloseButtonText = "今天就到这里",
+                Title = I18n.Get("LimitDialog_Title", "Daily Limit Reached"),
+                Content = I18n.GetFormat("LimitDialog_Content", domain),
+                PrimaryButtonText = I18n.Get("LimitDialog_Primary", "Continue anyway (5 min)"),
+                CloseButtonText = I18n.Get("LimitDialog_Close", "That's it for today"),
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = ContentFrame.XamlRoot
             };
@@ -209,7 +209,7 @@ public sealed partial class MainWindow : Window
             if (result == ContentDialogResult.Primary)
             {
                 AppServices.DailyLimits.AddTempAllow(domain, 5);
-                AppServices.Notify($"已临时放行「{domain}」5分钟，到点后重新阻断。");
+                AppServices.Notify(I18n.GetFormat("Notify_LimitAllowed", domain));
                 App.LogAction("限额临时放行", $"{domain} 5分钟");
             }
             else
@@ -259,7 +259,7 @@ public sealed partial class MainWindow : Window
                 {
                     // 渐进式自动化：推荐满3次后自动切换「工作」场景（仅当未在专注中）
                     App.LogAction("场景自动推荐", "第3次触发，自动切换工作场景");
-                    AppServices.Notify("检测到你持续编码，建议切换到「工作」场景 · 首页点击「工作」即可", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
+                    AppServices.Notify(I18n.Get("Notify_CodingDetected", "Detected continuous coding. Suggest switching to Work scene"), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
                     _sceneRecommendCount = 0;
                     return;
                 }
@@ -329,7 +329,7 @@ public sealed partial class MainWindow : Window
                             // 本次专注期间：用24小时（足够长），专注结束时统一清除
                             var actualMinutes = minutes == 0 ? 1440 : minutes;
                             AppServices.Blocklist.AddTempAllow(processName, actualMinutes);
-                            AppServices.Notify($"已临时放行「{processName}」{desc}，超时后重新屏蔽");
+                            AppServices.Notify(I18n.GetFormat("Notify_AppAllowed", processName, desc));
                             App.LogAction("摩擦拦截结果", $"{processName} 用户选择分心，临时放行{desc}");
                         };
                         _frictionOverlay.Closed += (_, _) => { _frictionOverlay = null; };
@@ -378,13 +378,13 @@ public sealed partial class MainWindow : Window
                 if (AppServices.Blocklist.IsManualShieldActive())
                 {
                     AppServices.Blocklist.DisableManualShield(AppServices.Engine.IsRunning);
-                    AppServices.Notify("屏蔽已关闭");
+                    AppServices.Notify(I18n.Get("Notify_ShieldOff", "Blocking disabled"));
                 }
                 else
                 {
                     AppServices.Blocklist.EnableManualShield();
                     AppServices.Activity.ApplyShieldNow();
-                    AppServices.Notify("屏蔽已开启（不计时）");
+                    AppServices.Notify(I18n.Get("Notify_ShieldOn", "Blocking enabled (untimed)"));
                 }
             }
             catch (Exception ex)
@@ -426,7 +426,7 @@ public sealed partial class MainWindow : Window
                 AppServices.Blocklist.SetEnabledCategories(new[] { "短视频", "视频娱乐" });
                 AppServices.Blocklist.Apply();
                 App.LogAction("托盘快捷操作", "一键屏蔽抖音/B站（短视频+视频娱乐）");
-                AppServices.Notify("已保存：屏蔽 短视频+视频娱乐，开始专注后生效。");
+                AppServices.Notify(I18n.Get("Notify_ShieldSaved", "Saved: blocking Short Video + Video Entertainment. Applies when focus starts."));
             }
             catch (Exception ex)
             {
@@ -446,13 +446,13 @@ public sealed partial class MainWindow : Window
                 if (AppServices.Engine.IsPaused)
                 {
                     AppServices.Engine.Resume();
-                    AppServices.Notify("已恢复定心");
+                    AppServices.Notify(I18n.Get("Notify_Resumed", "Focus resumed"));
                     App.LogAction("快捷键", "恢复专注");
                 }
                 else
                 {
                     AppServices.Engine.Pause();
-                    AppServices.Notify("已暂停计时 · 暂停期间不计入定心时长");
+                    AppServices.Notify(I18n.Get("Notify_Paused", "Paused · paused time not counted"));
                     App.LogAction("快捷键", "暂停专注");
                 }
             }

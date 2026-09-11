@@ -211,24 +211,24 @@ public sealed class CompanionHttpServer : IDisposable
     {
         if (_engine.IsRunning)
         {
-            return new { success = false, message = "已经在专注中" };
+            return new { success = false, message = "Already focusing" };
         }
         // 统一走 FocusController 开始逻辑（与首页/托盘/快捷键一致）：读当前场景配置、写 hosts.pre、开始计时
         var result = AppServices.Focus.Start();
         App.LogAction("伴侣控制", $"远程开始专注：{result}");
-        return new { success = true, message = "专注已开始", wish = _engine.Current?.Wish };
+        return new { success = true, message = "Focus started", wish = _engine.Current?.Wish };
     }
 
     private object StopFocus()
     {
         if (!_engine.IsRunning)
         {
-            return new { success = false, message = "当前没有在专注" };
+            return new { success = false, message = "Not currently focusing" };
         }
         // 统一走 FocusController 提前结束逻辑（重置暂离模式+标记破功）
         var result = AppServices.Focus.StopEarly();
         App.LogAction("伴侣控制", $"远程停止专注：{result}");
-        return new { success = true, message = "专注已停止" };
+        return new { success = true, message = "Focus stopped" };
     }
 
     private static void SendJson(HttpListenerResponse response, object data)

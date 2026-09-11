@@ -143,30 +143,33 @@ public sealed class TrayIconService : IDisposable
         var menu = CreatePopupMenu();
 
         // 标题（不可点击）
-        _ = AppendMenu(menu, MF_GRAYED, 0, "禅净");
+        _ = AppendMenu(menu, MF_GRAYED, 0, I18n.Get("Tray_Title", "ZenFocus"));
         _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
 
         // 专注状态
         var isFocusing = AppServices.Engine.IsRunning;
         var todayMinutes = AppServices.Engine.GetTodayTotalMinutes();
-        _ = AppendMenu(menu, MF_GRAYED, 0, isFocusing ? $"专注中 · 今日 {todayMinutes} 分钟" : $"空闲 · 今日 {todayMinutes} 分钟");
-        _ = AppendMenu(menu, 0, ID_TOGGLE_FOCUS, isFocusing ? "结束专注" : "开始专注");
+        var statusText = isFocusing
+            ? I18n.GetFormat("Tray_Focusing", todayMinutes)
+            : I18n.GetFormat("Tray_Idle", todayMinutes);
+        _ = AppendMenu(menu, MF_GRAYED, 0, statusText);
+        _ = AppendMenu(menu, 0, ID_TOGGLE_FOCUS, isFocusing ? I18n.Get("Tray_EndFocus", "End Focus") : I18n.Get("Tray_StartFocus", "Start Focus"));
         if (isFocusing)
         {
-            _ = AppendMenu(menu, 0, ID_REST, "休息3分钟（暂离）");
+            _ = AppendMenu(menu, 0, ID_REST, I18n.Get("Tray_Rest", "3-min Break"));
         }
         _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
 
         // 屏蔽状态
         var isShieldOn = AppServices.Blocklist.IsManualShieldActive();
-        _ = AppendMenu(menu, MF_GRAYED, 0, isShieldOn ? "屏蔽：已开启" : "屏蔽：已关闭");
-        _ = AppendMenu(menu, 0, ID_TOGGLE_SHIELD, isShieldOn ? "关闭屏蔽" : "开启屏蔽");
-        _ = AppendMenu(menu, 0, ID_QUICK_SHIELD, "一键屏蔽 抖音/B站");
+        _ = AppendMenu(menu, MF_GRAYED, 0, isShieldOn ? I18n.Get("Tray_ShieldOn", "Blocking: On") : I18n.Get("Tray_ShieldOff", "Blocking: Off"));
+        _ = AppendMenu(menu, 0, ID_TOGGLE_SHIELD, isShieldOn ? I18n.Get("Tray_ShieldDisable", "Disable Blocking") : I18n.Get("Tray_ShieldEnable", "Enable Blocking"));
+        _ = AppendMenu(menu, 0, ID_QUICK_SHIELD, I18n.Get("Tray_QuickShield", "Quick Block: TikTok/Bilibili"));
         _ = AppendMenu(menu, MF_SEPARATOR, 0, "");
 
         // 打开/退出
-        _ = AppendMenu(menu, 0, ID_OPEN, "打开禅净");
-        _ = AppendMenu(menu, 0, ID_EXIT, "退出");
+        _ = AppendMenu(menu, 0, ID_OPEN, I18n.Get("Tray_Open", "Open ZenFocus"));
+        _ = AppendMenu(menu, 0, ID_EXIT, I18n.Get("Tray_Exit", "Exit"));
 
         _ = GetCursorPos(out var pt);
         _ = SetForegroundWindow(_hwnd);

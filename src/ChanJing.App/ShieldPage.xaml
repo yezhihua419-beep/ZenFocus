@@ -27,24 +27,24 @@
 
                 <!-- 标题 -->
                 <StackPanel Grid.Row="0" Spacing="4">
-                    <TextBlock Text="屏蔽" FontSize="26" FontWeight="SemiBold"
+                    <TextBlock x:Uid="ShieldPage_Title" Text="" FontSize="26" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
                     <TextBlock x:Name="SceneStateHint" FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushState}"
                                Visibility="Collapsed" />
                     <TextBlock FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="勾选分类、添加域名，点击底部「保存为场景配置」，开始专注或开启立即屏蔽后生效" />
-                    <ToggleSwitch x:Name="ManualShieldSwitch" Header="立即屏蔽（不计时）" OffContent="关" OnContent="开"
+                               x:Uid="ShieldPage_Subtitle" Text="" />
+                    <ToggleSwitch x:Name="ManualShieldSwitch" x:Uid="ShieldPage_ManualShield" Header="" OffContent="" OnContent=""
                                   Toggled="ManualShield_Toggled" Margin="0,12,0,0" />
                     <TextBlock x:Name="ManualShieldHint" FontSize="12" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="开启后立即屏蔽已保存的网站和应用，无需开始专注；关闭后恢复" Visibility="Collapsed" />
+                               x:Uid="ShieldPage_ManualShieldHint" Text="" Visibility="Collapsed" />
                 </StackPanel>
 
                 <!-- 分类名单 -->
                 <StackPanel Grid.Row="1" Margin="0,20,0,0" Spacing="8">
-                    <TextBlock Text="网站分类" FontSize="15" FontWeight="SemiBold"
+                    <TextBlock x:Uid="ShieldPage_CategoryTitle" Text="" FontSize="15" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
                     <ItemsControl x:Name="CategoryPanel">
                         <ItemsControl.ItemsPanel>
@@ -55,57 +55,57 @@
                     </ItemsControl>
                     <TextBlock x:Name="LimitHint" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushWarning}"
-                               Text="免费版最多启用 3 个屏蔽目标（分类+自定义域名合计），升级后无限制。" />
+                               x:Uid="ShieldPage_LimitHint" Text="" />
                 </StackPanel>
 
                 <!-- 桌面应用拦截（高频，前置展开） -->
                 <StackPanel Grid.Row="2" Margin="0,20,0,0" Spacing="8">
-                    <TextBlock Text="桌面应用拦截" FontSize="15" FontWeight="SemiBold"
+                    <TextBlock x:Uid="ShieldPage_AppBlockTitle" Text="" FontSize="15" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
                     <StackPanel Orientation="Horizontal" Spacing="12">
-                        <TextBlock Text="拦截方式" VerticalAlignment="Center" />
+                        <TextBlock x:Uid="ShieldPage_AppModeLabel" Text="" VerticalAlignment="Center" />
                         <ComboBox x:Name="AppModeBox" Width="160" SelectionChanged="AppMode_Changed">
-                            <ComboBoxItem Content="自动最小化" Tag="minimize" />
-                            <ComboBoxItem Content="结束进程" Tag="kill" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppModeMinimize" Content="" Tag="minimize" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppModeKill" Content="" Tag="kill" />
                         </ComboBox>
                     </StackPanel>
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="自动最小化：温和拦截，可手动切回（专注中 2 秒冷却）。结束进程：强制关闭应用，未保存内容可能丢失。" />
+                               x:Uid="ShieldPage_AppModeHint" Text="" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                        <TextBlock Text="沟通工具仅专注中屏蔽" VerticalAlignment="Center"
+                        <TextBlock x:Uid="ShieldPage_FocusOnlyCommLabel" Text="" VerticalAlignment="Center"
                                    Foreground="{StaticResource BrushTextPrimary}" FontSize="13" />
                         <ToggleSwitch x:Name="FocusOnlyCommSwitch"
                                       IsOn="False" Toggled="FocusOnlyComm_Toggled" />
                     </StackPanel>
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="开启后，微信/钉钉/QQ等沟通工具仅在专注模式下被拦截，非专注时间可正常使用。" />
+                               x:Uid="ShieldPage_FocusOnlyCommHint" Text="" />
                     <!-- ADHD模式缓冲期时长 -->
                     <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
-                        <TextBlock Text="ADHD缓冲期（分钟）" VerticalAlignment="Center" FontSize="13" />
+                        <TextBlock x:Uid="ShieldPage_CooldownLabel" Text="" VerticalAlignment="Center" FontSize="13" />
                         <ComboBox x:Name="CooldownMinutesBox" Width="120" SelectionChanged="CooldownMinutes_Changed">
                             <ComboBoxItem Content="5" Tag="5" />
                             <ComboBoxItem Content="10" Tag="10" IsSelected="True" />
                             <ComboBoxItem Content="15" Tag="15" />
-                            <ComboBoxItem Content="20（付费）" Tag="20" />
-                            <ComboBoxItem Content="30（付费）" Tag="30" />
+                            <ComboBoxItem x:Uid="ShieldPage_Cooldown20" Content="" Tag="20" />
+                            <ComboBoxItem x:Uid="ShieldPage_Cooldown30" Content="" Tag="30" />
                         </ComboBox>
                     </StackPanel>
                     <TextBlock x:Name="CooldownHint" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="ADHD模式下专注结束后屏蔽保持的时长，防止一结束就刷手机。免费版可选5/10/15分钟，付费版可选20/30分钟。" />
+                               x:Uid="ShieldPage_CooldownHint" Text="" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                        <TextBox x:Name="AppBox" PlaceholderText="进程名如 Douyin" Width="200" />
+                        <TextBox x:Name="AppBox" x:Uid="ShieldPage_AppBox" PlaceholderText="" Width="200" />
                         <ComboBox x:Name="AppCategoryBox" Width="120">
-                            <ComboBoxItem Content="短视频" IsSelected="True" />
-                            <ComboBoxItem Content="视频娱乐" />
-                            <ComboBoxItem Content="社交" />
-                            <ComboBoxItem Content="资讯" />
-                            <ComboBoxItem Content="购物" />
-                            <ComboBoxItem Content="沟通工具" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppCatShort" Content="" IsSelected="True" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppCatVideo" Content="" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppCatSocial" Content="" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppCatNews" Content="" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppCatShop" Content="" />
+                            <ComboBoxItem x:Uid="ShieldPage_AppCatComm" Content="" />
                         </ComboBox>
-                        <Button Content="添加拦截" Click="AddApp_Click" Padding="16,8" />
+                        <Button x:Uid="ShieldPage_AddApp" Content="" Click="AddApp_Click" Padding="16,8" />
                     </StackPanel>
                     <ItemsControl x:Name="AppList">
                         <ItemsControl.ItemTemplate>
@@ -119,7 +119,7 @@
                                         <TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Process}" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <Button Grid.Column="2" Content="移除" Tag="{Binding Process}"
+                                    <Button Grid.Column="2" x:Uid="ShieldPage_RemoveApp" Content="" Tag="{Binding Process}"
                                             Visibility="{Binding RemoveVis}"
                                             Click="RemoveApp_Click" FontSize="11" Padding="10,2" />
                                 </Grid>
@@ -128,18 +128,18 @@
                     </ItemsControl>
                     <TextBlock FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               Text="仅「已勾选分类」内的桌面 App 会被拦截；预设：抖音、快手、B站、虎牙、斗鱼、爱奇艺、优酷。可用任务管理器查看某应用的进程名（如抖音是 Douyin）。" />
+                               x:Uid="ShieldPage_AppListHint" Text="" />
                 </StackPanel>
 
                 <!-- 自定义域名（低频，折叠） -->
-                <Expander Grid.Row="3" Header="自定义域名" Margin="0,16,0,0">
+                <Expander Grid.Row="3" x:Uid="ShieldPage_CustomDomain" Header="" Margin="0,16,0,0">
                     <StackPanel Spacing="8" Padding="0,10,0,0">
                         <TextBlock FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
-                                   Text="添加分类名单之外的单站域名（不含 http://）。" />
+                                   x:Uid="ShieldPage_CustomDomainHint" Text="" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox x:Name="DomainBox" PlaceholderText="如 example.com" Width="280" />
-                            <Button Content="添加" Click="AddDomain_Click" Padding="16,8" />
+                            <TextBox x:Name="DomainBox" x:Uid="ShieldPage_DomainBox" PlaceholderText="" Width="280" />
+                            <Button x:Uid="ShieldPage_AddDomain" Content="" Click="AddDomain_Click" Padding="16,8" />
                         </StackPanel>
                         <ItemsControl x:Name="DomainList">
                             <ItemsControl.ItemTemplate>
@@ -152,16 +152,16 @@
                 </Expander>
 
                 <!-- 每日限额（低频，折叠） -->
-                <Expander Grid.Row="4" Header="每日限额" Margin="0,16,0,0">
+                <Expander Grid.Row="4" x:Uid="ShieldPage_DailyLimit" Header="" Margin="0,16,0,0">
                     <StackPanel Spacing="8" Padding="0,10,0,0">
                         <TextBlock FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
-                                   Text="设定某域名每日最多使用分钟数，超限后自动最小化浏览器窗口（按域名每日去重提醒）。" />
+                                   x:Uid="ShieldPage_DailyLimitHint" Text="" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox x:Name="LimitDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
-                            <NumberBox x:Name="LimitMinutesBox" Header="分钟/天" Minimum="5" Maximum="1440"
+                            <TextBox x:Name="LimitDomainBox" x:Uid="ShieldPage_LimitDomainBox" PlaceholderText="" Width="200" />
+                            <NumberBox x:Name="LimitMinutesBox" x:Uid="ShieldPage_LimitMinutes" Header="" Minimum="5" Maximum="1440"
                                        Value="30" SmallChange="5" LargeChange="30" Width="110" SpinButtonPlacementMode="Compact" />
-                            <Button Content="添加限额" Click="AddLimit_Click" Padding="16,8" VerticalAlignment="Bottom" />
+                            <Button x:Uid="ShieldPage_AddLimit" Content="" Click="AddLimit_Click" Padding="16,8" VerticalAlignment="Bottom" />
                         </StackPanel>
                         <ItemsControl x:Name="LimitList">
                             <ItemsControl.ItemTemplate>
@@ -175,9 +175,9 @@
                                         <TextBlock Grid.Column="0" Text="{Binding Domain}" VerticalAlignment="Center" />
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
                                             <TextBlock Text="{Binding Minutes}" />
-                                            <TextBlock Text=" 分钟/天" Foreground="{StaticResource BrushTextSecondary}" />
+                                            <TextBlock x:Uid="ShieldPage_LimitUnit" Text="" Foreground="{StaticResource BrushTextSecondary}" />
                                         </StackPanel>
-                                        <Button Grid.Column="2" Content="删除" Tag="{Binding Domain}"
+                                        <Button Grid.Column="2" x:Uid="ShieldPage_DeleteLimit" Content="" Tag="{Binding Domain}"
                                                 Click="DeleteLimit_Click" FontSize="11" Padding="10,2" />
                                     </Grid>
                                 </DataTemplate>
@@ -187,14 +187,14 @@
                 </Expander>
 
                 <!-- 临时放行（低频，折叠） -->
-                <Expander Grid.Row="5" Header="临时放行" Margin="0,16,0,0">
+                <Expander Grid.Row="5" x:Uid="ShieldPage_TempAllow" Header="" Margin="0,16,0,0">
                     <StackPanel Spacing="8" Padding="0,10,0,0">
                         <TextBlock FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
-                                   Text="临时放行某域名 5/15/30 分钟，到期自动恢复屏蔽。适合查资料时短暂放行。" />
+                                   x:Uid="ShieldPage_TempAllowHint" Text="" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBox x:Name="AllowDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
-                            <Button Content="放行" Padding="16,8">
+                            <Button x:Uid="ShieldPage_AllowButton" Content="" Padding="16,8">
                                 <Button.Flyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem Text="放行 5 分钟" Tag="5" Click="AddAllowMenu_Click" />
@@ -203,7 +203,7 @@
                                     </MenuFlyout>
                                 </Button.Flyout>
                             </Button>
-                            <Button Content="清除全部放行" Click="ClearAllow_Click" Padding="16,8" />
+                            <Button x:Uid="ShieldPage_ClearAllow" Content="" Click="ClearAllow_Click" Padding="16,8" />
                         </StackPanel>
                         <ItemsControl x:Name="AllowList">
                             <ItemsControl.ItemTemplate>
@@ -225,22 +225,22 @@
                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0">
             <StackPanel Padding="48,12" Spacing="6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
-                    <Button x:Name="ApplyButton" Content="保存为场景配置" Click="Apply_Click"
+                    <Button x:Name="ApplyButton" x:Uid="ShieldPage_Apply" Content="" Click="Apply_Click"
                             Background="{StaticResource BrushState}" Foreground="White"
                             Padding="28,10" CornerRadius="24" />
-                    <Button Content="清除配置" Click="Remove_Click"
+                    <Button x:Uid="ShieldPage_Clear" Content="" Click="Remove_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="28,10" CornerRadius="24" />
-                    <Button Content="导出配置" Click="ExportConfig_Click"
+                    <Button x:Uid="ShieldPage_Export" Content="" Click="ExportConfig_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />
-                    <Button Content="导入配置" Click="ImportConfig_Click"
+                    <Button x:Uid="ShieldPage_Import" Content="" Click="ImportConfig_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />
-                    <Button Content="反馈建议" Click="Feedback_Click"
+                    <Button x:Uid="ShieldPage_Feedback" Content="" Click="Feedback_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />

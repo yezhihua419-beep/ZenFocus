@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MainPage_Title.Text" xml:space="preserve"><value>ZenFocus</value></data>
+  <data name="MainPage_SettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>Mode Settings</value></data>
+  <data name="MainPage_SettingsTitle.Text" xml:space="preserve"><value>Mode Settings</value></data>
+  <data name="MainPage_DeepModeSwitch.Header" xml:space="preserve"><value>Deep Mode (untimed, follow your rhythm)</value></data>
+  <data name="MainPage_DeepModeSwitch.OffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="MainPage_DeepModeSwitch.OnContent" xml:space="preserve"><value>On</value></data>
+  <data name="MainPage_AdhdModeSwitch.Header" xml:space="preserve"><value>ADHD-Friendly Mode (15-min cycles)</value></data>
+  <data name="MainPage_AdhdModeSwitch.OffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="MainPage_AdhdModeSwitch.OnContent" xml:space="preserve"><value>On</value></data>
+  <data name="MainPage_ModeMutexHint.Text" xml:space="preserve"><value>Deep and ADHD modes are mutually exclusive.</value></data>
+  <data name="MainPage_SceneWork.Content" xml:space="preserve"><value>Work</value></data>
+  <data name="MainPage_SceneWrite.Content" xml:space="preserve"><value>Write</value></data>
+  <data name="MainPage_SceneStudy.Content" xml:space="preserve"><value>Study</value></data>
+  <data name="MainPage_SceneMeeting.Content" xml:space="preserve"><value>Meeting</value></data>
+  <data name="MainPage_SceneConfigHint.Text" xml:space="preserve"><value>Tap a scene to start · Right-click to customize</value></data>
+  <data name="MainPage_GuideTitle.Text" xml:space="preserve"><value>Welcome to ZenFocus · Get started in 3 steps</value></data>
+  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>1. Write your intention, tap Start (or tap a scene above)</value></data>
+  <data name="MainPage_GuideStep2.Text" xml:space="preserve"><value>2. Go to Block page, check sites/apps to block — auto-applies when focus starts</value></data>
+  <data name="MainPage_GuideStep3.Text" xml:space="preserve"><value>3. Go to Stats page to review your data · Closing the window minimizes to tray</value></data>
+  <data name="MainPage_GuideClose.Content" xml:space="preserve"><value>Get Started</value></data>
+  <data name="MainPage_WishLabel.Text" xml:space="preserve"><value>Intention for Today</value></data>
+  <data name="MainPage_WishBox.PlaceholderText" xml:space="preserve"><value>What is the one thing you most want to accomplish right now…</value></data>
+  <data name="MainPage_StartButton.Content" xml:space="preserve"><value>Start Focus</value></data>
+  <data name="MainPage_SessionHint.Text" xml:space="preserve"><value>Default 25 min · Count-up timer · Stay focused</value></data>
+  <data name="MainPage_BreathIn.Text" xml:space="preserve"><value>Breathe in…</value></data>
+  <data name="MainPage_BreathOut.Text" xml:space="preserve"><value>Breathe out…</value></data>
+  <data name="MainPage_BreathHint.Text" xml:space="preserve"><value>Follow your breath, let your mind settle</value></data>
+  <data name="MainPage_SkipBreath.Content" xml:space="preserve"><value>Skip</value></data>
+  <data name="MainPage_Focusing.Text" xml:space="preserve"><value>Focused</value></data>
+  <data name="MainPage_Complete.Content" xml:space="preserve"><value>Complete</value></data>
+  <data name="MainPage_Break.Content" xml:space="preserve"><value>Let Go</value></data>
+  <data name="MainPage_Pause.Content" xml:space="preserve"><value>Pause</value></data>
+  <data name="MainPage_Resume.Content" xml:space="preserve"><value>Resume</value></data>
+  <data name="MainPage_Rest5.Content" xml:space="preserve"><value>5-min Break</value></data>
+  <data name="MainPage_AllowCurrent.Content" xml:space="preserve"><value>Temporarily allow this site</value></data>
+  <data name="MainPage_Allow5.Text" xml:space="preserve"><value>Allow 5 min</value></data>
+  <data name="MainPage_Allow15.Text" xml:space="preserve"><value>Allow 15 min</value></data>
+  <data name="MainPage_Allow30.Text" xml:space="preserve"><value>Allow 30 min</value></data>
+  <data name="MainPage_FeedbackAgain.Content" xml:space="preserve"><value>Another 15 min</value></data>
+  <data name="MainPage_FeedbackRest.Content" xml:space="preserve"><value>Take a break</value></data>
+  <data name="MainPage_CooldownTitle.Text" xml:space="preserve"><value>Cooldown</value></data>
+  <data name="MainPage_CooldownHint.Text" xml:space="preserve"><value>Drink water, stretch, look far away</value></data>
+  <data name="MainPage_CooldownAgain.Content" xml:space="preserve"><value>Another 15 min</value></data>
+  <data name="MainPage_CooldownRelease.Content" xml:space="preserve"><value>End blocking early</value></data>
+  <data name="MainPage_SoftLandingTitle.Text" xml:space="preserve"><value>Cooldown ended</value></data>
+  <data name="MainPage_SoftLandingAgain.Content" xml:space="preserve"><value>Another 15 min</value></data>
+  <data name="MainPage_SoftLandingRelease.Content" xml:space="preserve"><value>Use freely</value></data>
+  <data name="MainPage_SoftLandingHint.Text" xml:space="preserve"><value>(Unblock, return to home)</value></data>
+  <data name="MainPage_TodayCountLabel.Text" xml:space="preserve"><value>Focus sessions today</value></data>
+  <data name="MainPage_TodayMinutesLabel.Text" xml:space="preserve"><value>Minutes focused today</value></data>
+  <data name="MainPage_BlockStatusLabel.Text" xml:space="preserve"><value>Block rules</value></data>
+  <data name="MainPage_CompanionTitle.Text" xml:space="preserve"><value>Scan to connect phone</value></data>
+  <data name="MainPage_CompanionDesc.Text" xml:space="preserve"><value>Phone and PC must be on the same WiFi. Scan with phone browser to view stats and start/end focus remotely.</value></data>
+  <data name="MainPage_CompanionUpgrade.Text" xml:space="preserve"><value>Phone companion is a paid feature · $19 lifetime to unlock</value></data>
+  <data name="ShieldPage_Title.Text" xml:space="preserve"><value>Block</value></data>
+  <data name="ShieldPage_Subtitle.Text" xml:space="preserve"><value>Check sites and apps to block during focus</value></data>
+  <data name="StatsPage_Title.Text" xml:space="preserve"><value>Stats</value></data>
+  <data name="StatsPage_Export.Content" xml:space="preserve"><value>Export Data</value></data>
+  <data name="StatsPage_UpgradeTitle.Text" xml:space="preserve"><value>Upgrade for more insights</value></data>
+  <data name="StatsPage_UpgradeDesc.Text" xml:space="preserve"><value>Paid: Peak hour analysis · Distraction pattern recognition · Cross-device sync · Unlimited custom scenes · Phone companion · Data export</value></data>
+  <data name="StatsPage_UpgradeButton.Content" xml:space="preserve"><value>Upgrade $19 Lifetime</value></data>
+  <data name="Common_OK.Content" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_Cancel.Content" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Common_Close.Content" xml:space="preserve"><value>Close</value></data>
+  <data name="Common_Save.Content" xml:space="preserve"><value>Save</value></data>
+  <data name="Common_Confirm.Content" xml:space="preserve"><value>Confirm</value></data>
+  <data name="MainWindow.Title" xml:space="preserve"><value>ZenFocus</value></data>
+  <data name="MainWindow_TitleBar.Title" xml:space="preserve"><value>ZenFocus</value></data>
+  <data name="MainWindow_NavHome.Content" xml:space="preserve"><value>Focus</value></data>
+  <data name="MainWindow_NavShield.Content" xml:space="preserve"><value>Block</value></data>
+  <data name="MainWindow_NavStats.Content" xml:space="preserve"><value>Stats</value></data>
+  <data name="FrictionOverlay_Hint.Text" xml:space="preserve"><value>Take a deep breath, decide in 5 seconds</value></data>
+  <data name="FrictionOverlay_Continue.Content" xml:space="preserve"><value>Continue Focus</value></data>
+  <data name="FrictionOverlay_GiveIn.Content" xml:space="preserve"><value>I want to distract</value></data>
+  <data name="FrictionOverlay_Allow5.Text" xml:space="preserve"><value>Allow 5 min</value></data>
+  <data name="FrictionOverlay_Allow15.Text" xml:space="preserve"><value>Allow 15 min</value></data>
+  <data name="FrictionOverlay_Allow30.Text" xml:space="preserve"><value>Allow 30 min</value></data>
+  <data name="FrictionOverlay_AllowSession.Text" xml:space="preserve"><value>Allow for this session</value></data>
+  <data name="Tray_Title" xml:space="preserve"><value>ZenFocus</value></data>
+  <data name="Tray_Focusing" xml:space="preserve"><value>Focusing · {0} min today</value></data>
+  <data name="Tray_Idle" xml:space="preserve"><value>Idle · {0} min today</value></data>
+  <data name="Tray_EndFocus" xml:space="preserve"><value>End Focus</value></data>
+  <data name="Tray_StartFocus" xml:space="preserve"><value>Start Focus</value></data>
+  <data name="Tray_Rest" xml:space="preserve"><value>3-min Break</value></data>
+  <data name="Tray_ShieldOn" xml:space="preserve"><value>Blocking: On</value></data>
+  <data name="Tray_ShieldOff" xml:space="preserve"><value>Blocking: Off</value></data>
+  <data name="Tray_ShieldDisable" xml:space="preserve"><value>Disable Blocking</value></data>
+  <data name="Tray_ShieldEnable" xml:space="preserve"><value>Enable Blocking</value></data>
+  <data name="Tray_QuickShield" xml:space="preserve"><value>Quick Block: TikTok/Bilibili</value></data>
+  <data name="Tray_Open" xml:space="preserve"><value>Open ZenFocus</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="LimitDialog_Title" xml:space="preserve"><value>Daily Limit Reached</value></data>
+  <data name="LimitDialog_Content" xml:space="preserve"><value>"{0}" has reached today's limit. Window minimized.\n\nTake a break, or continue?</value></data>
+  <data name="LimitDialog_Primary" xml:space="preserve"><value>Continue anyway (5 min)</value></data>
+  <data name="LimitDialog_Close" xml:space="preserve"><value>That's it for today</value></data>
+  <data name="Notify_LimitAllowed" xml:space="preserve"><value>Temporarily allowed "{0}" for 5 min. Will re-block after.</value></data>
+  <data name="Notify_CodingDetected" xml:space="preserve"><value>Detected continuous coding. Suggest switching to "Work" scene · tap "Work" on home</value></data>
+  <data name="Notify_AppAllowed" xml:space="preserve"><value>Temporarily allowed "{0}" {1}. Will re-block after timeout.</value></data>
+  <data name="Notify_ShieldOff" xml:space="preserve"><value>Blocking disabled</value></data>
+  <data name="Notify_ShieldOn" xml:space="preserve"><value>Blocking enabled (untimed)</value></data>
+  <data name="Notify_ShieldSaved" xml:space="preserve"><value>Saved: blocking Short Video + Video Entertainment. Applies when focus starts.</value></data>
+  <data name="Notify_Resumed" xml:space="preserve"><value>Focus resumed</value></data>
+  <data name="Notify_Paused" xml:space="preserve"><value>Paused · paused time not counted</value></data>
+  <data name="Notify_Rest30" xml:space="preserve"><value>30 min focused. Take a break.</value></data>
+  <data name="Notify_AdhdOn" xml:space="preserve"><value>ADHD mode on: 15-min cycles · kill-process blocking · positive feedback</value></data>
+  <data name="Notify_AdhdOnShield" xml:space="preserve"><value>ADHD mode on: auto-switched to kill-process strong blocking, 15-min cycles. Block categories follow current scene, editable in Block page.</value></data>
+  <data name="Notify_DomainAllowed" xml:space="preserve"><value>"{0}" temporarily allowed for {1} min.</value></data>
+  <data name="SceneDialog_Categories" xml:space="preserve"><value>Block Categories</value></data>
+  <data name="SceneDialog_Primary" xml:space="preserve"><value>Save</value></data>
+  <data name="SceneDialog_Secondary" xml:space="preserve"><value>Reset to Default</value></data>
+  <data name="SceneDialog_Close" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Notify_SceneSaved" xml:space="preserve"><value>Saved: {0} scene · {1} min · {2} categories</value></data>
+  <data name="Notify_SceneReset" xml:space="preserve"><value>Reset to default: {0}</value></data>
+  <data name="MainPage_AdhdHint" xml:space="preserve"><value>ADHD-friendly mode · 15-min cycles · kill-process blocking · positive feedback</value></data>
+  <data name="SceneDialog_WishHeader" xml:space="preserve"><value>Intention</value></data>
+  <data name="SceneDialog_WishPlaceholder" xml:space="preserve"><value>What is the one thing you most want to accomplish right now…</value></data>
+  <data name="SceneDialog_Quota" xml:space="preserve"><value> (free: {0}/1 custom slot used)</value></data>
+  <data name="SceneDialog_Title" xml:space="preserve"><value>Customize "{0}" Scene</value></data>
+  <data name="Notify_SessionHint" xml:space="preserve"><value>{0} min focus · count-up · stay focused</value></data>
+  <data name="Notify_SceneSaved2" xml:space="preserve"><value>Saved: {0} scene · {1} min</value></data>
+  <data name="Notify_NoSceneAuto" xml:space="preserve"><value>No scene selected. Auto-selected Work scene and saved config.</value></data>
+  <data name="Notify_CooldownPaid" xml:space="preserve"><value>20/30 min cooldown is paid. Free version: 5/10/15 min.</value></data>
+  <data name="Notify_ConfigSaved" xml:space="preserve"><value>Config saved. Applies when focus starts.</value></data>
+  <data name="ActivateDialog_Title" xml:space="preserve"><value>Activate Pro</value></data>
+  <data name="ActivateDialog_Primary" xml:space="preserve"><value>Activate</value></data>
+  <data name="ActivateDialog_Close" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ActivateDialog_Hint" xml:space="preserve"><value>Enter license key to unlock all paid features.</value></data>
+  <data name="Notify_KeyEmpty" xml:space="preserve"><value>License key cannot be empty.</value></data>
+  <data name="Notify_KeySuccess" xml:space="preserve"><value>Activated! All paid features unlocked.</value></data>
+  <data name="Notify_KeyInvalid" xml:space="preserve"><value>Invalid license key. Format: CJ-XXXX-XXXXXX</value></data>
+  <data name="Notify_ExportSuccess" xml:space="preserve"><value>Exported {0} focus sessions to {1}</value></data>
+  <data name="Notify_ExportFailed" xml:space="preserve"><value>Export failed. Please retry.</value></data>
+  <data name="FrictionOverlay_Decision" xml:space="preserve"><value>"{0}" is {1}. Really want to distract? Choose allow duration.</value></data>
+  <data name="RestLabel_Short" xml:space="preserve"><value>Quick Break</value></data>
+  <data name="RestLabel_Long" xml:space="preserve"><value>Away Mode</value></data>
+  <data name="Notify_RestStart" xml:space="preserve"><value>{0} on · App blocking paused · resumes in {1} min</value></data>
+  <data name="Notify_RestEnd" xml:space="preserve"><value>{0} ended · App blocking resumed</value></data>
+</root>

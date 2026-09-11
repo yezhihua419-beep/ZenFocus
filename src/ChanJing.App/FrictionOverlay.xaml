@@ -22,25 +22,25 @@
                 </Grid>
 
                 <!-- 提示文字 -->
-                <TextBlock x:Name="HintText" Text="深呼吸，5 秒后再决定" FontSize="18"
+                <TextBlock x:Name="HintText" x:Uid="FrictionOverlay_Hint" Text="" FontSize="18"
                            HorizontalAlignment="Center" Foreground="#F4F3EE" Opacity="0.9" />
 
                 <!-- 5秒后显示的按钮 -->
                 <StackPanel x:Name="ButtonPanel" Orientation="Horizontal" HorizontalAlignment="Center"
                             Spacing="16" Visibility="Collapsed">
-                    <Button Content="继续专注" Click="ContinueFocus_Click"
+                    <Button x:Uid="FrictionOverlay_Continue" Content="" Click="ContinueFocus_Click"
                             Background="#7A7265" Foreground="White"
                             Padding="28,12" CornerRadius="24" FontSize="14" />
-                    <Button x:Name="GiveInButton" Content="我就要分心"
+                    <Button x:Name="GiveInButton" x:Uid="FrictionOverlay_GiveIn" Content=""
                             Background="Transparent" BorderBrush="#7A7265"
                             Foreground="#7A7265"
                             Padding="28,12" CornerRadius="24" FontSize="14">
                         <Button.Flyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="临时放行 5 分钟" Click="GiveIn5Min_Click" />
-                                <MenuFlyoutItem Text="临时放行 15 分钟" Click="GiveIn15Min_Click" />
-                                <MenuFlyoutItem Text="临时放行 30 分钟" Click="GiveIn30Min_Click" />
-                                <MenuFlyoutItem Text="本次专注期间都放行" Click="GiveInSession_Click" />
+                                <MenuFlyoutItem x:Uid="FrictionOverlay_Allow5" Text="" Click="GiveIn5Min_Click" />
+                                <MenuFlyoutItem x:Uid="FrictionOverlay_Allow15" Text="" Click="GiveIn15Min_Click" />
+                                <MenuFlyoutItem x:Uid="FrictionOverlay_Allow30" Text="" Click="GiveIn30Min_Click" />
+                                <MenuFlyoutItem x:Uid="FrictionOverlay_AllowSession" Text="" Click="GiveInSession_Click" />
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>

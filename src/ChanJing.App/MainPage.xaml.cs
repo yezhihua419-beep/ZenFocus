@@ -131,7 +131,7 @@ public sealed partial class MainPage : Page
             if (minutes >= 30 && !_softReminder30Shown)
             {
                 _softReminder30Shown = true;
-                AppServices.Notify("已经专注30分钟了，注意休息一下哦");
+                AppServices.Notify(I18n.Get("Notify_Rest30", "30 min focused. Take a break."));
             }
         }
     }
@@ -171,16 +171,16 @@ public sealed partial class MainPage : Page
                 AppServices.DeepMode = false;
             }
             _pendingMinutes = 15;
-            SessionHint.Text = "ADHD友好模式 · 15分钟短周期 · 结束进程强屏蔽 · 正反馈鼓励";
+            SessionHint.Text = I18n.Get("MainPage_AdhdHint", "ADHD-friendly mode · 15-min cycles · kill-process blocking · positive feedback");
             // 自动切换拦截方式为结束进程（如果当前不是）
             if (_blocklist.GetAppBlockMode() != "kill")
             {
                 _blocklist.SetAppBlockMode("kill");
-                AppServices.Notify("ADHD模式已开启：已自动切换为结束进程强屏蔽，15分钟短周期。屏蔽分类跟随当前场景，可在屏蔽页修改。");
+                AppServices.Notify(I18n.Get("Notify_AdhdOnShield", "ADHD mode on: auto-switched to kill-process strong blocking, 15-min cycles. Block categories follow current scene, editable in Block page."));
             }
             else
             {
-                AppServices.Notify("ADHD模式已开启：15分钟短周期·结束进程强屏蔽·正反馈鼓励");
+                AppServices.Notify(I18n.Get("Notify_AdhdOn", "ADHD mode on: 15-min cycles · kill-process blocking · positive feedback"));
             }
             // 首次开启ADHD引导
             if (!_adhdOnboarded && _db.GetSetting("adhd_onboarded") is null)
@@ -317,14 +317,14 @@ public sealed partial class MainPage : Page
                 Spacing = 8,
                 Children =
                 {
-                    new TextBlock { Text = "自定义场景额度已用完", FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
-                    new TextBlock { Text = "免费版可自定义 1 个场景（时长+屏蔽分类+愿望文案），当前额度已用完。", TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = "升级后可自定义全部 4 个场景。", TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = "¥68 买断，永久使用。", Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
+                    new TextBlock { Text = "Custom scene quota exceeded", FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = "Free version allows 1 custom scene (duration + block categories + intention). Quota used up.", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "Upgrade to customize all 4 scenes.", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "$19 lifetime, forever.", Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
                 }
             },
-            PrimaryButtonText = "了解升级",
-            CloseButtonText = "取消",
+            PrimaryButtonText = "Learn More",
+            CloseButtonText = "Cancel",
             XamlRoot = this.XamlRoot
         };
 
@@ -365,25 +365,25 @@ public sealed partial class MainPage : Page
 
         var wishBox = new TextBox
         {
-            Header = "愿望文案",
+            Header = I18n.Get("SceneDialog_WishHeader", "Intention"),
             Text = config.Wish,
-            PlaceholderText = "此刻，你最想完成的一件事…"
+            PlaceholderText = I18n.Get("SceneDialog_WishPlaceholder", "What is the one thing you most want to accomplish right now…")
         };
 
         var content = new StackPanel { Spacing = 16, MaxWidth = 360 };
         content.Children.Add(minutesCombo);
-        content.Children.Add(new TextBlock { Text = "屏蔽分类", Foreground = (Brush)Application.Current.Resources["BrushTextSecondary"], FontSize = 12 });
+        content.Children.Add(new TextBlock { Text = I18n.Get("SceneDialog_Categories", "Block Categories"), Foreground = (Brush)Application.Current.Resources["BrushTextSecondary"], FontSize = 12 });
         content.Children.Add(categoryPanel);
         content.Children.Add(wishBox);
 
         var usedQuota = SceneManager.GetCustomSceneCount(_db);
-        var quotaText = _blocklist.IsActivated() ? "" : $"（免费版已用{usedQuota}/1个自定义额度）";
+        var quotaText = _blocklist.IsActivated() ? "" : I18n.GetFormat("SceneDialog_Quota", usedQuota);
         var dialog = new ContentDialog
         {
-            Title = $"自定义「{sceneName}」场景{quotaText}",
-            PrimaryButtonText = "保存",
-            SecondaryButtonText = "重置默认",
-            CloseButtonText = "取消",
+            Title = I18n.GetFormat("SceneDialog_Title", sceneName) + quotaText,
+            PrimaryButtonText = I18n.Get("SceneDialog_Primary", "Save"),
+            SecondaryButtonText = I18n.Get("SceneDialog_Secondary", "Reset to Default"),
+            CloseButtonText = I18n.Get("SceneDialog_Close", "Cancel"),
             XamlRoot = this.XamlRoot
         };
 
@@ -402,7 +402,7 @@ public sealed partial class MainPage : Page
             {
                 WishBox.Text = newWish;
                 _pendingMinutes = selectedMinutes;
-                SessionHint.Text = $"{selectedMinutes} 分钟定心 · 正计时 · 心无旁骛";
+                SessionHint.Text = I18n.GetFormat("Notify_SessionHint", selectedMinutes);
                 _blocklist.SetEnabledCategories(selectedCategories);
             }
         }
@@ -563,7 +563,7 @@ public sealed partial class MainPage : Page
                            streak >= 3 ? "状态渐入佳境，继续保持" :
                            streak >= 1 ? "好的开始，念念不忘必有回响" : "";
         FeedbackText.Text = $"今日定心 {done.ActualMinutes} 分钟\n{encouragement}";
-        FeedbackAgainButton.Content = "再来 15 分钟";
+        FeedbackAgainButton.Content = "Another 15 min";
         FeedbackRestButton.Visibility = Visibility.Visible;
         RefreshTodayStats();
     }
@@ -614,10 +614,10 @@ public sealed partial class MainPage : Page
     {
         var dialog = new ContentDialog
         {
-            Title = "提前解除屏蔽",
+            Title = "Disable Blocking Early",
             Content = $"缓冲期还剩 {_cooldownRemaining} 分钟，确定现在解除屏蔽吗？",
-            PrimaryButtonText = "确定解除",
-            CloseButtonText = "再等等",
+            PrimaryButtonText = "Confirm Disable",
+            CloseButtonText = "Wait",
             XamlRoot = XamlRoot
         };
         var result = await dialog.ShowAsync();
@@ -666,7 +666,7 @@ public sealed partial class MainPage : Page
             {
                 _engine.Resume();
                 App.LogAction("继续专注");
-                PauseButton.Content = "暂停";
+                PauseButton.Content = "Pause";
                 PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextSecondary"];
                 TimerText.Text = $"{(int)_engine.Elapsed.TotalMinutes} 分钟";
             }
@@ -677,10 +677,10 @@ public sealed partial class MainPage : Page
                 {
                     var dialog = new ContentDialog
                     {
-                        Title = "暂停专注",
-                        Content = "确定要暂停吗？ADHD模式下暂停后容易一去不回，建议直接结束或继续。",
-                        PrimaryButtonText = "还是暂停",
-                        CloseButtonText = "继续专注",
+                        Title = "Pause Focus",
+                        Content = "Sure to pause? In ADHD mode, pausing often leads to not coming back. Consider ending or continuing instead.",
+                        PrimaryButtonText = "Pause Anyway",
+                        CloseButtonText = "Keep Focusing",
                         XamlRoot = XamlRoot
                     };
                     var result = await dialog.ShowAsync();
@@ -688,7 +688,7 @@ public sealed partial class MainPage : Page
                 }
                 _engine.Pause();
                 App.LogAction("暂停专注");
-                PauseButton.Content = "继续";
+                PauseButton.Content = "Resume";
                 PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushState"];
                 TimerText.Text = "已暂停";
             }
@@ -710,9 +710,9 @@ public sealed partial class MainPage : Page
             {
                 var none = new ContentDialog
                 {
-                    Title = "没有可放行的网站",
-                    Content = "当前前台没有正在被屏蔽的网站。先打开那个网站（如 bilibili.com），再点此按钮。",
-                    CloseButtonText = "知道了",
+                    Title = "No Site to Allow",
+                    Content = "No blocked site in foreground. Open the site first (e.g. bilibili.com), then tap this button.",
+                    CloseButtonText = "Got it",
                     XamlRoot = XamlRoot
                 };
                 await none.ShowAsync();
@@ -720,7 +720,7 @@ public sealed partial class MainPage : Page
             }
             AppServices.Blocklist.AddTempAllow(domain, minutes);
             App.LogAction("快捷放行", $"{domain} {minutes}分钟");
-            AppServices.Notify($"「{domain}」已临时放行 {minutes} 分钟，期间可正常访问。");
+            AppServices.Notify(I18n.GetFormat("Notify_DomainAllowed", domain, minutes));
         }
         catch (Exception ex)
         {
@@ -736,7 +736,7 @@ public sealed partial class MainPage : Page
         {
             Title = restLabel,
             Content = $"{restLabel} {restMinutes} 分钟，桌面应用（抖音/B站等）暂停拦截，网站屏蔽保持生效。期间仍记录专注时长。",
-            PrimaryButtonText = "确认放行",
+            PrimaryButtonText = "Confirm Allow",
             CloseButtonText = "取消",
             XamlRoot = Content.XamlRoot
         };
@@ -774,9 +774,9 @@ public sealed partial class MainPage : Page
 
             var dialog = new ContentDialog
             {
-                Title = "发生了什么？",
+                Title = "What happened?",
                 Content = panel,
-                PrimaryButtonText = "再定心一会儿",
+                PrimaryButtonText = "Focus More",
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = XamlRoot
             };
@@ -789,7 +789,7 @@ public sealed partial class MainPage : Page
                 {
                     cooldown.Stop();
                     endButton.IsEnabled = true;
-                    endButton.Content = "结束";
+                    endButton.Content = "End";
                     hint.Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？";
                 }
                 else
@@ -1067,28 +1067,28 @@ public sealed partial class MainPage : Page
 
             var step1 = new ContentDialog
             {
-                Title = "ADHD友好模式 · 1/3",
-                Content = "专为注意力容易分散的你设计：\n\n【15分钟短周期】\n降低心理门槛，坐不住也能开始。\n\n【结束进程强屏蔽】\n抖音/B站等分心App会被直接结束（不是最小化），防止手贱点回去。\n\n【正反馈鼓励】\n结束后只夸你完成了多少，不批评你分心了几次。",
-                PrimaryButtonText = "下一步",
+                Title = "ADHD-Friendly Mode · 1/3",
+                Content = "Designed for easily distracted minds:\n\n[15-min cycles]\nLow barrier to start, even if you can't sit still.\n\n[Kill-process blocking]\nDistraction apps like TikTok/Bilibili are killed (not minimized), preventing impulsive return.\n\n[Positive feedback]\nOnly praise what you completed, never criticize distractions.",
+                PrimaryButtonText = "Next",
                 XamlRoot = XamlRoot
             };
             await step1.ShowAsync();
 
             var step2 = new ContentDialog
             {
-                Title = "ADHD友好模式 · 2/3",
-                Content = "【缓冲期】\n专注结束后屏蔽保持10分钟，防止「一结束就刷手机」的条件反射。\n\n【软着陆】\n缓冲期到了不会自动解除屏蔽，你需要主动选择「再来15分钟」或「自由使用」。\n\n【暂停有摩擦】\n暂停时会弹确认，防止「暂停一下就再也不回来了」。",
-                PrimaryButtonText = "下一步",
+                Title = "ADHD-Friendly Mode · 2/3",
+                Content = "[Cooldown]\nBlocking stays on for 10 min after focus ends, preventing the reflex of grabbing phone immediately.\n\n[Soft landing]\nBlocking won't auto-disable after cooldown. You actively choose Another 15 min or Free Use.\n\n[Pause friction]\nPause shows confirmation, preventing pausing and never returning.",
+                PrimaryButtonText = "Next",
                 XamlRoot = XamlRoot
             };
             await step2.ShowAsync();
 
             var step3 = new ContentDialog
             {
-                Title = "ADHD友好模式 · 3/3",
-                Content = "【注意事项】\n• 结束进程可能丢失未保存内容，请确保重要文件已保存\n• 屏蔽分类跟随当前场景（工作/写作/学习/会议），可在屏蔽页修改\n• 可随时在屏蔽页把拦截方式改回「最小化」\n• ADHD模式与深度模式互斥，不能同时开启\n\n准备好了吗？",
-                PrimaryButtonText = "开始使用",
-                CloseButtonText = "先关掉",
+                Title = "ADHD-Friendly Mode · 3/3",
+                Content = "[Notes]\n• Kill-process may lose unsaved work, ensure important files are saved\n• Block categories follow current scene (Work/Write/Study/Meeting), editable in Block page\n• Can switch blocking mode back to Minimize in Block page anytime\n• ADHD and Deep modes are mutually exclusive\n\nReady?",
+                PrimaryButtonText = "Get Started",
+                CloseButtonText = "Close",
                 XamlRoot = XamlRoot
             };
             var result = await step3.ShowAsync();

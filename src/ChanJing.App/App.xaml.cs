@@ -225,9 +225,9 @@ public partial class App : Application
             {
                 var dialog = new ContentDialog
                 {
-                    Title = "禅净",
+                    Title = "ZenFocus",
                     Content = successMessage,
-                    CloseButtonText = "好",
+                    CloseButtonText = "OK",
                     XamlRoot = root
                 };
                 await dialog.ShowAsync();
@@ -240,9 +240,9 @@ public partial class App : Application
             {
                 var dialog = new ContentDialog
                 {
-                    Title = "操作失败",
-                    Content = $"未能完成操作：{ex.Message}",
-                    CloseButtonText = "好",
+                    Title = "Operation Failed",
+                    Content = $"Failed to complete: {ex.Message}",
+                    CloseButtonText = "OK",
                     XamlRoot = root
                 };
                 await dialog.ShowAsync();

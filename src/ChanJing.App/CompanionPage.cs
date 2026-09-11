@@ -7,11 +7,11 @@
 public static class CompanionPage
 {
     public const string Html = @"<!DOCTYPE html>
-<html lang=""zh-CN"">
+<html lang=""en"">
 <head>
 <meta charset=""UTF-8"">
 <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
-<title>禅净 · 伴侣</title>
+<title>ZenFocus · Companion</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
@@ -110,49 +110,49 @@ body {
 </head>
 <body>
 <div class=""header"">
-  <h1>禅 净</h1>
+  <h1>Zen Focus</h1>
   <div class=""date"" id=""date""></div>
 </div>
 
 <div class=""stats-grid"">
   <div class=""stat-card"">
     <div class=""value"" id=""focusMinutes"">0</div>
-    <div class=""label"">专注分钟</div>
+    <div class=""label"">Focus Min</div>
   </div>
   <div class=""stat-card"">
     <div class=""value"" id=""focusSessions"">0</div>
-    <div class=""label"">专注次数</div>
+    <div class=""label"">Sessions</div>
   </div>
   <div class=""stat-card"">
     <div class=""value"" id=""distractionCount"">0</div>
-    <div class=""label"">分心次数</div>
+    <div class=""label"">Distractions</div>
   </div>
 </div>
 
 <div class=""focus-status"" id=""focusStatus"">
-  <div class=""state-label"" id=""stateLabel"">当前空闲</div>
+  <div class=""state-label"" id=""stateLabel"">Idle</div>
   <div class=""wish"" id=""wish"">—</div>
   <div class=""time"" id=""elapsedTime"">00:00</div>
-  <div class=""time-label"">已专注</div>
+  <div class=""time-label"">Focused</div>
 </div>
 
-<button class=""control-btn start"" id=""startBtn"" onclick=""startFocus()"">开始专注</button>
-<button class=""control-btn stop"" id=""stopBtn"" onclick=""stopFocus()"" style=""display:none;"">结束专注</button>
+<button class=""control-btn start"" id=""startBtn"" onclick=""startFocus()"">Start Focus</button>
+<button class=""control-btn stop"" id=""stopBtn"" onclick=""stopFocus()"" style=""display:none;"">End Focus</button>
 
 <div class=""distraction-list"">
-  <h3>今日分心来源</h3>
-  <div id=""distractionList""><div class=""empty"">暂无分心记录</div></div>
+  <h3>Today's Distractions</h3>
+  <div id=""distractionList""><div class=""empty"">No distractions yet</div></div>
 </div>
 
 <div class=""distraction-list"">
-  <h3>同伴专注（可选 · 非社交）</h3>
-  <div>输入同伴的地址（如 http://192.168.1.5:8765 ），即可看到对方是否在专注。</div>
+  <h3>Peer Focus (optional · non-social)</h3>
+  <div>Enter peer's address (e.g. http://192.168.1.5:8765) to see if they're focusing.</div>
   <input id=""peerUrl"" placeholder=""http://IP:8765"" style=""width:100%;padding:8px;margin:6px 0;border:1px solid #ccc;border-radius:6px;"" />
-  <button class=""control-btn start"" onclick=""savePeer()"" style=""font-size:12px;padding:6px 10px;"">保存</button>
+  <button class=""control-btn start"" onclick=""savePeer()"" style=""font-size:12px;padding:6px 10px;"">Save</button>
   <div id=""peerStatus"" class=""peer-status"" style=""margin-top:8px;font-size:13px;""></div>
 </div>
 
-<div class=""footer"">禅净 · 局域网伴侣页 · 手机与电脑需连接同一WiFi</div>
+<div class=""footer"">ZenFocus · LAN Companion · Phone and PC must be on same WiFi</div>
 <div class=""toast"" id=""toast""></div>
 
 <script>
@@ -163,7 +163,7 @@ let timerInterval = null;
 function formatTime(minutes) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return h > 0 ? h + '小时' + m + '分' : m + '分钟';
+  return h > 0 ? h > 0 ? h + 'h ' + m + 'm' : m + 'min';
 }
 
 function formatElapsed(seconds) {
@@ -184,7 +184,7 @@ async function fetchJSON(url, options) {
     const res = await fetch(url, options);
     return await res.json();
   } catch (e) {
-    showToast('连接失败，请检查WiFi');
+    showToast('Connection failed. Check WiFi.');
     return null;
   }
 }
@@ -199,7 +199,7 @@ async function loadStats() {
   const list = document.getElementById('distractionList');
   if (data.topDistractions && data.topDistractions.length > 0) {
     list.innerHTML = data.topDistractions.map(d =>
-      '<div class=""distraction-item""><span class=""app"">' + d.app + '</span><span class=""count"">' + d.count + '次</span></div>'
+      '<div class=""distraction-item""><span class=""app"">' + d.app + '</span><span class=""count"">' + d.count + 'x</span></div>'
     ).join('');
   } else {
     list.innerHTML = '<div class=""empty"">暂无分心记录</div>';
@@ -218,7 +218,7 @@ async function loadFocusStatus() {
 
   if (isFocusing) {
     statusEl.classList.add('focusing');
-    stateLabel.textContent = '专注中';
+    stateLabel.textContent = 'Focusing';
     wishEl.textContent = data.wish || '—';
     startBtn.style.display = 'none';
     stopBtn.style.display = 'block';
@@ -230,7 +230,7 @@ async function loadFocusStatus() {
     }
   } else {
     statusEl.classList.remove('focusing');
-    stateLabel.textContent = '当前空闲';
+    stateLabel.textContent = 'Idle';
     wishEl.textContent = '—';
     document.getElementById('elapsedTime').textContent = '00:00';
     startBtn.style.display = 'block';
@@ -259,44 +259,44 @@ function stopTimer() {
 async function startFocus() {
   const data = await fetchJSON('/api/focus/start', { method: 'POST' });
   if (data && data.success) {
-    showToast('专注已开始');
+    showToast('Focus started');
     loadFocusStatus();
     loadStats();
   } else if (data) {
-    showToast(data.message || '启动失败');
+    showToast(data.message || 'Failed to start');
   }
 }
 
 async function stopFocus() {
   const data = await fetchJSON('/api/focus/stop', { method: 'POST' });
   if (data && data.success) {
-    showToast('专注已结束');
+    showToast('Focus ended');
     loadFocusStatus();
     loadStats();
   } else if (data) {
-    showToast(data.message || '停止失败');
+    showToast(data.message || 'Failed to stop');
   }
 }
 
 function savePeer() {
   const url = document.getElementById('peerUrl').value.trim();
-  if (!url) { showToast('请输入同伴地址'); return; }
+  if (!url) { showToast('Enter peer address'); return; }
   localStorage.setItem('peerUrl', url);
-  showToast('同伴地址已保存');
+  showToast('Peer address saved');
   loadPeerStatus();
 }
 
 async function loadPeerStatus() {
   const url = localStorage.getItem('peerUrl');
   const el = document.getElementById('peerStatus');
-  if (!url) { el.textContent = '未设置同伴地址'; return; }
+  if (!url) { el.textContent = 'No peer address set'; return; }
   try {
     const res = await fetch(url.replace(/\\/$/, '') + '/api/focus/status');
     const data = await res.json();
-    el.textContent = data.isFocusing ? '同伴正在专注中' : '同伴当前空闲';
+    el.textContent = data.isFocusing ? 'Peer is focusing' : 'Peer is idle';
     el.style.color = data.isFocusing ? '#2e7d32' : '#888';
   } catch (e) {
-    el.textContent = '无法连接同伴（检查网络或地址）';
+    el.textContent = 'Cannot connect to peer (check network/address)';
     el.style.color = '#c62828';
   }
 }

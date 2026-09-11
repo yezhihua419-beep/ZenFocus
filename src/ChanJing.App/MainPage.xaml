@@ -27,7 +27,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="2">
-                        <TextBlock Text="禅定" FontSize="24" FontWeight="SemiBold"
+                        <TextBlock x:Uid="MainPage_Title" Text="" FontSize="24" FontWeight="SemiBold"
                                    Foreground="{StaticResource BrushTextPrimary}" />
                         <TextBlock x:Name="DateText" FontSize="12"
                                    Foreground="{StaticResource BrushTextSecondary}" />
@@ -36,17 +36,17 @@
                     <Button x:Name="SettingsButton" Grid.Column="1" VerticalAlignment="Top"
                             Padding="10" Background="Transparent"
                             BorderBrush="{StaticResource BrushBorder}"
-                            CornerRadius="20" ToolTipService.ToolTip="模式设置">
+                            CornerRadius="20" ToolTipService.ToolTip="" x:Uid="MainPage_SettingsButton">
                         <FontIcon Glyph="&#xE713;" FontSize="16"
                                   Foreground="{StaticResource BrushTextSecondary}" />
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight">
                                 <StackPanel Spacing="8" Padding="4" MinWidth="260">
-                                    <TextBlock Text="模式设置" FontSize="14" FontWeight="SemiBold"
+                                    <TextBlock x:Uid="MainPage_SettingsTitle" Text="" FontSize="14" FontWeight="SemiBold"
                                                Foreground="{StaticResource BrushTextPrimary}" />
-                                    <ToggleSwitch x:Name="DeepModeSwitch" Header="深度模式（不计时，随心而定）" OffContent="关" OnContent="开" Toggled="DeepMode_Toggled" />
-                                    <ToggleSwitch x:Name="AdhdModeSwitch" Header="ADHD友好模式（15分钟短周期·视觉化时间）" OffContent="关" OnContent="开" Toggled="AdhdMode_Toggled" />
-                                    <TextBlock Text="深度与ADHD互斥，只能开启一个。" FontSize="11"
+                                    <ToggleSwitch x:Name="DeepModeSwitch" x:Uid="MainPage_DeepModeSwitch" Header="" OffContent="" OnContent="" Toggled="DeepMode_Toggled" />
+                                    <ToggleSwitch x:Name="AdhdModeSwitch" x:Uid="MainPage_AdhdModeSwitch" Header="" OffContent="" OnContent="" Toggled="AdhdMode_Toggled" />
+                                    <TextBlock x:Uid="MainPage_ModeMutexHint" Text="" FontSize="11"
                                                Foreground="{StaticResource BrushTextSecondary}" Opacity="0.8" />
                                 </StackPanel>
                             </Flyout>
@@ -57,24 +57,24 @@
                 <!-- 场景标签（顶部一行） -->
                 <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Spacing="4" Margin="0,12,0,4">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                        <Button x:Name="SceneWork" Content="工作" Tag="work" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                        <Button x:Name="SceneWork" x:Uid="MainPage_SceneWork" Content="" Tag="work" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="16,5" CornerRadius="16" FontSize="12" />
-                        <Button x:Name="SceneWrite" Content="写作" Tag="write" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                        <Button x:Name="SceneWrite" x:Uid="MainPage_SceneWrite" Content="" Tag="write" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="16,5" CornerRadius="16" FontSize="12" />
-                        <Button x:Name="SceneStudy" Content="学习" Tag="study" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                        <Button x:Name="SceneStudy" x:Uid="MainPage_SceneStudy" Content="" Tag="study" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="16,5" CornerRadius="16" FontSize="12" />
-                        <Button x:Name="SceneMeeting" Content="会议" Tag="meeting" Click="Scene_Click" RightTapped="Scene_RightTapped"
+                        <Button x:Name="SceneMeeting" x:Uid="MainPage_SceneMeeting" Content="" Tag="meeting" Click="Scene_Click" RightTapped="Scene_RightTapped"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="16,5" CornerRadius="16" FontSize="12" />
                     </StackPanel>
-                    <TextBlock x:Name="SceneConfigHint" Text="选择场景一键进入 · 右键可自定义" FontSize="11" HorizontalAlignment="Center"
+                    <TextBlock x:Name="SceneConfigHint" x:Uid="MainPage_SceneConfigHint" Text="" FontSize="11" HorizontalAlignment="Center"
                                Foreground="{StaticResource BrushTextSecondary}" Opacity="0.7" />
                 </StackPanel>
 
@@ -84,15 +84,15 @@
                         BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
                         Padding="20,14" MaxWidth="560" HorizontalAlignment="Center">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="欢迎使用禅净 · 三步上手" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock x:Uid="MainPage_GuideTitle" Text="" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock Text="① 写下「今日一愿」，点开始定心（或直接点上方场景快捷进入）" FontSize="12" TextWrapping="Wrap"
+                        <TextBlock x:Uid="MainPage_GuideStep1" Text="" FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}" />
-                        <TextBlock Text="② 到「屏蔽」页勾选想拦的网站/应用，开始专注时自动生效" FontSize="12" TextWrapping="Wrap"
+                        <TextBlock x:Uid="MainPage_GuideStep2" Text="" FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}" />
-                        <TextBlock Text="③ 到「统计」页回看定心数据；关窗口只是最小化到托盘，不会退出" FontSize="12" TextWrapping="Wrap"
+                        <TextBlock x:Uid="MainPage_GuideStep3" Text="" FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}" />
-                        <Button Content="开始使用" Click="GuideClose_Click" HorizontalAlignment="Right"
+                        <Button x:Uid="MainPage_GuideClose" Content="" Click="GuideClose_Click" HorizontalAlignment="Right"
                                 Background="{StaticResource BrushState}" Foreground="White"
                                 Padding="20,6" CornerRadius="16" FontSize="12" />
                     </StackPanel>
@@ -104,19 +104,19 @@
                     <!-- 空闲态：呼吸感开始按钮 + 今日一愿 -->
                     <StackPanel x:Name="IdlePanel" VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Spacing="16" MaxWidth="440" MinWidth="280">
-                        <TextBlock Text="今日一愿" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Uid="MainPage_WishLabel" Text="" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
-                        <TextBox x:Name="WishBox" PlaceholderText="此刻，你最想完成的一件事…" FontSize="14"
+                        <TextBox x:Name="WishBox" x:Uid="MainPage_WishBox" PlaceholderText="" FontSize="14"
                                  HorizontalAlignment="Stretch" Padding="14,10" TextWrapping="Wrap"
                                  Background="{StaticResource BrushPanel}"
                                  BorderBrush="{StaticResource BrushTextSecondary}" />
-                        <Button x:Name="StartButton" Content="开始专注" Click="StartButton_Click"
+                        <Button x:Name="StartButton" x:Uid="MainPage_StartButton" Content="" Click="StartButton_Click"
                                 FontSize="18" Padding="48,16" HorizontalAlignment="Center"
                                 CornerRadius="32" MinWidth="200" MinHeight="56"
                                 Background="{StaticResource BrushState}" Foreground="White" />
                         <TextBlock x:Name="SessionHint" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
-                                   Text="默认定心 25 分钟 · 正计时 · 心无旁骛" />
+                                   x:Uid="MainPage_SessionHint" Text="" />
 
                     </StackPanel>
 
@@ -131,11 +131,11 @@
                                 </Ellipse.RenderTransform>
                             </Ellipse>
                         </Grid>
-                        <TextBlock x:Name="BreathText" Text="吸气…" FontSize="16" HorizontalAlignment="Center"
+                        <TextBlock x:Name="BreathText" x:Uid="MainPage_BreathIn" Text="" FontSize="16" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushState}" />
-                        <TextBlock Text="跟随呼吸，心先静下来" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"
+                        <TextBlock x:Uid="MainPage_BreathHint" Text="" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}" />
-                        <Button Content="跳过" Click="SkipBreath_Click" HorizontalAlignment="Center"
+                        <Button x:Uid="MainPage_SkipBreath" Content="" Click="SkipBreath_Click" HorizontalAlignment="Center"
                                 Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="16,6" CornerRadius="16" />
                     </StackPanel>
@@ -144,7 +144,7 @@
                     <StackPanel x:Name="FocusPanel" Visibility="Collapsed"
                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Spacing="12" MaxWidth="440" MinWidth="280">
-                        <TextBlock Text="心已定" FontSize="14" HorizontalAlignment="Center"
+                        <TextBlock x:Uid="MainPage_Focusing" Text="" FontSize="14" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushState}" />
                         <!-- 非深度模式：进度条 + 小字号分钟数；深度模式：隐藏时间 -->
                         <ProgressBar x:Name="FocusProgress" Maximum="100" Value="0"
@@ -156,31 +156,31 @@
                         <TextBlock x:Name="WishShow" FontSize="13" HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12" Margin="0,12,0,0">
-                            <Button Content="圆满结束" Click="Complete_Click"
+                            <Button x:Uid="MainPage_Complete" Content="" Click="Complete_Click"
                                     Background="{StaticResource BrushState}" Foreground="White"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button x:Name="BreakButton" Content="放下" Click="Break_Click"
+                            <Button x:Name="BreakButton" x:Uid="MainPage_Break" Content="" Click="Break_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button x:Name="PauseButton" Content="暂停" Click="PauseToggle_Click"
+                            <Button x:Name="PauseButton" x:Uid="MainPage_Pause" Content="" Click="PauseToggle_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button Content="休息5分钟" Click="EmergencyPass_Click"
+                            <Button x:Uid="MainPage_Rest5" Content="" Click="EmergencyPass_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
                         </StackPanel>
-                        <Button Content="临时放行当前网站" AllowFocusOnInteraction="True"
+                        <Button x:Uid="MainPage_AllowCurrent" Content="" AllowFocusOnInteraction="True"
                                 Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                 Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="20,6" CornerRadius="18" FontSize="12" HorizontalAlignment="Center">
                             <Button.Flyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Text="放行 5 分钟" Tag="5" Click="AllowCurrentMenu_Click" />
-                                    <MenuFlyoutItem Text="放行 15 分钟" Tag="15" Click="AllowCurrentMenu_Click" />
-                                    <MenuFlyoutItem Text="放行 30 分钟" Tag="30" Click="AllowCurrentMenu_Click" />
+                                    <MenuFlyoutItem x:Uid="MainPage_Allow5" Text="" Tag="5" Click="AllowCurrentMenu_Click" />
+                                    <MenuFlyoutItem x:Uid="MainPage_Allow15" Text="" Tag="15" Click="AllowCurrentMenu_Click" />
+                                    <MenuFlyoutItem x:Uid="MainPage_Allow30" Text="" Tag="30" Click="AllowCurrentMenu_Click" />
                                 </MenuFlyout>
                             </Button.Flyout>
                         </Button>
@@ -195,11 +195,11 @@
                         <TextBlock x:Name="FeedbackText" FontSize="15" TextWrapping="Wrap"
                                    HorizontalAlignment="Center" TextAlignment="Center"
                                    Foreground="{StaticResource BrushTextPrimary}" />
-                        <Button x:Name="FeedbackAgainButton" Content="再来 15 分钟" Click="StartAgain_Click"
+                        <Button x:Name="FeedbackAgainButton" x:Uid="MainPage_FeedbackAgain" Content="" Click="StartAgain_Click"
                                 Background="{StaticResource BrushState}" Foreground="White"
                                 Padding="32,12" CornerRadius="24" HorizontalAlignment="Center"
                                 FontSize="14" MinWidth="160" MinHeight="48" />
-                        <Button x:Name="FeedbackRestButton" Content="先休息一下" Click="FeedbackRest_Click"
+                        <Button x:Name="FeedbackRestButton" x:Uid="MainPage_FeedbackRest" Content="" Click="FeedbackRest_Click"
                                 Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="20,6" CornerRadius="18" HorizontalAlignment="Center" FontSize="12" />
                     </StackPanel>
@@ -208,20 +208,20 @@
                     <StackPanel x:Name="CooldownPanel" Visibility="Collapsed"
                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Spacing="14" MaxWidth="440" MinWidth="280">
-                        <TextBlock Text="🧘 缓冲期" FontSize="16" HorizontalAlignment="Center"
+                        <TextBlock x:Uid="MainPage_CooldownTitle" Text="" FontSize="16" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushState}" />
                         <TextBlock x:Name="CooldownText" FontSize="13" TextWrapping="Wrap"
                                    HorizontalAlignment="Center" TextAlignment="Center"
                                    Foreground="{StaticResource BrushTextPrimary}"
                                    Text="专注结束，休息一下\n屏蔽还剩 10 分钟" />
-                        <TextBlock Text="可以喝水、伸展、远眺\n暂时不能刷抖音哦" FontSize="11" TextWrapping="Wrap"
+                        <TextBlock x:Uid="MainPage_CooldownHint" Text="" FontSize="11" TextWrapping="Wrap"
                                    HorizontalAlignment="Center" TextAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" Opacity="0.8" />
-                        <Button Content="再来 15 分钟" Click="CooldownAgain_Click"
+                        <Button x:Uid="MainPage_CooldownAgain" Content="" Click="CooldownAgain_Click"
                                 Background="{StaticResource BrushState}" Foreground="White"
                                 Padding="32,12" CornerRadius="24" HorizontalAlignment="Center"
                                 FontSize="14" MinWidth="160" MinHeight="48" />
-                        <Button x:Name="CooldownReleaseButton" Content="提前解除屏蔽" Click="CooldownRelease_Click"
+                        <Button x:Name="CooldownReleaseButton" x:Uid="MainPage_CooldownRelease" Content="" Click="CooldownRelease_Click"
                                 Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="20,6" CornerRadius="18" HorizontalAlignment="Center" FontSize="12" />
                     </StackPanel>
@@ -230,20 +230,20 @@
                     <StackPanel x:Name="SoftLandingPanel" Visibility="Collapsed"
                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Spacing="16" MaxWidth="440" MinWidth="280">
-                        <TextBlock Text="🌿 缓冲期结束" FontSize="16" HorizontalAlignment="Center"
+                        <TextBlock x:Uid="MainPage_SoftLandingTitle" Text="" FontSize="16" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushState}" />
                         <TextBlock x:Name="SoftLandingText" FontSize="13" TextWrapping="Wrap"
                                    HorizontalAlignment="Center" TextAlignment="Center"
                                    Foreground="{StaticResource BrushTextPrimary}"
                                    Text="你已经休息了 10 分钟\n接下来想做什么？" />
-                        <Button Content="再来 15 分钟" Click="SoftLandingAgain_Click"
+                        <Button x:Uid="MainPage_SoftLandingAgain" Content="" Click="SoftLandingAgain_Click"
                                 Background="{StaticResource BrushState}" Foreground="White"
                                 Padding="32,12" CornerRadius="24" HorizontalAlignment="Center"
                                 FontSize="14" MinWidth="160" MinHeight="48" />
-                        <Button Content="我想自由使用" Click="SoftLandingRelease_Click"
+                        <Button x:Uid="MainPage_SoftLandingRelease" Content="" Click="SoftLandingRelease_Click"
                                 Background="Transparent" Foreground="{StaticResource BrushTextSecondary}"
                                 Padding="20,6" CornerRadius="18" HorizontalAlignment="Center" FontSize="12" />
-                        <TextBlock Text="（解除屏蔽，返回首页）" FontSize="10" HorizontalAlignment="Center"
+                        <TextBlock x:Uid="MainPage_SoftLandingHint" Text="" FontSize="10" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" Opacity="0.6" />
                     </StackPanel>
                 </Grid>
@@ -258,19 +258,19 @@
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="TodayCount" FontSize="20" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock Text="今日定心（次）" FontSize="12"
+                        <TextBlock x:Uid="MainPage_TodayCountLabel" Text="" FontSize="12"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="TodayMinutes" FontSize="20" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock Text="今日专注（分）" FontSize="12"
+                        <TextBlock x:Uid="MainPage_TodayMinutesLabel" Text="" FontSize="12"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="BlockStatus" FontSize="20" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
-                        <TextBlock Text="屏蔽规则" FontSize="12"
+                        <TextBlock x:Uid="MainPage_BlockStatusLabel" Text="" FontSize="12"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                 </StackPanel>
@@ -281,10 +281,10 @@
                         <Image x:Name="QrCodeImage" Width="80" Height="80" Stretch="Uniform" />
                     </Border>
                     <StackPanel Spacing="4" VerticalAlignment="Center" MaxWidth="240">
-                        <TextBlock x:Name="CompanionTitleText" Text="手机扫码连接" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock x:Name="CompanionDescText" Text="手机和电脑需在同一WiFi下，手机浏览器扫码，查看专注统计、远程开始/结束专注" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock x:Name="CompanionTitleText" x:Uid="MainPage_CompanionTitle" Text="" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock x:Name="CompanionDescText" x:Uid="MainPage_CompanionDesc" Text="" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
                         <TextBlock x:Name="ConnectUrlText" FontSize="11" Foreground="{StaticResource BrushAccent}" />
-                        <TextBlock x:Name="CompanionUpgradeText" Text="手机伴侣为付费功能 · ¥68 买断后扫码连接" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushWarning}" Visibility="Collapsed" />
+                        <TextBlock x:Name="CompanionUpgradeText" x:Uid="MainPage_CompanionUpgrade" Text="" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource BrushWarning}" Visibility="Collapsed" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

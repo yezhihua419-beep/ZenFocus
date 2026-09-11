@@ -82,9 +82,9 @@ public static class AppServices
     {
         try
         {
-            var label = minutes <= 3 ? "喘口气" : "暂离模式";
+            var label = minutes <= 3 ? I18n.Get("RestLabel_Short", "Quick Break") : I18n.Get("RestLabel_Long", "Away Mode");
             Blocklist.EmergencyPass = true;
-            Notify($"{label}已开启 · 桌面应用暂停拦截 · {minutes}分钟后自动恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
+            Notify(I18n.GetFormat("Notify_RestStart", label, minutes), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
             _restTimer?.Stop();
             _restTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();
             _restTimer.Interval = TimeSpan.FromMinutes(minutes);
@@ -93,7 +93,7 @@ public static class AppServices
             {
                 _restTimer?.Stop();
                 Blocklist.EmergencyPass = false;
-                Notify($"{label}结束 · 桌面应用拦截已恢复", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
+                Notify(I18n.GetFormat("Notify_RestEnd", label), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
                 App.LogAction($"{label}结束", "自动恢复桌面应用拦截");
             };
             _restTimer.Start();

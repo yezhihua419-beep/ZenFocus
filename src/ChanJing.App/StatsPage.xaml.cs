@@ -436,12 +436,12 @@ public sealed partial class StatsPage : Page
             var content = isCsv ? BuildCsv(sessions) : BuildJson(sessions);
             await Windows.Storage.FileIO.WriteTextAsync(file, content);
             App.LogAction("数据导出", $"{file.Name}（{(isCsv ? "CSV" : "JSON")}，{sessions.Count}条会话）");
-            AppServices.Notify($"已导出 {sessions.Count} 条专注记录到 {file.Name}");
+            AppServices.Notify(I18n.GetFormat("Notify_ExportSuccess", sessions.Count, file.Name));
         }
         catch (Exception ex)
         {
             App.LogCrash("StatsPage.ExportData", ex);
-            AppServices.Notify("导出失败，请重试", Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error);
+            AppServices.Notify(I18n.Get("Notify_ExportFailed", "Export failed. Please retry."), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error);
         }
     }
 
@@ -508,10 +508,10 @@ public sealed partial class StatsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "今日定心卡片",
+            Title = "Today's Focus Card",
             Content = ShareCard,
-            PrimaryButtonText = "保存图片",
-            CloseButtonText = "关闭",
+            PrimaryButtonText = "Save Image",
+            CloseButtonText = "Close",
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -569,9 +569,9 @@ public sealed partial class StatsPage : Page
 
             var info = new ContentDialog
             {
-                Title = "已保存",
+                Title = "Saved",
                 Content = $"卡片已保存到：\n{path}\n且已复制到剪贴板，可直接粘贴分享。",
-                CloseButtonText = "好",
+                CloseButtonText = "OK",
                 XamlRoot = XamlRoot
             };
             await info.ShowAsync();
@@ -581,7 +581,7 @@ public sealed partial class StatsPage : Page
         {
             var error = new ContentDialog
             {
-                Title = "保存失败",
+                Title = "Save Failed",
                 Content = ex.Message,
                 CloseButtonText = "好",
                 XamlRoot = XamlRoot
@@ -678,25 +678,25 @@ public sealed partial class StatsPage : Page
         {
             var dialog = new ContentDialog
             {
-                Title = "升级到正式版",
+                Title = "Upgrade to Pro",
                 XamlRoot = XamlRoot,
-                PrimaryButtonText = "输入激活码",
-                CloseButtonText = "稍后再说",
+                PrimaryButtonText = "Enter License Key",
+                CloseButtonText = "Later",
                 DefaultButton = ContentDialogButton.Primary,
                 Content = new StackPanel
                 {
                     Spacing = 8,
                     Children =
                     {
-                        new TextBlock { Text = "¥68 终身买断，一次付费永久使用", FontSize = 16, FontWeight = FontWeights.SemiBold },
-                        new TextBlock { Text = "付费版功能：", FontSize = 13, FontWeight = FontWeights.SemiBold },
-                        new TextBlock { Text = "• 无限自定义域名（免费版限3个）", FontSize = 12 },
-                        new TextBlock { Text = "• 全部4个场景自定义（免费版限1个）", FontSize = 12 },
-                        new TextBlock { Text = "• 手机伴侣（扫码查看统计+远程控制）", FontSize = 12 },
-                        new TextBlock { Text = "• 数据导出（CSV/JSON）", FontSize = 12 },
-                        new TextBlock { Text = "• 高级统计（高效时段分析+连续纪录历史）", FontSize = 12 },
-                        new TextBlock { Text = "• ADHD缓冲期20/30分钟（免费版限5/10/15）", FontSize = 12 },
-                        new TextBlock { Text = "\n购买方式：邮件联系 yezhihua_yzh@163.com，付款后手动发激活码。", FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
+                        new TextBlock { Text = "$19 Lifetime, one-time payment forever", FontSize = 16, FontWeight = FontWeights.SemiBold },
+                        new TextBlock { Text = "Paid features:", FontSize = 13, FontWeight = FontWeights.SemiBold },
+                        new TextBlock { Text = "• Unlimited custom domains (free: 3 max)", FontSize = 12 },
+                        new TextBlock { Text = "• All 4 scenes customizable (free: 1 max)", FontSize = 12 },
+                        new TextBlock { Text = "• Phone companion (scan to view stats + remote control)", FontSize = 12 },
+                        new TextBlock { Text = "• Data export (CSV/JSON)", FontSize = 12 },
+                        new TextBlock { Text = "• Advanced stats (peak hour analysis + streak history)", FontSize = 12 },
+                        new TextBlock { Text = "• ADHD cooldown 20/30 min (free: 5/10/15)", FontSize = 12 },
+                        new TextBlock { Text = "\nTo purchase: email yezhihua_yzh@163.com, license key sent manually after payment.", FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
                     }
                 }
             };
@@ -722,17 +722,17 @@ public sealed partial class StatsPage : Page
             };
             var dialog = new ContentDialog
             {
-                Title = "激活正式版",
+                Title = I18n.Get("ActivateDialog_Title", "Activate Pro"),
                 XamlRoot = XamlRoot,
-                PrimaryButtonText = "激活",
-                CloseButtonText = "取消",
+                PrimaryButtonText = I18n.Get("ActivateDialog_Primary", "Activate"),
+                CloseButtonText = I18n.Get("ActivateDialog_Close", "Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
                 Content = new StackPanel
                 {
                     Spacing = 8,
                     Children =
                     {
-                        new TextBlock { Text = "输入激活码后立即解锁全部付费功能。", FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
+                        new TextBlock { Text = I18n.Get("ActivateDialog_Hint", "Enter license key to unlock all paid features."), FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
                         input
                     }
                 }
@@ -743,7 +743,7 @@ public sealed partial class StatsPage : Page
                 var code = input.Text?.Trim() ?? "";
                 if (string.IsNullOrWhiteSpace(code))
                 {
-                    AppServices.Notify("激活码不能为空");
+                    AppServices.Notify(I18n.Get("Notify_KeyEmpty", "License key cannot be empty."));
                     return;
                 }
                 // HMAC离线验证：格式 CJ-XXXX-XXXXXX
@@ -751,13 +751,13 @@ public sealed partial class StatsPage : Page
                 if (ok)
                 {
                     App.LogAction("激活正式版", $"激活码={code.Substring(0, Math.Min(6, code.Length))}***");
-                    AppServices.Notify("激活成功！全部付费功能已解锁");
+                    AppServices.Notify(I18n.Get("Notify_KeySuccess", "Activated! All paid features unlocked."));
                     // 刷新当前页面
                     RefreshAll();
                 }
                 else
                 {
-                    AppServices.Notify("激活码无效，请检查后重试。格式：CJ-XXXX-XXXXXX");
+                    AppServices.Notify(I18n.Get("Notify_KeyInvalid", "Invalid license key. Format: CJ-XXXX-XXXXXX"));
                 }
             }
         }

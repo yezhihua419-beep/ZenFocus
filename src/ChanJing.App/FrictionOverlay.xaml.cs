@@ -72,7 +72,7 @@ public sealed partial class FrictionOverlay : Window
             {
                 _timer.Stop();
                 CountdownText.Text = "";
-                HintText.Text = $"「{_processName}」属于{_category}，真的要分心吗？选择放行时长";
+                HintText.Text = I18n.GetFormat("FrictionOverlay_Decision", _processName, _category);
                 ButtonPanel.Visibility = Visibility.Visible;
             }
             else

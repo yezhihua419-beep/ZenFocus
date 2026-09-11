@@ -39,10 +39,10 @@ public sealed partial class ShieldPage : Page
     {
         var dialog = new ContentDialog
         {
-            Title = "需要管理员权限",
+            Title = "Admin Rights Required",
             Content = $"「{label}」需要写入系统 hosts 文件，需要管理员权限。\n\n是否以管理员身份重启禅净并自动执行？",
-            PrimaryButtonText = "以管理员身份重启",
-            CloseButtonText = "取消",
+            PrimaryButtonText = "Restart as Admin",
+            CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -359,7 +359,7 @@ public sealed partial class ShieldPage : Page
             {
                 sceneTag = "work";
                 AppServices.CurrentSceneTag = sceneTag;
-                AppServices.Notify("未选择场景，已自动选择「工作」场景并保存配置");
+                AppServices.Notify(I18n.Get("Notify_NoSceneAuto", "No scene selected. Auto-selected Work scene and saved config."));
             }
             var cats = _blocklist.GetEnabledCategories().ToArray();
             // 用当前场景的愿望和时长，只更新屏蔽分类
@@ -367,7 +367,7 @@ public sealed partial class ShieldPage : Page
             ChanJing.Core.Services.SceneManager.SaveSceneConfig(AppServices.Db, sceneTag,
                 new ChanJing.Core.Services.SceneManager.SceneConfig(existing.Wish, existing.Minutes, cats));
             App.LogAction("保存场景配置", $"{sceneTag} 屏蔽=[{string.Join("/", cats)}]");
-            RefreshStatus("配置已保存，开始专注时自动生效。");
+            RefreshStatus(I18n.Get("Notify_ConfigSaved", "Config saved. Applies when focus starts."));
             App.LogAction("保存屏蔽配置", "成功");
         }
         catch (Exception ex)
@@ -383,9 +383,9 @@ public sealed partial class ShieldPage : Page
         {
             var confirm = new ContentDialog
             {
-                Title = "确认清除",
-                Content = "将清除所有已保存的屏蔽分类和自定义域名，此操作不可撤销。确定继续吗？",
-                PrimaryButtonText = "确定清除",
+                Title = "Confirm Clear",
+                Content = "This will clear all saved block categories and custom domains. This cannot be undone. Continue?",
+                PrimaryButtonText = "Confirm Clear",
                 CloseButtonText = "取消",
                 XamlRoot = this.Content.XamlRoot
             };
@@ -514,10 +514,10 @@ public sealed partial class ShieldPage : Page
                 {
                     var dialog = new ContentDialog
                     {
-                        Title = "结束进程模式",
-                        Content = "「结束进程」会强制关闭被拦截的应用，未保存的内容可能丢失。\n\n确定使用此模式吗？",
-                        PrimaryButtonText = "确定使用",
-                        CloseButtonText = "取消",
+                        Title = "Kill-Process Mode",
+                        Content = "Kill-Process will force close blocked apps. Unsaved content may be lost.\n\nUse this mode?",
+                        PrimaryButtonText = "Confirm Use",
+                        CloseButtonText = "Cancel",
                         DefaultButton = ContentDialogButton.Close,
                         XamlRoot = XamlRoot
                     };
@@ -555,7 +555,7 @@ public sealed partial class ShieldPage : Page
             if (!_blocklist.IsActivated() && minutes > 15)
             {
                 CooldownMinutesBox.SelectedIndex = 1; // 回退到10分钟
-                AppServices.Notify("20/30分钟缓冲期为付费功能，免费版可选5/10/15分钟。");
+                AppServices.Notify(I18n.Get("Notify_CooldownPaid", "20/30 min cooldown is paid. Free version: 5/10/15 min."));
                 return;
             }
             _blocklist.SetCooldownMinutes(minutes);
