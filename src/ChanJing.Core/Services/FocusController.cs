@@ -56,6 +56,9 @@ public class FocusController
         }
 
         // 未选场景或场景配置无效，用默认配置
+        // 关键：即使未选场景，也要调用Apply()确保hosts.pre存在，
+        // 否则IsApplied()返回false，OnFocusStarted和前台轮询都不工作，抖音不会被屏蔽
+        _blocklist.Apply();
         FocusContext.CurrentWish = "专注";
         var defaultMinutes = FocusContext.DeepMode ? 0 : 25;
         FocusContext.CurrentMinutes = defaultMinutes;
