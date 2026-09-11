@@ -114,11 +114,11 @@
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button x:Name="PauseButton" Content="暂离" Click="PauseToggle_Click"
+                            <Button x:Name="PauseButton" Content="暂停" Click="PauseToggle_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />
-                            <Button Content="暂离" Click="EmergencyPass_Click"
+                            <Button Content="休息5分钟" Click="EmergencyPass_Click"
                                     Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                                     Foreground="{StaticResource BrushTextSecondary}"
                                     Padding="20,10" CornerRadius="24" FontSize="13" />

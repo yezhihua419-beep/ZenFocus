@@ -435,7 +435,7 @@ public sealed partial class MainPage : Page
             {
                 _engine.Resume();
                 App.LogAction("继续专注");
-                PauseButton.Content = "临时离开";
+                PauseButton.Content = "暂停";
                 PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextSecondary"];
                 TimerText.Text = FormatElapsed(_engine.Elapsed);
             }
@@ -443,7 +443,7 @@ public sealed partial class MainPage : Page
             {
                 _engine.Pause();
                 App.LogAction("暂停专注");
-                PauseButton.Content = "继续专注";
+                PauseButton.Content = "继续";
                 PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushState"];
                 TimerText.Text = "已暂停";
             }
