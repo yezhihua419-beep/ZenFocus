@@ -75,9 +75,14 @@
 
                 <!-- 付费功能预览钩子 -->
                 <Border Background="{StaticResource BrushPanel}" CornerRadius="8" Padding="16,12" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PremiumPreview">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="升级解锁更多洞察" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" />
-                        <TextBlock Text="付费版：最专注时段分析 · 分心模式识别 · 跨设备同步屏蔽 · 无限自定义场景" FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                    <StackPanel Spacing="8">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="升级解锁更多洞察" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" />
+                            <TextBlock Text="付费版：最专注时段分析 · 分心模式识别 · 跨设备同步屏蔽 · 无限自定义场景 · 手机伴侣 · 数据导出" FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                        </StackPanel>
+                        <Button Content="立即升级 ¥68 终身买断" Click="Upgrade_Click"
+                                Background="{StaticResource BrushState}" Foreground="White"
+                                Padding="20,8" CornerRadius="16" HorizontalAlignment="Left" FontSize="12" />
                     </StackPanel>
                 </Border>
 

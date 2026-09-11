@@ -1,5 +1,6 @@
 ﻿using ChanJing.Core.Services;
 using Microsoft.UI;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -669,6 +670,99 @@ public sealed partial class StatsPage : Page
     }
 
     private static Brush? GetBrush(string key) => App.Current.Resources[key] as Brush;
+
+    /// <summary>立即升级按钮：弹升级说明弹窗。</summary>
+    private async void Upgrade_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "升级到正式版",
+                XamlRoot = XamlRoot,
+                PrimaryButtonText = "输入激活码",
+                CloseButtonText = "稍后再说",
+                DefaultButton = ContentDialogButton.Primary,
+                Content = new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        new TextBlock { Text = "¥68 终身买断，一次付费永久使用", FontSize = 16, FontWeight = FontWeights.SemiBold },
+                        new TextBlock { Text = "付费版功能：", FontSize = 13, FontWeight = FontWeights.SemiBold },
+                        new TextBlock { Text = "• 无限自定义域名（免费版限3个）", FontSize = 12 },
+                        new TextBlock { Text = "• 全部4个场景自定义（免费版限1个）", FontSize = 12 },
+                        new TextBlock { Text = "• 手机伴侣（扫码查看统计+远程控制）", FontSize = 12 },
+                        new TextBlock { Text = "• 数据导出（CSV/JSON）", FontSize = 12 },
+                        new TextBlock { Text = "• 高级统计（高效时段分析+连续纪录历史）", FontSize = 12 },
+                        new TextBlock { Text = "• ADHD缓冲期20/30分钟（免费版限5/10/15）", FontSize = 12 },
+                        new TextBlock { Text = "\n购买方式：邮件联系 yezhihua_yzh@163.com，付款后手动发激活码。", FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
+                    }
+                }
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await ShowActivationDialog();
+            }
+        }
+        catch (Exception ex) { App.LogCrash("StatsPage.Upgrade_Click", ex); }
+    }
+
+    /// <summary>激活码输入弹窗：验证通过后写本地 activated=true。</summary>
+    private async System.Threading.Tasks.Task ShowActivationDialog()
+    {
+        try
+        {
+            var input = new TextBox
+            {
+                PlaceholderText = "请输入购买后收到的激活码",
+                FontSize = 14,
+                Padding = new Thickness(12, 8, 12, 8)
+            };
+            var dialog = new ContentDialog
+            {
+                Title = "激活正式版",
+                XamlRoot = XamlRoot,
+                PrimaryButtonText = "激活",
+                CloseButtonText = "取消",
+                DefaultButton = ContentDialogButton.Primary,
+                Content = new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        new TextBlock { Text = "输入激活码后立即解锁全部付费功能。", FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
+                        input
+                    }
+                }
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                var code = input.Text?.Trim() ?? "";
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    AppServices.Notify("激活码不能为空");
+                    return;
+                }
+                // HMAC离线验证：格式 CJ-XXXX-XXXXXX
+                var ok = AppServices.Blocklist.Activate(code);
+                if (ok)
+                {
+                    App.LogAction("激活正式版", $"激活码={code.Substring(0, Math.Min(6, code.Length))}***");
+                    AppServices.Notify("激活成功！全部付费功能已解锁");
+                    // 刷新当前页面
+                    RefreshAll();
+                }
+                else
+                {
+                    AppServices.Notify("激活码无效，请检查后重试。格式：CJ-XXXX-XXXXXX");
+                }
+            }
+        }
+        catch (Exception ex) { App.LogCrash("StatsPage.ShowActivationDialog", ex); }
+    }
 
     private sealed record UsageItem(string Name, long Value, long Max, string Text, bool IsDistraction = false)
     {
