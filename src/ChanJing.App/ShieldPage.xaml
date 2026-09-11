@@ -240,6 +240,10 @@
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />
+                    <Button Content="反馈建议" Click="Feedback_Click"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="20,10" CornerRadius="24" FontSize="12" />
                 </StackPanel>
                 <TextBlock x:Name="StatusText" FontSize="12" HorizontalAlignment="Center"
                            Foreground="{StaticResource BrushState}" TextWrapping="Wrap" />

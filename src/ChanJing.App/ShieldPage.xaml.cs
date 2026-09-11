@@ -646,4 +646,20 @@ public sealed partial class ShieldPage : Page
         }
         catch (Exception ex) { App.LogCrash("ManualShield_Toggled", ex); }
     }
+
+    /// <summary>反馈建议：打开默认邮件客户端，收件人预填。</summary>
+    private void Feedback_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "v0.8.0";
+            var os = Environment.OSVersion.VersionString;
+            var subject = Uri.EscapeDataString($"禅净反馈 - v{version}");
+            var body = Uri.EscapeDataString($"版本：{version}\n系统：{os}\n\n请描述您遇到的问题或建议：\n");
+            var url = $"mailto:yezhihua_yzh@163.com?subject={subject}&body={body}";
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            App.LogAction("反馈建议", "打开邮件客户端");
+        }
+        catch (Exception ex) { App.LogCrash("Feedback_Click", ex); }
+    }
 }
