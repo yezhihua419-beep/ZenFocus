@@ -85,6 +85,38 @@ public sealed partial class MainPage : Page
         HotkeyHint.Text = I18n.Get("MainPage_Hotkeys", "Shortcuts: Ctrl+Alt+F start/end · P pause · R 3-min break · S block page");
         ToolTipService.SetToolTip(SettingsButton, I18n.Get("MainPage_SettingsTooltip", "Mode and language"));
         ApplyAdminHint();
+        RefreshPaidLocks();
+    }
+
+    /// <summary>额度用尽的场景显示锁标+灰+hover，左键仍能应用愿望/时长。</summary>
+    private void RefreshPaidLocks()
+    {
+        var tip = I18n.Get("PaidLock_Scene", "Custom scene quota used · $19 lifetime to unlock more");
+        foreach (var btn in new[] { SceneWork, SceneWrite, SceneStudy, SceneMeeting })
+        {
+            var tag = btn.Tag?.ToString() ?? "";
+            var locked = SceneManager.IsSceneCustomizeLocked(_db, tag, _blocklist.IsActivated());
+            var key = tag switch
+            {
+                "work" => "MainPage_SceneWork.Content",
+                "write" => "MainPage_SceneWrite.Content",
+                "study" => "MainPage_SceneStudy.Content",
+                _ => "MainPage_SceneMeeting.Content"
+            };
+            PaidLock.Prefix(btn, I18n.Get(key, tag), locked);
+            PaidLock.Apply(btn, locked, tip);
+        }
+        var companionLocked = !_blocklist.IsActivated();
+        var companionTitle = companionLocked
+            ? I18n.Get("MainPage_CompanionPaidTitle", "Phone companion (paid)")
+            : I18n.Get("MainPage_CompanionTitle.Text", "Scan to connect phone");
+        PaidLock.Prefix(CompanionTitleText, companionTitle, companionLocked);
+        PaidLock.Apply(CompanionTitleText, companionLocked,
+            I18n.Get("PaidLock_Companion", "Phone companion · $19 lifetime"));
+        PaidLock.Apply(CompanionUpgradeText, companionLocked,
+            I18n.Get("PaidLock_Companion", "Phone companion · $19 lifetime"));
+        PaidLock.Apply(QrCodeBorder, companionLocked,
+            I18n.Get("PaidLock_Companion", "Phone companion · $19 lifetime"));
     }
 
     /// <summary>未提权时写清：网站 hosts 会跳过，桌面应用拦截仍在。</summary>
@@ -172,6 +204,7 @@ public sealed partial class MainPage : Page
                 EnterIdleView();
 
             ApplyLocalizedButtons();
+            RefreshPaidLocks();
             App.LogAction("i18n-loaded", $"scene={SceneWork.Content} start={StartButton.Content} wish={WishBox.Text}");
             ShowFirstRunGuideIfNeeded();
         }
@@ -358,6 +391,7 @@ public sealed partial class MainPage : Page
         SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
         HighlightSceneButtons(tag);
         UpdateSceneHint(tag, config.Minutes);
+        RefreshPaidLocks();
     }
 
     /// <summary>长按场景按钮：付费版弹出自定义配置小窗，免费版提示升级。</summary>
@@ -368,8 +402,8 @@ public sealed partial class MainPage : Page
             var tag = (sender as Button)?.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
 
-            // 免费版开放 1 个自定义场景额度，超出后提示升级
-            if (!_blocklist.IsActivated() && SceneManager.GetCustomSceneCount(_db) >= 1)
+            // 已自定义的那个场景仍可右键编辑；其余灰锁出升级框
+            if (SceneManager.IsSceneCustomizeLocked(_db, tag, _blocklist.IsActivated()))
             {
                 _ = ShowSceneUpgradeHint(tag);
                 return;
@@ -411,8 +445,39 @@ public sealed partial class MainPage : Page
         if (result == ContentDialogResult.Primary)
         {
             App.LogAction("场景自定义升级提示", $"{tag} 用户点击了解升级");
-            // TODO: 跳转到升级页面（支付上线后接入）
+            // 支付上线前只出说明，不跳转
         }
+    }
+
+    /// <summary>免费版点伴侣区：灰锁仍可点，弹出升级说明。</summary>
+    private void CompanionPaid_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (_blocklist.IsActivated()) return;
+        _ = ShowCompanionUpgradeHint();
+    }
+
+    private async Task ShowCompanionUpgradeHint()
+    {
+        var dialog = new ContentDialog
+        {
+            Title = I18n.Get("Upgrade_Title", "Upgrade to Pro"),
+            Content = new StackPanel
+            {
+                Spacing = 8,
+                Children =
+                {
+                    new TextBlock { Text = I18n.Get("PaidLock_Companion", "Phone companion · $19 lifetime"), FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = I18n.Get("MainPage_CompanionPaidDesc", "After upgrade, scan to view stats and start/end focus from your phone."), TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
+                }
+            },
+            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
+            XamlRoot = XamlRoot
+        };
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+            App.LogAction("伴侣升级提示", "用户点击了解升级");
     }
 
     /// <summary>显示场景自定义配置对话框：时长+屏蔽分类+愿望文案。</summary>
@@ -487,6 +552,7 @@ public sealed partial class MainPage : Page
                 _blocklist.SetEnabledCategories(selectedCategories); // 用户在对话框里明确勾了分类
                 UpdateSceneHint(tag, selectedMinutes);
             }
+            RefreshPaidLocks();
         }
         else if (result == ContentDialogResult.Secondary)
         {
@@ -501,6 +567,7 @@ public sealed partial class MainPage : Page
                 SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
                 UpdateSceneHint(tag, preset.Minutes);
             }
+            RefreshPaidLocks();
         }
     }
     private void StartBreathing()
@@ -1089,6 +1156,7 @@ public sealed partial class MainPage : Page
                 ConnectUrlText.Text = "";
                 CompanionUpgradeText.Text = I18n.Get("MainPage_CompanionUpgrade.Text", "Phone companion is a paid feature · $19 lifetime to unlock");
                 CompanionUpgradeText.Visibility = Visibility.Visible;
+                RefreshPaidLocks();
                 App.LogAction("伴侣二维码", "免费版显示升级提示");
                 return;
             }
@@ -1098,6 +1166,7 @@ public sealed partial class MainPage : Page
             CompanionTitleText.Text = I18n.Get("MainPage_CompanionTitle.Text", "Scan to connect phone");
             CompanionDescText.Text = I18n.Get("MainPage_CompanionDesc.Text", "Phone and PC must be on the same WiFi.");
             CompanionUpgradeText.Visibility = Visibility.Collapsed;
+            RefreshPaidLocks();
 
             var server = AppServices.Companion;
             if (server == null || !server.IsRunning)

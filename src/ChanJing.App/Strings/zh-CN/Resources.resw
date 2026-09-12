@@ -477,4 +477,10 @@
   <data name="Diag_BrowserHosts" xml:space="preserve"><value>浏览器：新访问会失败。已打开的标签可能还在。</value></data>
   <data name="Diag_BrowserBubble" xml:space="preserve"><value>浏览器：只出分心气泡，不会关标签。</value></data>
   <data name="Diag_Log" xml:space="preserve"><value>崩溃日志：{0}</value></data>
+  <data name="Diag_ConfigBackup" xml:space="preserve"><value>屏蔽名单备份（分类/自定义站点/应用，不含统计）：</value></data>
+  <data name="PaidLock_Scene" xml:space="preserve"><value>自定义场景额度已用完 · ¥69 买断解锁</value></data>
+  <data name="PaidLock_Domain" xml:space="preserve"><value>免费版自定义域名 3 个 · ¥69 买断解锁</value></data>
+  <data name="PaidLock_Export" xml:space="preserve"><value>数据导出为付费功能 · ¥69 买断解锁</value></data>
+  <data name="PaidLock_Companion" xml:space="preserve"><value>手机伴侣 · ¥69 买断解锁</value></data>
+  <data name="PaidLock_Cooldown" xml:space="preserve"><value>ADHD 缓冲期 20/30 分钟 · ¥69 买断解锁</value></data>
 </root>

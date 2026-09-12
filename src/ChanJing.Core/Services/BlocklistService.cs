@@ -739,7 +739,14 @@ public sealed class BlocklistService
         if (root.TryGetProperty("version", out var ver)) version = ver.GetInt32();
         if (version > 1) System.Diagnostics.Debug.WriteLine($"ImportConfig: 配置版本v{version}高于当前v1，按v1兼容导入");
         if (root.TryGetProperty("enabledCategories", out var cats)) SetEnabledCategories(cats.EnumerateArray().Select(c => c.GetString()!).Where(s => !string.IsNullOrEmpty(s)).ToList());
-        if (root.TryGetProperty("customDomains", out var domains)) { var domainList = domains.EnumerateArray().Select(d => d.GetString()!).Where(s => !string.IsNullOrEmpty(s)).ToList(); SetCustomDomains(domainList); }
+        if (root.TryGetProperty("customDomains", out var domains))
+        {
+            var domainList = domains.EnumerateArray().Select(d => d.GetString()!).Where(s => !string.IsNullOrEmpty(s)).ToList();
+            // 免费导入不得绕过 3 个自定义域名
+            if (!IsActivated() && domainList.Count > FreeTargetLimit)
+                domainList = domainList.Take(FreeTargetLimit).ToList();
+            SetCustomDomains(domainList);
+        }
         if (root.TryGetProperty("customApps", out var apps)) { foreach (var a in GetCustomApps()) RemoveCustomApp(a.Process); foreach (var a in apps.EnumerateArray()) { var process = a.GetProperty("process").GetString(); var category = a.TryGetProperty("category", out var cat) ? cat.GetString() ?? "短视频" : "短视频"; if (!string.IsNullOrEmpty(process)) AddCustomApp(process, category); } }
         if (root.TryGetProperty("appBlockMode", out var mode)) SetAppBlockMode(mode.GetString() ?? "minimize");
     }

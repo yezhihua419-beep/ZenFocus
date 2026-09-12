@@ -320,6 +320,25 @@ public class BlocklistServiceTests : IDisposable
     }
 
     [Fact]
+    public void ImportConfig_Free_ClipsDomainsToLimit()
+    {
+        var json = "{\"version\":1,\"enabledCategories\":[],\"customDomains\":[\"a.com\",\"b.com\",\"c.com\",\"d.com\"],\"customApps\":[],\"appBlockMode\":\"minimize\"}";
+        _service.ImportConfig(json);
+        Assert.Equal(3, _service.GetCustomDomains().Count);
+        Assert.DoesNotContain("d.com", _service.GetCustomDomains());
+    }
+
+    [Fact]
+    public void ImportConfig_Activated_KeepsAllDomains()
+    {
+        _db.SetSetting(BlocklistService.SettingKeyActivated, "true");
+        var paid = new BlocklistService(_db);
+        var json = "{\"version\":1,\"enabledCategories\":[],\"customDomains\":[\"a.com\",\"b.com\",\"c.com\",\"d.com\"],\"customApps\":[],\"appBlockMode\":\"minimize\"}";
+        paid.ImportConfig(json);
+        Assert.Equal(4, paid.GetCustomDomains().Count);
+    }
+
+    [Fact]
     public void ImportConfig_NoVersion_DefaultsToV1()
     {
         // 旧版配置没有version字段，应按v1处理

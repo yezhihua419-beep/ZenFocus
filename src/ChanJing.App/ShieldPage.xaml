@@ -256,14 +256,6 @@
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="28,10" CornerRadius="24" />
-                    <Button x:Name="ExportButton" Content="Export" Click="ExportConfig_Click"
-                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                            Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="20,10" CornerRadius="24" FontSize="12" />
-                    <Button x:Name="ImportButton" Content="Import" Click="ImportConfig_Click"
-                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
-                            Foreground="{StaticResource BrushTextSecondary}"
-                            Padding="20,10" CornerRadius="24" FontSize="12" />
                     <Button x:Name="DiagnoseButton" Content="Diagnose" Click="Diagnose_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"

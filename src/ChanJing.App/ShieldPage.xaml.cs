@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Security;
 using ChanJing.Core.Services;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace ChanJing_App;
 
@@ -98,8 +100,6 @@ public sealed partial class ShieldPage : Page
         I18n.SetContent(ElevateButton, "Admin_ElevatePrimary", "Restart as admin");
         I18n.SetContent(ApplyButton, "ShieldPage_Apply.Content", "Save config");
         I18n.SetContent(ClearButton, "ShieldPage_Clear.Content", "Clear");
-        I18n.SetContent(ExportButton, "ShieldPage_Export.Content", "Export");
-        I18n.SetContent(ImportButton, "ShieldPage_Import.Content", "Import");
         I18n.SetContent(DiagnoseButton, "Shield_Diagnose", "Diagnose");
         I18n.SetContent(FeedbackButton, "ShieldPage_Feedback.Content", "Feedback");
         I18n.SetContent(Allow5Item, "MainPage_Allow5.Text", "Allow 5 min");
@@ -111,6 +111,8 @@ public sealed partial class ShieldPage : Page
         I18n.SetContent(CatalogChina, "Shield_CatalogChina", "China (Douyin / Bilibili)");
         ApplyAdminHint();
         RefreshCatalogHint();
+        RefreshDomainLock();
+        RefreshCooldownLock();
         var appSample = string.Join("+", BlocklistService.DefaultAppCategories.SelectMany(kv => kv.Value).Take(6));
         var siteSample = string.Join("+", BlocklistService.DefaultCategories.SelectMany(kv => kv.Value).Take(4));
         App.LogAction("i18n-shield", $"apply={ApplyButton.Content} mode={ModeMinimize.Content} add={AddAppButton.Content} apps={appSample} sites={siteSample}");
@@ -199,10 +201,16 @@ public sealed partial class ShieldPage : Page
             RefreshCatalogHint();
             AppModeBox.SelectedIndex = blockMode == "kill" ? 1 : 0;
             FocusOnlyCommSwitch.IsOn = _blocklist.IsFocusOnlyCommunication();
-            // 初始化ADHD缓冲期时长
+            // 初始化ADHD缓冲期时长；免费版若库里残留 20/30，显示并回落到 10
             var cooldownMinutes = _blocklist.GetCooldownMinutes();
+            if (SceneManager.IsAdhdCooldownLocked(cooldownMinutes, activated))
+            {
+                _blocklist.SetCooldownMinutes(10);
+                cooldownMinutes = 10;
+            }
             var cooldownIndex = cooldownMinutes == 5 ? 0 : cooldownMinutes == 10 ? 1 : cooldownMinutes == 15 ? 2 : cooldownMinutes == 20 ? 3 : 4;
             CooldownMinutesBox.SelectedIndex = cooldownIndex;
+            RefreshCooldownLock();
             RefreshStatus();
             App.LogAction("进入屏蔽页", $"激活={activated} 已选分类={enabled.Count}/{BlocklistService.DefaultCategories.Count} 拦截方式={blockMode} UI设置={(blockMode == "kill" ? 1 : 0)}");
         }
@@ -314,20 +322,89 @@ public sealed partial class ShieldPage : Page
         StatusText.Text = I18n.GetFormat("Shield_FreeDomainLimit", BlocklistService.FreeTargetLimit);
     }
 
+    /// <summary>自定义域名满 3 个：Add 灰锁+锁标，点击出升级框。</summary>
+    private void RefreshDomainLock()
+    {
+        var locked = SceneManager.IsCustomDomainAddLocked(CountCustomDomains(), _blocklist.IsActivated());
+        PaidLock.Prefix(AddDomainButton, I18n.Get("ShieldPage_AddDomain.Content", "Add"), locked);
+        PaidLock.Apply(AddDomainButton, locked,
+            I18n.Get("PaidLock_Domain", "Free plan: 3 custom domains · $19 lifetime"));
+    }
+
+    /// <summary>未激活：20/30 灰+锁标+hover，仍可选中以弹出升级框。</summary>
+    private void RefreshCooldownLock()
+    {
+        var locked = !_blocklist.IsActivated();
+        var tip = I18n.Get("PaidLock_Cooldown", "ADHD cooldown 20/30 min · $19 lifetime");
+        PaidLock.Prefix(Cooldown20, "20", locked);
+        PaidLock.Prefix(Cooldown30, "30", locked);
+        PaidLock.Apply(Cooldown20, locked, tip);
+        PaidLock.Apply(Cooldown30, locked, tip);
+    }
+
+    private async System.Threading.Tasks.Task ShowCooldownUpgradeHint()
+    {
+        var dialog = new ContentDialog
+        {
+            Title = I18n.Get("Upgrade_Title", "Upgrade to Pro"),
+            Content = new StackPanel
+            {
+                Spacing = 8,
+                Children =
+                {
+                    new TextBlock { Text = I18n.Get("PaidLock_Cooldown", "ADHD cooldown 20/30 min · $19 lifetime"), FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = I18n.Get("Notify_CooldownPaid", "20/30 min cooldown is paid. Free version: 5/10/15 min."), TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
+                }
+            },
+            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
+            XamlRoot = XamlRoot
+        };
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+            App.LogAction("ADHD缓冲升级提示", "用户点击了解升级");
+    }
+
+    private async System.Threading.Tasks.Task ShowDomainUpgradeHint()
+    {
+        var dialog = new ContentDialog
+        {
+            Title = I18n.Get("Upgrade_Title", "Upgrade to Pro"),
+            Content = new StackPanel
+            {
+                Spacing = 8,
+                Children =
+                {
+                    new TextBlock { Text = I18n.Get("PaidLock_Domain", "Free plan: 3 custom domains · $19 lifetime"), FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = I18n.GetFormat("Shield_FreeDomainLimit", BlocklistService.FreeTargetLimit), TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
+                }
+            },
+            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
+            XamlRoot = XamlRoot
+        };
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+            App.LogAction("域名升级提示", "用户点击了解升级");
+    }
+
     // ---------- 自定义域名 ----------
 
     private void AddDomain_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            var input = DomainBox.Text;
-            if (string.IsNullOrWhiteSpace(input)) return;
-
-            if (!_blocklist.IsActivated() && CountCustomDomains() + 1 > BlocklistService.FreeTargetLimit)
+            if (SceneManager.IsCustomDomainAddLocked(CountCustomDomains(), _blocklist.IsActivated()))
             {
                 ShowLimitHint();
+                _ = ShowDomainUpgradeHint();
                 return;
             }
+
+            var input = DomainBox.Text;
+            if (string.IsNullOrWhiteSpace(input)) return;
 
             var list = _blocklist.GetCustomDomains().ToList();
             list.Add(input);
@@ -351,6 +428,7 @@ public sealed partial class ShieldPage : Page
         DomainList.ItemsSource = _blocklist.GetCustomDomains()
             .Select(d => new DomainItem(d, remove))
             .ToList();
+        RefreshDomainLock();
     }
 
     private void RemoveDomain_Click(object sender, RoutedEventArgs e)
@@ -684,11 +762,12 @@ public sealed partial class ShieldPage : Page
             var item = CooldownMinutesBox.SelectedItem as ComboBoxItem;
             if (item == null || item.Tag == null) return;
             if (!int.TryParse(item.Tag.ToString(), out var minutes)) return;
-            // 免费版限制：20/30需要付费
-            if (!_blocklist.IsActivated() && minutes > 15)
+            if (SceneManager.IsAdhdCooldownLocked(minutes, _blocklist.IsActivated()))
             {
-                CooldownMinutesBox.SelectedIndex = 1; // 回退到10分钟
-                AppServices.Notify(I18n.Get("Notify_CooldownPaid", "20/30 min cooldown is paid. Free version: 5/10/15 min."));
+                _isLoading = true;
+                CooldownMinutesBox.SelectedIndex = 1; // 回退到10分钟，不禁用选项
+                _isLoading = false;
+                _ = ShowCooldownUpgradeHint();
                 return;
             }
             _blocklist.SetCooldownMinutes(minutes);
@@ -722,9 +801,9 @@ public sealed partial class ShieldPage : Page
 
     private sealed record LimitItem(string Domain, int Minutes, string DeleteLabel);
 
-    // ---------- 导入/导出配置 ----------
+    // ---------- 导入/导出配置（次要：诊断框里，免费不灰锁） ----------
 
-    private async void ExportConfig_Click(object sender, RoutedEventArgs e)
+    private async System.Threading.Tasks.Task ExportConfigAsync()
     {
         try
         {
@@ -741,14 +820,17 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    private async void ImportConfig_Click(object sender, RoutedEventArgs e)
+    private async System.Threading.Tasks.Task ImportConfigAsync()
     {
         try
         {
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
             picker.FileTypeFilter.Add(".json");
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            if (App.MainWindow is not null)
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+                WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            }
             var file = await picker.PickSingleFileAsync();
             if (file is null) return;
 
@@ -814,12 +896,40 @@ public sealed partial class ShieldPage : Page
                 browser,
                 I18n.GetFormat("Diag_Log", App.CrashLogPath)
             };
+            var exportBtn = new Button { Content = I18n.Get("ShieldPage_Export.Content", "Export"), Padding = new Thickness(16, 8, 16, 8) };
+            var importBtn = new Button { Content = I18n.Get("ShieldPage_Import.Content", "Import"), Padding = new Thickness(16, 8, 16, 8) };
             var dialog = new ContentDialog
             {
                 Title = I18n.Get("Diag_Title", "Diagnose"),
-                Content = string.Join("\n", lines),
                 CloseButtonText = I18n.Get("Common_Close.Content", "OK"),
-                XamlRoot = XamlRoot
+                XamlRoot = XamlRoot,
+                Content = new StackPanel
+                {
+                    Spacing = 12,
+                    Children =
+                    {
+                        new TextBlock { Text = string.Join("\n", lines), TextWrapping = TextWrapping.Wrap },
+                        new TextBlock
+                        {
+                            Text = I18n.Get("Diag_ConfigBackup", "Blocklist backup (categories / custom sites / apps, not stats):"),
+                            FontSize = 12,
+                            Foreground = (Brush)Application.Current.Resources["BrushTextSecondary"],
+                            TextWrapping = TextWrapping.Wrap
+                        },
+                        new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Spacing = 8,
+                            Children = { exportBtn, importBtn }
+                        }
+                    }
+                }
+            };
+            exportBtn.Click += async (_, _) => await ExportConfigAsync();
+            importBtn.Click += async (_, _) =>
+            {
+                dialog.Hide();
+                await ImportConfigAsync();
             };
             await dialog.ShowAsync();
             App.LogAction("一键诊断", $"{r.WebsiteLayer}/{r.BrowserLayer} elevated={r.Elevated}");

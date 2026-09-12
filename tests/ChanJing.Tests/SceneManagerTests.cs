@@ -52,6 +52,31 @@ public class SceneManagerTests : IDisposable
     }
 
     [Fact]
+    public void SceneCustomizeLock_FreeQuotaUsed_LocksOtherScenesOnly()
+    {
+        SceneManager.SaveSceneConfig(_db, "work", new SceneManager.SceneConfig("w1", 50, new[] { "短视频" }));
+        Assert.False(SceneManager.IsSceneCustomizeLocked(_db, "work", activated: false));
+        Assert.True(SceneManager.IsSceneCustomizeLocked(_db, "study", activated: false));
+        Assert.False(SceneManager.IsSceneCustomizeLocked(_db, "study", activated: true));
+    }
+
+    [Fact]
+    public void AdhdCooldownLock_Over15WhenFree()
+    {
+        Assert.False(SceneManager.IsAdhdCooldownLocked(15, activated: false));
+        Assert.True(SceneManager.IsAdhdCooldownLocked(20, activated: false));
+        Assert.False(SceneManager.IsAdhdCooldownLocked(20, activated: true));
+    }
+
+    [Fact]
+    public void CustomDomainAddLock_AtFreeLimit()
+    {
+        Assert.False(SceneManager.IsCustomDomainAddLocked(2, activated: false));
+        Assert.True(SceneManager.IsCustomDomainAddLocked(3, activated: false));
+        Assert.False(SceneManager.IsCustomDomainAddLocked(3, activated: true));
+    }
+
+    [Fact]
     public void ResetSceneConfig_FreesQuota()
     {
         // 重置场景 → 不再算自定义，额度释放

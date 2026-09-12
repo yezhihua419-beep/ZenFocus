@@ -477,4 +477,10 @@
   <data name="Diag_BrowserHosts" xml:space="preserve"><value>Browser: new visits fail. Already-open tabs may stay.</value></data>
   <data name="Diag_BrowserBubble" xml:space="preserve"><value>Browser: distraction bubble only. Tabs are not closed.</value></data>
   <data name="Diag_Log" xml:space="preserve"><value>Crash log: {0}</value></data>
+  <data name="Diag_ConfigBackup" xml:space="preserve"><value>Blocklist backup (categories / custom sites / apps, not stats):</value></data>
+  <data name="PaidLock_Scene" xml:space="preserve"><value>Custom scene quota used · $19 lifetime to unlock more</value></data>
+  <data name="PaidLock_Domain" xml:space="preserve"><value>Free plan: 3 custom domains · $19 lifetime</value></data>
+  <data name="PaidLock_Export" xml:space="preserve"><value>Data export is paid · $19 lifetime</value></data>
+  <data name="PaidLock_Companion" xml:space="preserve"><value>Phone companion · $19 lifetime</value></data>
+  <data name="PaidLock_Cooldown" xml:space="preserve"><value>ADHD cooldown 20/30 min · $19 lifetime</value></data>
 </root>

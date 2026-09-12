@@ -71,7 +71,17 @@ public sealed partial class StatsPage : Page
         I18n.SetContent(ShareMinutesUnit, "StatsPage_ShareMinutesUnit.Text", "minutes");
         I18n.SetContent(ShareStreakUnit, "StatsPage_ShareStreakUnit.Text", "streak");
         I18n.SetContent(ShareQualityUnit, "StatsPage_ShareQualityUnit.Text", "quality");
+        RefreshExportLock();
         App.LogAction("i18n-stats", $"export={ExportButton.Content} share={ShareCardButton.Content}");
+    }
+
+    /// <summary>未激活：导出灰锁，点击走升级框而不是选文件。</summary>
+    private void RefreshExportLock()
+    {
+        var locked = !AppServices.Blocklist.IsActivated();
+        PaidLock.Prefix(ExportButton, I18n.Get("StatsPage_Export.Content", "Export Data"), locked);
+        PaidLock.Apply(ExportButton, locked,
+            I18n.Get("PaidLock_Export", "Data export is paid · $19 lifetime"));
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -456,6 +466,12 @@ public sealed partial class StatsPage : Page
     {
         try
         {
+            if (!AppServices.Blocklist.IsActivated())
+            {
+                Upgrade_Click(sender, e);
+                return;
+            }
+
             var picker = new Windows.Storage.Pickers.FileSavePicker();
             picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             picker.FileTypeChoices.Add(I18n.Get("Stats_ExportCsv", "CSV"), new List<string> { ".csv" });

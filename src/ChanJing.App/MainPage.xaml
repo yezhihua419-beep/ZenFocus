@@ -288,7 +288,8 @@
                 </StackPanel>
 
                 <!-- 底部：手机伴侣二维码（付费功能） -->
-                <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,20,0,0">
+                <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" Margin="0,20,0,0"
+                            Tapped="CompanionPaid_Tapped">
                     <Border x:Name="QrCodeBorder" Background="{StaticResource BrushCard}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="12" Padding="10">
                         <Image x:Name="QrCodeImage" Width="80" Height="80" Stretch="Uniform" />
                     </Border>

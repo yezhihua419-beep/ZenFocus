@@ -89,6 +89,18 @@ public static class SceneManager
     public static bool IsCustomized(AppDatabase db, string tag) =>
         !string.IsNullOrEmpty(db.GetSetting("scene_config_" + tag));
 
+    /// <summary>免费额度用尽且本场景尚未自定义：右键应灰锁，左键仍可应用愿望/时长。</summary>
+    public static bool IsSceneCustomizeLocked(AppDatabase db, string tag, bool activated) =>
+        !activated && GetCustomSceneCount(db) >= 1 && !IsCustomized(db, tag);
+
+    /// <summary>免费版自定义域名已满 3 个：添加按钮灰锁。</summary>
+    public static bool IsCustomDomainAddLocked(int currentCount, bool activated) =>
+        !activated && currentCount >= BlocklistService.FreeTargetLimit;
+
+    /// <summary>免费版 ADHD 缓冲期只能 5/10/15，20/30 灰锁。</summary>
+    public static bool IsAdhdCooldownLocked(int minutes, bool activated) =>
+        !activated && minutes > 15;
+
     /// <summary>当前场景摘要（如「工作 · 50分钟 · 屏蔽3类」），无场景返回 null。</summary>
     public static string? GetCurrentSceneSummary(AppDatabase db, string? currentTag)
     {
