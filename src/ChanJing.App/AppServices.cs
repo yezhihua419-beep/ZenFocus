@@ -39,11 +39,14 @@ public static class AppServices
     /// <summary>局域网伴侣页HTTP服务（App启动时初始化）。</summary>
     public static CompanionHttpServer? Companion { get; set; }
 
+    /// <summary>恢复 UI 偏好时禁止回写，避免 Load 触发 Persist。</summary>
+    public static bool SuppressUiPersist { get; set; }
+
     /// <summary>当前选中的场景标签（跨页面共享：首页选中后，屏蔽页顶部显示当前场景摘要）。</summary>
     public static string? CurrentSceneTag
     {
         get => FocusContext.CurrentSceneTag;
-        set => FocusContext.CurrentSceneTag = value;
+        set { FocusContext.CurrentSceneTag = value; PersistUi(); }
     }
 
     /// <summary>当前待专注的愿望（跨路径共享：首页/托盘/伴侣页开始专注前设置，FocusStarted 时统一保存到场景）。</summary>
@@ -64,11 +67,46 @@ public static class AppServices
     public static bool DeepMode
     {
         get => FocusContext.DeepMode;
-        set => FocusContext.DeepMode = value;
+        set { FocusContext.DeepMode = value; PersistUi(); }
+    }
+
+    /// <summary>是否 ADHD 友好模式（与首页开关同步，托盘/快捷键共用）。</summary>
+    public static bool AdhdMode
+    {
+        get => FocusContext.AdhdMode;
+        set { FocusContext.AdhdMode = value; PersistUi(); }
+    }
+
+    public static void LoadUi()
+    {
+        SuppressUiPersist = true;
+        try { FocusContext.Load(Db); }
+        finally { SuppressUiPersist = false; }
+    }
+
+    private static void PersistUi()
+    {
+        if (SuppressUiPersist) return;
+        try { FocusContext.Save(Db); } catch { }
     }
 
     /// <summary>全局通知（MainWindow 的 InfoBar 承载）：消息 + 严重级别。</summary>
     public static Action<string, Microsoft.UI.Xaml.Controls.InfoBarSeverity>? NotifyHandler { get; set; }
+
+    /// <summary>编码检测第 3 次等外部入口应用场景（愿望/时长）。分类仍以屏蔽页为准。</summary>
+    public static event Action<string>? SceneAppliedExternally;
+
+    public static void ApplyScenePreset(string tag)
+    {
+        if (string.IsNullOrEmpty(tag) || !SceneManager.ScenePresets.ContainsKey(tag)) return;
+        CurrentSceneTag = tag;
+        var cfg = SceneManager.GetSceneConfig(Db, tag);
+        CurrentWish = I18n.DisplayWish(tag, cfg.Wish);
+        CurrentMinutes = AdhdMode ? 15 : cfg.Minutes;
+        Blocklist.SeedCategoriesIfEmpty(SceneManager.GetDefaultCategories(tag));
+        Blocklist.Apply();
+        try { SceneAppliedExternally?.Invoke(tag); } catch { }
+    }
 
     /// <summary>统一提示入口：页面/服务用此方法发消息，由主窗口 InfoBar 显示。</summary>
     public static void Notify(string message, Microsoft.UI.Xaml.Controls.InfoBarSeverity severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational)
@@ -84,6 +122,7 @@ public static class AppServices
         {
             var label = minutes <= 3 ? I18n.Get("RestLabel_Short", "Quick Break") : I18n.Get("RestLabel_Long", "Away Mode");
             Blocklist.EmergencyPass = true;
+            Blocklist.PauseSystemHosts();
             Notify(I18n.GetFormat("Notify_RestStart", label, minutes), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
             _restTimer?.Stop();
             _restTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -93,11 +132,12 @@ public static class AppServices
             {
                 _restTimer?.Stop();
                 Blocklist.EmergencyPass = false;
+                Blocklist.RestoreSystemHostsIfNeeded(Engine.IsRunning || Blocklist.IsManualShieldActive());
                 Notify(I18n.GetFormat("Notify_RestEnd", label), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
-                App.LogAction($"{label}结束", "自动恢复桌面应用拦截");
+                App.LogAction($"{label}结束", "自动恢复拦截");
             };
             _restTimer.Start();
-            App.LogAction(label, $"桌面应用暂停拦截{minutes}分钟");
+            App.LogAction(label, $"网站+桌面应用暂停拦截{minutes}分钟");
         }
         catch (Exception ex)
         {

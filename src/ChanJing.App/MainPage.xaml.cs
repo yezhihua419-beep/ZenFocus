@@ -42,6 +42,84 @@ public sealed partial class MainPage : Page
         _breathTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
         _breathTimer.Tick += OnBreathTick;
         Loaded += OnLoaded;
+        Unloaded += (_, _) => AppServices.SceneAppliedExternally -= OnSceneAppliedExternally;
+        AppServices.SceneAppliedExternally += OnSceneAppliedExternally;
+        ApplyLocalizedButtons();
+        App.LogAction("i18n-probe",
+            $"lang={App.GetLanguage()} i18n={I18n.Get("MainPage_Title.Text")} xaml={TitleText.Text} start={StartButton.Content} scene={SceneWork.Content} presetWish={I18n.SceneWish("work")} app={I18n.AppName("douyin")}");
+    }
+
+    /// <summary>x:Uid 对 Button.Content 会被本地空值盖掉，启动时用 PRI 回填。</summary>
+    private void ApplyLocalizedButtons()
+    {
+        I18n.SetContent(SceneWork, "MainPage_SceneWork.Content", "Work");
+        I18n.SetContent(SceneWrite, "MainPage_SceneWrite.Content", "Write");
+        I18n.SetContent(SceneStudy, "MainPage_SceneStudy.Content", "Study");
+        I18n.SetContent(SceneMeeting, "MainPage_SceneMeeting.Content", "Meeting");
+        I18n.SetContent(StartButton, "MainPage_StartButton.Content", "Start Focus");
+        I18n.SetContent(BreakButton, "MainPage_Break.Content", "Let Go");
+        I18n.SetContent(PauseButton, "MainPage_Pause.Content", "Pause");
+        I18n.SetContent(FeedbackAgainButton, "MainPage_FeedbackAgain.Content", "Another 15 min");
+        I18n.SetContent(FeedbackRestButton, "MainPage_FeedbackRest.Content", "Take a break");
+        I18n.SetContent(CooldownReleaseButton, "MainPage_CooldownRelease.Content", "End blocking early");
+        I18n.SetContent(GuideCloseButton, "MainPage_GuideClose.Content", "Get Started");
+        I18n.SetContent(SkipBreathButton, "MainPage_SkipBreath.Content", "Skip");
+        I18n.SetContent(CompleteButton, "MainPage_Complete.Content", "Complete");
+        I18n.SetContent(Rest5Button, "MainPage_Rest5.Content", "5-min Break");
+        I18n.SetContent(AllowCurrentButton, "MainPage_AllowCurrent.Content", "Temporarily allow this site");
+        I18n.SetContent(Allow5Item, "MainPage_Allow5.Text", "Allow 5 min");
+        I18n.SetContent(Allow15Item, "MainPage_Allow15.Text", "Allow 15 min");
+        I18n.SetContent(Allow30Item, "MainPage_Allow30.Text", "Allow 30 min");
+        I18n.SetContent(CooldownAgainButton, "MainPage_CooldownAgain.Content", "Another 15 min");
+        I18n.SetContent(SoftLandingAgainButton, "MainPage_SoftLandingAgain.Content", "Another 15 min");
+        I18n.SetContent(SoftLandingReleaseButton, "MainPage_SoftLandingRelease.Content", "Use freely");
+        I18n.SetContent(DeepModeSwitch, "MainPage_DeepModeSwitch.Header", "Deep Mode (untimed, follow your rhythm)");
+        I18n.SetContent(DeepModeSwitch, "MainPage_DeepModeSwitch.OnContent", "On");
+        I18n.SetContent(DeepModeSwitch, "MainPage_DeepModeSwitch.OffContent", "Off");
+        I18n.SetContent(AdhdModeSwitch, "MainPage_AdhdModeSwitch.Header", "ADHD-Friendly Mode (15-min cycles)");
+        I18n.SetContent(AdhdModeSwitch, "MainPage_AdhdModeSwitch.OnContent", "On");
+        I18n.SetContent(AdhdModeSwitch, "MainPage_AdhdModeSwitch.OffContent", "Off");
+        I18n.SetContent(LangEnButton, "Lang_English", "English");
+        I18n.SetContent(LangZhButton, "Lang_Chinese", "中文");
+        LangLabel.Text = I18n.Get("Lang_Label", "Language");
+        HotkeyHint.Text = I18n.Get("MainPage_Hotkeys", "Shortcuts: Ctrl+Alt+F start/end · P pause · R 3-min break · S block page");
+        ToolTipService.SetToolTip(SettingsButton, I18n.Get("MainPage_SettingsTooltip", "Mode and language"));
+        ApplyAdminHint();
+    }
+
+    /// <summary>未提权时写清：网站 hosts 会跳过，桌面应用拦截仍在。</summary>
+    private void ApplyAdminHint()
+    {
+        var show = !I18n.IsElevated();
+        AdminHint.Text = I18n.Get("Admin_Hint", "Not administrator: YouTube/TikTok tabs will stay open (hosts skipped). Desktop apps can still be minimized. Right-click → Run as administrator.");
+        AdminHint.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        ToolTipService.SetToolTip(StartButton, show
+            ? I18n.Get("Admin_StartTooltip", "Without administrator, browser tabs will not close. Desktop app blocking still works.")
+            : I18n.Get("MainPage_StartButton.Content", "Start Focus"));
+    }
+
+    private void LangEn_Click(object sender, RoutedEventArgs e) => _ = ConfirmSwitchLanguage("en-US");
+
+    private void LangZh_Click(object sender, RoutedEventArgs e) => _ = ConfirmSwitchLanguage("zh-CN");
+
+    /// <summary>切语言会重启进程：先确认，重启路径会结束专注并清 hosts。</summary>
+    private async Task ConfirmSwitchLanguage(string lang)
+    {
+        if (App.GetLanguage() == lang) return;
+        try
+        {
+            var dialog = new ContentDialog
+            {
+                Title = I18n.Get("Lang_ConfirmTitle", "Switch language?"),
+                Content = I18n.Get("Lang_ConfirmContent", "The app will restart. Current focus will end and website blocking will be cleared."),
+                PrimaryButtonText = I18n.Get("Lang_ConfirmPrimary", "Restart"),
+                CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
+                XamlRoot = XamlRoot
+            };
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+            App.SwitchLanguage(lang);
+        }
+        catch (Exception ex) { App.LogCrash("MainPage.SwitchLanguage", ex); }
     }
 
     /// <summary>每次回到首页刷新统计与场景高亮（跨页面同步）。</summary>
@@ -57,10 +135,15 @@ public sealed partial class MainPage : Page
             {
                 EnterFocusView();
             }
+            else if (_uiState is MainUiState.Cooldown or MainUiState.SoftLanding or MainUiState.Feedback or MainUiState.Breathing)
+            {
+                // 缓冲/反馈还在，不要拆掉面板（hosts 可能仍生效）
+            }
             else
             {
                 EnterIdleView();
             }
+            ApplyLocalizedButtons();
         }
         catch (Exception ex) { App.LogCrash("MainPage.OnNavigatedTo", ex); }
     }
@@ -69,16 +152,26 @@ public sealed partial class MainPage : Page
     {
         try
         {
-            DateText.Text = DateTime.Today.ToString("M 月 d 日 dddd",
-                CultureInfo.GetCultureInfo("zh-CN"));
-            WishBox.Text = _db.GetSetting("today_wish") ?? string.Empty;
+            var culture = App.GetLanguage() == "zh-CN" ? "zh-CN" : "en-US";
+            DateText.Text = DateTime.Today.ToString(I18n.Get("MainPage_DateFmt", "MMMM d, dddd"),
+                CultureInfo.GetCultureInfo(culture));
+            WishBox.Text = I18n.DisplayWish(AppServices.CurrentSceneTag, _db.GetSetting("today_wish"));
             RestoreSceneHighlight(); // 回到首页时恢复场景高亮（跨页面同步）
             RefreshTodayStats();
             GenerateCompanionQrCode();
 
-            if (_engine.IsRunning) EnterFocusView();
-            else EnterIdleView();
+            DeepModeSwitch.IsOn = AppServices.DeepMode;
+            AdhdModeSwitch.IsOn = AppServices.AdhdMode;
+            _deepMode = AppServices.DeepMode;
+            _adhdMode = AppServices.AdhdMode;
+            if (_adhdMode) _pendingMinutes = 15;
 
+            if (_engine.IsRunning) EnterFocusView();
+            else if (_uiState is not (MainUiState.Cooldown or MainUiState.SoftLanding or MainUiState.Feedback or MainUiState.Breathing))
+                EnterIdleView();
+
+            ApplyLocalizedButtons();
+            App.LogAction("i18n-loaded", $"scene={SceneWork.Content} start={StartButton.Content} wish={WishBox.Text}");
             ShowFirstRunGuideIfNeeded();
         }
         catch (Exception ex)
@@ -112,7 +205,7 @@ public sealed partial class MainPage : Page
     {
         var elapsed = _engine.Elapsed;
         var minutes = (int)elapsed.TotalMinutes;
-        TimerText.Text = $"{minutes} 分钟";
+        TimerText.Text = I18n.GetFormat("MainPage_MinutesFmt", minutes);
         // 非深度模式：更新进度条
         if (!_deepMode && _engine.Current?.PlannedMinutes > 0)
         {
@@ -125,7 +218,7 @@ public sealed partial class MainPage : Page
             if (minutes >= 15 && !_softTargetReached)
             {
                 _softTargetReached = true;
-                WishShow.Text = "已超过15分钟，状态不错，随时可结束";
+                WishShow.Text = I18n.Get("MainPage_AdhdSoftTarget", "Past 15 min — looking good. End whenever you're ready.");
                 WishShow.Foreground = (Brush)Application.Current.Resources["BrushAccent"];
             }
             if (minutes >= 30 && !_softReminder30Shown)
@@ -149,18 +242,20 @@ public sealed partial class MainPage : Page
             {
                 _adhdMode = false;
                 AdhdModeSwitch.IsOn = false;
+                AppServices.AdhdMode = false;
             }
-            SessionHint.Text = "深度模式 · 不计时 · 随心而定 · 手动结束";
+            SessionHint.Text = I18n.Get("MainPage_DeepHint", "Deep mode · untimed · follow your rhythm · end manually");
         }
         else
         {
-            SessionHint.Text = $"{_pendingMinutes} 分钟定心 · 正计时 · 心无旁骛";
+            SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
         }
     }
 
     private void AdhdMode_Toggled(object sender, RoutedEventArgs e)
     {
         _adhdMode = AdhdModeSwitch.IsOn;
+        AppServices.AdhdMode = _adhdMode;
         if (_adhdMode)
         {
             // 与深度模式互斥：开启ADHD自动关闭深度模式
@@ -171,17 +266,8 @@ public sealed partial class MainPage : Page
                 AppServices.DeepMode = false;
             }
             _pendingMinutes = 15;
-            SessionHint.Text = I18n.Get("MainPage_AdhdHint", "ADHD-friendly mode · 15-min cycles · kill-process blocking · positive feedback");
-            // 自动切换拦截方式为结束进程（如果当前不是）
-            if (_blocklist.GetAppBlockMode() != "kill")
-            {
-                _blocklist.SetAppBlockMode("kill");
-                AppServices.Notify(I18n.Get("Notify_AdhdOnShield", "ADHD mode on: auto-switched to kill-process strong blocking, 15-min cycles. Block categories follow current scene, editable in Block page."));
-            }
-            else
-            {
-                AppServices.Notify(I18n.Get("Notify_AdhdOn", "ADHD mode on: 15-min cycles · kill-process blocking · positive feedback"));
-            }
+            SessionHint.Text = I18n.Get("MainPage_AdhdHint", "ADHD-friendly mode · 15-min cycles · positive feedback");
+            AppServices.Notify(I18n.Get("Notify_AdhdOn", "ADHD mode on: 15-min cycles · positive feedback. Blocking mode stays as set on the Block page."));
             // 首次开启ADHD引导
             if (!_adhdOnboarded && _db.GetSetting("adhd_onboarded") is null)
             {
@@ -192,7 +278,7 @@ public sealed partial class MainPage : Page
         {
             // 关闭ADHD：不恢复拦截方式（用户的选择保留），时长恢复场景预设
             _pendingMinutes = _currentSceneTag != null ? SceneManager.GetSceneConfig(_db, _currentSceneTag).Minutes : 25;
-            SessionHint.Text = $"{_pendingMinutes} 分钟定心 · 正计时 · 心无旁骛";
+            SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
         }
     }
 
@@ -203,12 +289,14 @@ public sealed partial class MainPage : Page
             _pendingWish = WishBox.Text?.Trim();
             if (!string.IsNullOrEmpty(_pendingWish))
             {
-                _db.SetSetting("today_wish", _pendingWish);
+                _db.SetSetting("today_wish", I18n.StoreWish(_currentSceneTag, _pendingWish));
             }
             App.LogAction("开始专注", _pendingWish is { Length: > 0 } ? $"愿：{_pendingWish}" : "无愿");
             // 同步当前愿望/时长到 AppServices，FocusStarted 时统一保存到场景（首页/托盘/伴侣页所有路径一致）
             AppServices.CurrentWish = _pendingWish;
             AppServices.CurrentMinutes = _deepMode ? 0 : _pendingMinutes;
+            if (!I18n.IsElevated())
+                AppServices.Notify(I18n.Get("Notify_HostsSkipped", "Website blocking skipped (needs administrator). Browser tabs such as YouTube will stay open."), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
 
             StartBreathing();
         }
@@ -225,60 +313,50 @@ public sealed partial class MainPage : Page
 
 
 
-    /// <summary>场景快捷选择：自动填充愿望、预设时长、应用该场景的屏蔽配置。</summary>
+    /// <summary>编码检测等外部入口切场景后，刷新首页高亮/愿望/时长。</summary>
+    private void OnSceneAppliedExternally(string tag)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try { ApplySceneToUi(tag); }
+            catch (Exception ex) { App.LogCrash("MainPage.SceneExternal", ex); }
+        });
+    }
+
+    /// <summary>场景快捷选择：愿望/时长走统一入口，分类仍以屏蔽页为准。</summary>
     private void Scene_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             var tag = (sender as Button)?.Tag?.ToString();
-            if (string.IsNullOrEmpty(tag) || !SceneManager.ScenePresets.TryGetValue(tag, out var preset))
+            if (string.IsNullOrEmpty(tag) || !SceneManager.ScenePresets.ContainsKey(tag))
             {
                 App.LogAction("选择场景", "未知场景: " + tag);
                 return;
             }
 
-            // 切换场景前，若旧场景已自定义，保存当前配置到旧场景（避免屏蔽修改后切换场景数据丢失）
-            if (!string.IsNullOrEmpty(_currentSceneTag) && _currentSceneTag != tag && SceneManager.IsCustomized(_db, _currentSceneTag))
-            {
-                var oldCategories = _blocklist.GetEnabledCategories().ToArray();
-                SceneManager.SaveSceneConfig(_db, _currentSceneTag, new SceneManager.SceneConfig(WishBox.Text?.Trim() ?? "", _pendingMinutes, oldCategories));
-                App.LogAction("场景切换前保存", $"{_currentSceneTag} {_pendingMinutes}分钟 屏蔽=[{string.Join("/", oldCategories)}]");
-            }
-
-            _currentSceneTag = tag;
-            AppServices.CurrentSceneTag = tag; // 跨页面共享：屏蔽页顶部显示当前场景
-            var config = SceneManager.GetSceneConfig(_db, tag);
-            WishBox.Text = config.Wish;
-            _pendingMinutes = config.Minutes;
-            AppServices.CurrentWish = config.Wish;
-            AppServices.CurrentMinutes = config.Minutes;
-
-            // 更新时长显示（用户可见）
-            SessionHint.Text = $"{config.Minutes} 分钟定心 · 正计时 · 心无旁骛";
-
-            // 一键应用该场景的屏蔽分类（专注开始时自动生效）
-            _blocklist.SetEnabledCategories(config.Categories);
-            _blocklist.Apply();
-
-            // 更新场景按钮高亮状态
-            foreach (var btn in new[] { SceneWork, SceneWrite, SceneStudy, SceneMeeting })
-            {
-                    var isActive = btn.Tag?.ToString() == tag;
-                    btn.Background = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : new SolidColorBrush(Colors.Transparent);
-                    btn.Foreground = isActive ? new SolidColorBrush(Colors.White) : (Brush)Application.Current.Resources["BrushTextSecondary"];
-                    btn.BorderBrush = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : (Brush)Application.Current.Resources["BrushTextSecondary"];
-            }
-
-            // 更新场景配置摘要提示
-            var sceneName = SceneManager.GetSceneName(tag);
-            SceneConfigHint.Text = $"{sceneName} · {config.Minutes}分钟 · 屏蔽{config.Categories.Length}类（{string.Join("/", config.Categories)}） · 右键可自定义";
-
-            App.LogAction("选择场景", $"{tag} {config.Minutes}分钟 屏蔽=[{string.Join("/", config.Categories)}]");
+            AppServices.ApplyScenePreset(tag);
+            App.LogAction("选择场景", $"{tag} {AppServices.CurrentMinutes}分钟 分类保持屏蔽页");
         }
         catch (Exception ex)
         {
             App.LogCrash("MainPage.Scene", ex);
         }
+    }
+
+    /// <summary>把已写入 FocusContext 的场景同步到首页控件（不改分类勾选）。</summary>
+    private void ApplySceneToUi(string tag)
+    {
+        if (string.IsNullOrEmpty(tag) || !SceneManager.ScenePresets.ContainsKey(tag)) return;
+        _currentSceneTag = tag;
+        var config = SceneManager.GetSceneConfig(_db, tag);
+        var shownWish = AppServices.CurrentWish ?? I18n.DisplayWish(tag, config.Wish);
+        WishBox.Text = shownWish;
+        _pendingMinutes = AppServices.AdhdMode ? 15 : AppServices.CurrentMinutes;
+        if (_pendingMinutes <= 0) _pendingMinutes = AppServices.AdhdMode ? 15 : config.Minutes;
+        SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
+        HighlightSceneButtons(tag);
+        UpdateSceneHint(tag, config.Minutes);
     }
 
     /// <summary>长按场景按钮：付费版弹出自定义配置小窗，免费版提示升级。</summary>
@@ -307,24 +385,24 @@ public sealed partial class MainPage : Page
     /// <summary>免费版长按场景按钮时的升级提示。</summary>
     private async Task ShowSceneUpgradeHint(string tag)
     {
-        var sceneName = SceneManager.GetSceneName(tag);
+        var sceneName = I18n.SceneName(tag);
 
         var dialog = new ContentDialog
         {
-            Title = $"自定义「{sceneName}」场景",
+            Title = I18n.GetFormat("SceneUpgrade_Title", sceneName),
             Content = new StackPanel
             {
                 Spacing = 8,
                 Children =
                 {
-                    new TextBlock { Text = "Custom scene quota exceeded", FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
-                    new TextBlock { Text = "Free version allows 1 custom scene (duration + block categories + intention). Quota used up.", TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = "Upgrade to customize all 4 scenes.", TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = "$19 lifetime, forever.", Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
+                    new TextBlock { Text = I18n.Get("SceneUpgrade_Head", "Custom scene quota used"), FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = I18n.Get("SceneUpgrade_Body", "Free version allows 1 custom scene. Quota used up."), TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = I18n.Get("SceneUpgrade_More", "Upgrade to customize all 4 scenes."), TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
                 }
             },
-            PrimaryButtonText = "Learn More",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
             XamlRoot = this.XamlRoot
         };
 
@@ -340,11 +418,11 @@ public sealed partial class MainPage : Page
     private async Task ShowSceneConfigDialog(string tag)
     {
         var config = SceneManager.GetSceneConfig(_db, tag);
-        var sceneName = SceneManager.GetSceneName(tag);
+        var sceneName = I18n.SceneName(tag);
 
         var minutesCombo = new ComboBox
         {
-            Header = "专注时长（分钟）",
+            Header = I18n.Get("SceneDialog_MinutesHeader", "Focus length (minutes)"),
             Items = { 15, 25, 30, 45, 50, 60, 90 },
             SelectedItem = config.Minutes
         };
@@ -356,7 +434,8 @@ public sealed partial class MainPage : Page
         {
             var cb = new CheckBox
             {
-                Content = cat,
+                Content = I18n.CategoryName(cat),
+                Tag = cat,
                 IsChecked = config.Categories.Contains(cat)
             };
             categoryCheckboxes.Add(cb);
@@ -366,7 +445,7 @@ public sealed partial class MainPage : Page
         var wishBox = new TextBox
         {
             Header = I18n.Get("SceneDialog_WishHeader", "Intention"),
-            Text = config.Wish,
+            Text = I18n.DisplayWish(tag, config.Wish),
             PlaceholderText = I18n.Get("SceneDialog_WishPlaceholder", "What is the one thing you most want to accomplish right now…")
         };
 
@@ -381,6 +460,7 @@ public sealed partial class MainPage : Page
         var dialog = new ContentDialog
         {
             Title = I18n.GetFormat("SceneDialog_Title", sceneName) + quotaText,
+            Content = content,
             PrimaryButtonText = I18n.Get("SceneDialog_Primary", "Save"),
             SecondaryButtonText = I18n.Get("SceneDialog_Secondary", "Reset to Default"),
             CloseButtonText = I18n.Get("SceneDialog_Close", "Cancel"),
@@ -392,18 +472,19 @@ public sealed partial class MainPage : Page
         {
             var selectedMinutes = (int)(minutesCombo.SelectedItem ?? 25);
             var selectedCategories = categoryCheckboxes.Where(cb => cb.IsChecked == true)
-                .Select(cb => cb.Content.ToString()!).ToArray();
-            var newWish = wishBox.Text.Trim();
+                .Select(cb => cb.Tag?.ToString() ?? cb.Content?.ToString() ?? "").Where(s => s.Length > 0).ToArray();
+            var newWish = I18n.StoreWish(tag, wishBox.Text);
             var newConfig = new SceneManager.SceneConfig(newWish, selectedMinutes, selectedCategories);
             SceneManager.SaveSceneConfig(_db, tag, newConfig);
             App.LogAction("自定义场景", $"{tag} {selectedMinutes}分钟 屏蔽=[{string.Join("/", selectedCategories)}]");
 
             if (_currentSceneTag == tag)
             {
-                WishBox.Text = newWish;
-                _pendingMinutes = selectedMinutes;
-                SessionHint.Text = I18n.GetFormat("Notify_SessionHint", selectedMinutes);
-                _blocklist.SetEnabledCategories(selectedCategories);
+                WishBox.Text = I18n.DisplayWish(tag, newWish);
+                _pendingMinutes = _adhdMode ? 15 : selectedMinutes;
+                SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
+                _blocklist.SetEnabledCategories(selectedCategories); // 用户在对话框里明确勾了分类
+                UpdateSceneHint(tag, selectedMinutes);
             }
         }
         else if (result == ContentDialogResult.Secondary)
@@ -414,17 +495,17 @@ public sealed partial class MainPage : Page
             if (_currentSceneTag == tag)
             {
                 var preset = SceneManager.GetSceneConfig(_db, tag);
-                WishBox.Text = preset.Wish;
-                _pendingMinutes = preset.Minutes;
-                SessionHint.Text = $"{preset.Minutes} 分钟定心 · 正计时 · 心无旁骛";
-                _blocklist.SetEnabledCategories(preset.Categories);
+                WishBox.Text = I18n.DisplayWish(tag, preset.Wish);
+                _pendingMinutes = _adhdMode ? 15 : preset.Minutes;
+                SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
+                UpdateSceneHint(tag, preset.Minutes);
             }
         }
     }
     private void StartBreathing()
     {
         SetUiState(MainUiState.Breathing);
-        BreathText.Text = "吸气…";
+        BreathText.Text = I18n.Get("MainPage_BreathIn.Text", "Breathe in…");
         _breathTimer.Start();
 
         var storyboard = BuildBreathStoryboard();
@@ -434,7 +515,9 @@ public sealed partial class MainPage : Page
 
     private void OnBreathTick(object? sender, object e)
     {
-        BreathText.Text = BreathText.Text == "吸气…" ? "呼气…" : "吸气…";
+        var inhale = I18n.Get("MainPage_BreathIn.Text", "Breathe in…");
+        var exhale = I18n.Get("MainPage_BreathOut.Text", "Breathe out…");
+        BreathText.Text = BreathText.Text == inhale ? exhale : inhale;
     }
 
     private void SkipBreath_Click(object sender, RoutedEventArgs e)
@@ -514,7 +597,7 @@ public sealed partial class MainPage : Page
             }
             else
             {
-                ShowFeedback(_engine.GenerateFeedback(done));
+                ShowLocalizedFeedback(done);
             }
         }
         catch (Exception ex)
@@ -556,14 +639,14 @@ public sealed partial class MainPage : Page
         SetUiState(MainUiState.Feedback);
 
         var streak = GetTodayStreak();
-        FeedbackStreak.Text = streak > 1 ? $"✨ 今日已完成 {streak} 次定心" : "";
+        FeedbackStreak.Text = streak > 1 ? I18n.GetFormat("MainPage_FeedbackStreak", streak) : "";
         FeedbackStreak.Visibility = streak > 1 ? Visibility.Visible : Visibility.Collapsed;
 
-        var encouragement = streak >= 5 ? "心已定，功自成，继续保持" :
-                           streak >= 3 ? "状态渐入佳境，继续保持" :
-                           streak >= 1 ? "好的开始，念念不忘必有回响" : "";
-        FeedbackText.Text = $"今日定心 {done.ActualMinutes} 分钟\n{encouragement}";
-        FeedbackAgainButton.Content = "Another 15 min";
+        var encouragement = streak >= 5 ? I18n.Get("MainPage_Encourage5", "Settled and building. Keep going.") :
+                           streak >= 3 ? I18n.Get("MainPage_Encourage3", "Finding your rhythm. Keep going.") :
+                           streak >= 1 ? I18n.Get("MainPage_Encourage1", "A good start.") : "";
+        FeedbackText.Text = I18n.GetFormat("MainPage_FeedbackMinutes", done.ActualMinutes, encouragement);
+        FeedbackAgainButton.Content = I18n.Get("MainPage_FeedbackAgain.Content", "Another 15 min");
         FeedbackRestButton.Visibility = Visibility.Visible;
         RefreshTodayStats();
     }
@@ -598,7 +681,7 @@ public sealed partial class MainPage : Page
 
     private void UpdateCooldownText()
     {
-        CooldownText.Text = $"专注结束，休息一下\n屏蔽还剩 {_cooldownRemaining} 分钟";
+        CooldownText.Text = I18n.GetFormat("MainPage_CooldownText", _cooldownRemaining);
     }
 
     /// <summary>缓冲期内点"再来15分钟"→取消缓冲，直接开始新专注。</summary>
@@ -614,10 +697,10 @@ public sealed partial class MainPage : Page
     {
         var dialog = new ContentDialog
         {
-            Title = "Disable Blocking Early",
-            Content = $"缓冲期还剩 {_cooldownRemaining} 分钟，确定现在解除屏蔽吗？",
-            PrimaryButtonText = "Confirm Disable",
-            CloseButtonText = "Wait",
+            Title = I18n.Get("MainPage_CooldownReleaseTitle", "End blocking early?"),
+            Content = I18n.GetFormat("MainPage_CooldownReleaseContent", _cooldownRemaining),
+            PrimaryButtonText = I18n.Get("MainPage_CooldownReleasePrimary", "Unblock now"),
+            CloseButtonText = I18n.Get("MainPage_CooldownReleaseClose", "Wait"),
             XamlRoot = XamlRoot
         };
         var result = await dialog.ShowAsync();
@@ -638,6 +721,7 @@ public sealed partial class MainPage : Page
     private void EnterSoftLanding()
     {
         SetUiState(MainUiState.SoftLanding);
+        SoftLandingText.Text = I18n.GetFormat("MainPage_SoftLandingBody", _blocklist.GetCooldownMinutes());
         App.LogAction("软着陆", "缓冲期到期，等待用户选择");
     }
 
@@ -666,9 +750,9 @@ public sealed partial class MainPage : Page
             {
                 _engine.Resume();
                 App.LogAction("继续专注");
-                PauseButton.Content = "Pause";
+                PauseButton.Content = I18n.Get("MainPage_Pause.Content", "Pause");
                 PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextSecondary"];
-                TimerText.Text = $"{(int)_engine.Elapsed.TotalMinutes} 分钟";
+                TimerText.Text = I18n.GetFormat("MainPage_MinutesFmt", (int)_engine.Elapsed.TotalMinutes);
             }
             else
             {
@@ -677,10 +761,10 @@ public sealed partial class MainPage : Page
                 {
                     var dialog = new ContentDialog
                     {
-                        Title = "Pause Focus",
-                        Content = "Sure to pause? In ADHD mode, pausing often leads to not coming back. Consider ending or continuing instead.",
-                        PrimaryButtonText = "Pause Anyway",
-                        CloseButtonText = "Keep Focusing",
+                        Title = I18n.Get("MainPage_PauseTitle", "Pause focus?"),
+                        Content = I18n.Get("MainPage_PauseContent", "In ADHD mode, pausing often means not coming back."),
+                        PrimaryButtonText = I18n.Get("MainPage_PausePrimary", "Pause anyway"),
+                        CloseButtonText = I18n.Get("MainPage_PauseClose", "Keep focusing"),
                         XamlRoot = XamlRoot
                     };
                     var result = await dialog.ShowAsync();
@@ -688,9 +772,9 @@ public sealed partial class MainPage : Page
                 }
                 _engine.Pause();
                 App.LogAction("暂停专注");
-                PauseButton.Content = "Resume";
+                PauseButton.Content = I18n.Get("MainPage_Resume.Content", "Resume");
                 PauseButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushState"];
-                TimerText.Text = "已暂停";
+                TimerText.Text = I18n.Get("MainPage_Paused", "Paused");
             }
         }
         catch (Exception ex)
@@ -705,14 +789,14 @@ public sealed partial class MainPage : Page
         try
         {
             var minutes = int.TryParse((sender as MenuFlyoutItem)?.Tag?.ToString(), out var m) ? m : 5;
-            var domain = AppServices.Activity.GetCurrentBlockedDomain();
+            var domain = AppServices.Activity.GetAllowableTarget();
             if (domain is null)
             {
                 var none = new ContentDialog
                 {
-                    Title = "No Site to Allow",
-                    Content = "No blocked site in foreground. Open the site first (e.g. bilibili.com), then tap this button.",
-                    CloseButtonText = "Got it",
+                    Title = I18n.Get("MainPage_NoSiteTitle", "No site to allow"),
+                    Content = I18n.Get("MainPage_NoSiteContent", "No recent blocked site. Open a blocked page first, or wait for a distraction reminder."),
+                    CloseButtonText = I18n.Get("MainPage_NoSiteClose", "Got it"),
                     XamlRoot = XamlRoot
                 };
                 await none.ShowAsync();
@@ -731,18 +815,18 @@ public sealed partial class MainPage : Page
     private async void EmergencyPass_Click(object sender, RoutedEventArgs e)
     {
         var restMinutes = _adhdMode ? 3 : 5;
-        var restLabel = _adhdMode ? "喘口气" : "暂离模式";
+        var restLabel = _adhdMode ? I18n.Get("RestLabel_Short", "Quick Break") : I18n.Get("RestLabel_Long", "Away Mode");
         var dialog = new ContentDialog
         {
             Title = restLabel,
-            Content = $"{restLabel} {restMinutes} 分钟，桌面应用（抖音/B站等）暂停拦截，网站屏蔽保持生效。期间仍记录专注时长。",
-            PrimaryButtonText = "Confirm Allow",
-            CloseButtonText = "取消",
+            Content = I18n.GetFormat("MainPage_RestContent", restLabel, restMinutes),
+            PrimaryButtonText = I18n.Get("MainPage_RestPrimary", "Confirm"),
+            CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
             XamlRoot = Content.XamlRoot
         };
         var result = await dialog.ShowAsync();
         if (result != ContentDialogResult.Primary) return;
-        App.LogAction(restLabel, $"桌面应用暂停拦截{restMinutes}分钟");
+        App.LogAction(restLabel, $"网站+桌面应用暂停拦截{restMinutes}分钟");
         AppServices.StartRestBreak(restMinutes);
     }
 
@@ -753,14 +837,14 @@ public sealed partial class MainPage : Page
             var remaining = 3;
             var hint = new TextBlock
             {
-                Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？\n\n请等 3 秒再决定。",
+                Text = I18n.Get("MainPage_BreakHintWait", "Three breaths. Wait 3 seconds."),
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = 14,
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources["BrushTextPrimary"]
             };
             var endButton = new Button
             {
-                Content = $"结束（{remaining}）",
+                Content = I18n.GetFormat("MainPage_BreakEndCountdown", remaining),
                 IsEnabled = false,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Padding = new Thickness(32, 10, 32, 10),
@@ -774,9 +858,9 @@ public sealed partial class MainPage : Page
 
             var dialog = new ContentDialog
             {
-                Title = "What happened?",
+                Title = I18n.Get("MainPage_BreakTitle", "What happened?"),
                 Content = panel,
-                PrimaryButtonText = "Focus More",
+                PrimaryButtonText = I18n.Get("MainPage_BreakContinue", "Focus more"),
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = XamlRoot
             };
@@ -789,12 +873,12 @@ public sealed partial class MainPage : Page
                 {
                     cooldown.Stop();
                     endButton.IsEnabled = true;
-                    endButton.Content = "End";
-                    hint.Text = "深呼吸三次。禅净不会拦你——但你真的要现在结束吗？";
+                    endButton.Content = I18n.Get("MainPage_BreakEnd", "End");
+                    hint.Text = I18n.Get("MainPage_BreakHintReady", "Three breaths. Do you really want to end now?");
                 }
                 else
                 {
-                    endButton.Content = $"结束（{remaining}）";
+                    endButton.Content = I18n.GetFormat("MainPage_BreakEndCountdown", remaining);
                 }
             };
             cooldown.Start();
@@ -817,7 +901,7 @@ public sealed partial class MainPage : Page
                 }
                 else
                 {
-                    ShowFeedback(_engine.GenerateFeedback(done));
+                    ShowLocalizedFeedback(done);
                 }
             }
             else
@@ -836,12 +920,12 @@ public sealed partial class MainPage : Page
         _timer.Start();
         SetUiState(MainUiState.Focusing);
         WishShow.Text = _engine.Current?.Wish is { Length: > 0 } w
-            ? $"今日一愿：{w}"
-            : "心无旁骛，只做眼前这一件事";
+            ? I18n.GetFormat("MainPage_WishShow", w)
+            : I18n.Get("MainPage_WishDefault", "One thing in front of you. Nothing else.");
         if (_deepMode)
         {
             // 深度模式：隐藏时间和进度条，只显示愿望；无计划时长，"放下"无意义，隐藏
-            WishShow.Text = "深度模式 · 随心而定 · 完成后手动结束";
+            WishShow.Text = I18n.Get("MainPage_DeepFocusHint", "Deep mode · follow your rhythm · end manually when done");
             TimerText.Visibility = Visibility.Collapsed;
             FocusProgress.Visibility = Visibility.Collapsed;
             BreakButton.Visibility = Visibility.Collapsed;
@@ -851,7 +935,7 @@ public sealed partial class MainPage : Page
             TimerText.Visibility = Visibility.Visible;
             FocusProgress.Visibility = Visibility.Visible;
             BreakButton.Visibility = Visibility.Visible;
-            TimerText.Text = "0 分钟";
+            TimerText.Text = I18n.GetFormat("MainPage_MinutesFmt", 0);
             FocusProgress.Value = 0;
             if (_engine.Current?.PlannedMinutes > 0)
                 FocusProgress.Maximum = _engine.Current.PlannedMinutes;
@@ -865,11 +949,16 @@ public sealed partial class MainPage : Page
         SetUiState(MainUiState.Idle);
     }
 
-    private void ShowFeedback(string text)
+    private void ShowLocalizedFeedback(ChanJing.Core.Models.FocusSession done)
     {
+        var yesterday = DateTime.Today.AddDays(-1);
+        var ys = _db.GetSessions(yesterday, DateTime.Today);
+        int? avg = ys.Count > 0 ? (int)Math.Round(ys.Average(s => s.ActualMinutes)) : null;
         _timer.Stop();
         SetUiState(MainUiState.Feedback);
-        FeedbackText.Text = text;
+        FeedbackText.Text = I18n.FocusFeedback(done.ActualMinutes,
+            done.State == ChanJing.Core.Models.FocusSessionState.Completed,
+            done.DistractionCount, avg);
         RefreshTodayStats();
     }
 
@@ -928,8 +1017,20 @@ public sealed partial class MainPage : Page
         TodayCount.Text = sessions.Count.ToString(CultureInfo.InvariantCulture);
         TodayMinutes.Text = sessions.Sum(s => s.ActualMinutes).ToString(CultureInfo.InvariantCulture);
         // 屏蔽规则状态：有当前场景时显示场景摘要，否则显示是否已保存配置
-        var sceneSummary = SceneManager.GetCurrentSceneSummary(_db, AppServices.CurrentSceneTag);
-        BlockStatus.Text = sceneSummary ?? (AppServices.Blocklist.IsApplied() ? "已启用" : "未启用");
+        var tag = AppServices.CurrentSceneTag;
+        if (!string.IsNullOrEmpty(tag))
+        {
+            var cfg = SceneManager.GetSceneConfig(_db, tag);
+            BlockStatus.Text = I18n.SceneSummary(tag, cfg.Minutes, _blocklist.GetEnabledCategories().Count);
+        }
+        else
+        {
+            BlockStatus.Text = AppServices.Blocklist.IsApplied()
+                ? I18n.Get("Block_On", "On")
+                : I18n.Get("Block_Off", "Off");
+        }
+        var mins = sessions.Sum(s => s.ActualMinutes);
+        TodayFeedback.Text = I18n.GetFormat("MainPage_TodayFeedback", mins);
     }
 
     /// <summary>回到首页时恢复上次选中的场景高亮与摘要（跨页面同步）。</summary>
@@ -941,21 +1042,36 @@ public sealed partial class MainPage : Page
             if (string.IsNullOrEmpty(restoreTag)) return;
 
             _currentSceneTag = restoreTag;
-            foreach (var btn in new[] { SceneWork, SceneWrite, SceneStudy, SceneMeeting })
-            {
-                    var isActive = btn.Tag?.ToString() == restoreTag;
-                    btn.Background = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : new SolidColorBrush(Colors.Transparent);
-                    btn.Foreground = isActive ? new SolidColorBrush(Colors.White) : (Brush)Application.Current.Resources["BrushTextSecondary"];
-                    btn.BorderBrush = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : (Brush)Application.Current.Resources["BrushTextSecondary"];
-            }
+            HighlightSceneButtons(restoreTag);
 
             var config = SceneManager.GetSceneConfig(_db, restoreTag);
-            SceneConfigHint.Text = $"{SceneManager.GetSceneName(restoreTag)} · {config.Minutes}分钟 · 屏蔽{config.Categories.Length}类（{string.Join("/", config.Categories)}） · 右键可自定义";
+            if (_adhdMode) _pendingMinutes = 15;
+            else _pendingMinutes = config.Minutes;
+            UpdateSceneHint(restoreTag, config.Minutes);
+            WishBox.Text = I18n.DisplayWish(restoreTag, string.IsNullOrWhiteSpace(WishBox.Text) ? config.Wish : WishBox.Text);
         }
         catch (Exception ex)
         {
             App.LogCrash("MainPage.RestoreScene", ex);
         }
+    }
+
+    private void HighlightSceneButtons(string tag)
+    {
+        foreach (var btn in new[] { SceneWork, SceneWrite, SceneStudy, SceneMeeting })
+        {
+            var isActive = btn.Tag?.ToString() == tag;
+            btn.Background = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : new SolidColorBrush(Colors.Transparent);
+            btn.Foreground = isActive ? new SolidColorBrush(Colors.White) : (Brush)Application.Current.Resources["BrushTextSecondary"];
+            btn.BorderBrush = isActive ? new SolidColorBrush(ColorHelper.FromArgb(255, 110, 127, 99)) : (Brush)Application.Current.Resources["BrushTextSecondary"];
+        }
+    }
+
+    /// <summary>摘要用屏蔽页当前分类，不用场景里存的分类。</summary>
+    private void UpdateSceneHint(string tag, int minutes)
+    {
+        var live = _blocklist.GetEnabledCategories();
+        SceneConfigHint.Text = I18n.GetFormat("Scene_Hint", I18n.SceneName(tag), minutes, live.Count, I18n.CategoriesText(live));
     }
 
     /// <summary>生成手机伴侣页二维码：手机伴侣为付费功能，免费版显示升级提示，激活后才生成二维码。</summary>
@@ -967,9 +1083,10 @@ public sealed partial class MainPage : Page
             if (!AppServices.Blocklist.IsActivated())
             {
                 QrCodeBorder.Visibility = Visibility.Collapsed;
-                CompanionTitleText.Text = "手机伴侣（付费功能）";
-                CompanionDescText.Text = "升级后可手机扫码查看专注统计、远程开始/结束专注";
+                CompanionTitleText.Text = I18n.Get("MainPage_CompanionPaidTitle", "Phone companion (paid)");
+                CompanionDescText.Text = I18n.Get("MainPage_CompanionPaidDesc", "After upgrade, scan to view stats and start/end focus from your phone.");
                 ConnectUrlText.Text = "";
+                CompanionUpgradeText.Text = I18n.Get("MainPage_CompanionUpgrade.Text", "Phone companion is a paid feature · $19 lifetime to unlock");
                 CompanionUpgradeText.Visibility = Visibility.Visible;
                 App.LogAction("伴侣二维码", "免费版显示升级提示");
                 return;
@@ -977,14 +1094,14 @@ public sealed partial class MainPage : Page
 
             // 付费版：显示二维码
             QrCodeBorder.Visibility = Visibility.Visible;
-            CompanionTitleText.Text = "手机扫码连接";
-            CompanionDescText.Text = "手机和电脑需在同一WiFi下，手机浏览器扫码，查看专注统计、远程开始/结束专注";
+            CompanionTitleText.Text = I18n.Get("MainPage_CompanionTitle.Text", "Scan to connect phone");
+            CompanionDescText.Text = I18n.Get("MainPage_CompanionDesc.Text", "Phone and PC must be on the same WiFi.");
             CompanionUpgradeText.Visibility = Visibility.Collapsed;
 
             var server = AppServices.Companion;
             if (server == null || !server.IsRunning)
             {
-                ConnectUrlText.Text = "伴侣服务未启动";
+                ConnectUrlText.Text = I18n.Get("MainPage_CompanionNoServer", "Companion server is not running");
                 return;
             }
 
@@ -994,16 +1111,16 @@ public sealed partial class MainPage : Page
                 var ip = GetLocalIpAddress();
                 if (string.IsNullOrEmpty(ip))
                 {
-                    ConnectUrlText.Text = "未检测到网络";
+                    ConnectUrlText.Text = I18n.Get("MainPage_CompanionNoNet", "No network detected");
                     return;
                 }
-                url = $"http://{ip}:{server.Port}";
-                ConnectUrlText.Text = $"{url}（手机和电脑需在同一WiFi下）";
+                url = $"http://{ip}:{server.Port}/?token={Uri.EscapeDataString(server.AccessToken)}";
+                ConnectUrlText.Text = I18n.GetFormat("MainPage_CompanionLanHint", $"http://{ip}:{server.Port}");
             }
             else
             {
-                url = $"http://localhost:{server.Port}";
-                ConnectUrlText.Text = "需管理员权限运行才能让手机访问（当前仅本机）";
+                url = $"http://localhost:{server.Port}/?token={Uri.EscapeDataString(server.AccessToken)}";
+                ConnectUrlText.Text = I18n.Get("MainPage_CompanionNeedAdmin", "Run as administrator so the phone can connect (localhost only now)");
             }
 
             using var qrGenerator = new QRCoder.QRCodeGenerator();
@@ -1023,7 +1140,7 @@ public sealed partial class MainPage : Page
         catch (Exception ex)
         {
             App.LogCrash("GenerateCompanionQrCode", ex);
-            ConnectUrlText.Text = "二维码生成失败";
+            ConnectUrlText.Text = I18n.Get("MainPage_CompanionQrFail", "Failed to generate QR code");
         }
     }
 
@@ -1067,28 +1184,28 @@ public sealed partial class MainPage : Page
 
             var step1 = new ContentDialog
             {
-                Title = "ADHD-Friendly Mode · 1/3",
-                Content = "Designed for easily distracted minds:\n\n[15-min cycles]\nLow barrier to start, even if you can't sit still.\n\n[Kill-process blocking]\nDistraction apps like TikTok/Bilibili are killed (not minimized), preventing impulsive return.\n\n[Positive feedback]\nOnly praise what you completed, never criticize distractions.",
-                PrimaryButtonText = "Next",
+                Title = I18n.Get("AdhdOnboard_T1", "ADHD-friendly mode · 1/3"),
+                Content = I18n.Get("AdhdOnboard_C1", "15-min cycles. Kill-process blocking. Positive feedback."),
+                PrimaryButtonText = I18n.Get("AdhdOnboard_Next", "Next"),
                 XamlRoot = XamlRoot
             };
             await step1.ShowAsync();
 
             var step2 = new ContentDialog
             {
-                Title = "ADHD-Friendly Mode · 2/3",
-                Content = "[Cooldown]\nBlocking stays on for 10 min after focus ends, preventing the reflex of grabbing phone immediately.\n\n[Soft landing]\nBlocking won't auto-disable after cooldown. You actively choose Another 15 min or Free Use.\n\n[Pause friction]\nPause shows confirmation, preventing pausing and never returning.",
-                PrimaryButtonText = "Next",
+                Title = I18n.Get("AdhdOnboard_T2", "ADHD-friendly mode · 2/3"),
+                Content = I18n.Get("AdhdOnboard_C2", "Cooldown. Soft landing. Pause friction."),
+                PrimaryButtonText = I18n.Get("AdhdOnboard_Next", "Next"),
                 XamlRoot = XamlRoot
             };
             await step2.ShowAsync();
 
             var step3 = new ContentDialog
             {
-                Title = "ADHD-Friendly Mode · 3/3",
-                Content = "[Notes]\n• Kill-process may lose unsaved work, ensure important files are saved\n• Block categories follow current scene (Work/Write/Study/Meeting), editable in Block page\n• Can switch blocking mode back to Minimize in Block page anytime\n• ADHD and Deep modes are mutually exclusive\n\nReady?",
-                PrimaryButtonText = "Get Started",
-                CloseButtonText = "Close",
+                Title = I18n.Get("AdhdOnboard_T3", "ADHD-friendly mode · 3/3"),
+                Content = I18n.Get("AdhdOnboard_C3", "Notes. Ready?"),
+                PrimaryButtonText = I18n.Get("AdhdOnboard_Start", "Get started"),
+                CloseButtonText = I18n.Get("Common_Close.Content", "Close"),
                 XamlRoot = XamlRoot
             };
             var result = await step3.ShowAsync();
@@ -1097,7 +1214,7 @@ public sealed partial class MainPage : Page
                 _adhdMode = false;
                 AdhdModeSwitch.IsOn = false;
                 _pendingMinutes = _currentSceneTag != null ? SceneManager.GetSceneConfig(_db, _currentSceneTag).Minutes : 25;
-                SessionHint.Text = $"{_pendingMinutes} 分钟定心 · 正计时 · 心无旁骛";
+                SessionHint.Text = I18n.GetFormat("Notify_SessionHint", _pendingMinutes);
             }
             App.LogAction("ADHD首次引导", result == ContentDialogResult.Primary ? "完成" : "跳过");
         }

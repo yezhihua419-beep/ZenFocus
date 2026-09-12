@@ -7,6 +7,7 @@ namespace ChanJing.Tests;
 /// 场景管理核心逻辑测试（P0-1 额度判断 / P0-2 切换保存 / 配置读写）。
 /// 验证"自动记忆"与"主动自定义"的区分——免费版正常使用场景不得消耗自定义额度。
 /// </summary>
+[Collection("Hosts")]
 public class SceneManagerTests : IDisposable
 {
     private readonly string _tempDir;
@@ -59,6 +60,28 @@ public class SceneManagerTests : IDisposable
         SceneManager.ResetSceneConfig(_db, "work");
         Assert.False(SceneManager.IsCustomized(_db, "work"));
         Assert.Equal(0, SceneManager.GetCustomSceneCount(_db));
+    }
+
+    [Fact]
+    public void GetDefaultCategories_EnWork_AddsSocial()
+    {
+        var prev = BlocklistService.ResolveLocale;
+        try
+        {
+            BlocklistService.ResolveLocale = () => "zh-CN";
+            Assert.Equal(3, SceneManager.GetDefaultCategories("work").Length);
+            Assert.DoesNotContain("社交", SceneManager.GetDefaultCategories("work"));
+
+            BlocklistService.ResolveLocale = () => "en-US";
+            var en = SceneManager.GetDefaultCategories("work");
+            Assert.Contains("社交", en);
+            Assert.Contains("短视频", en);
+            Assert.Equal(4, en.Length);
+        }
+        finally
+        {
+            BlocklistService.ResolveLocale = prev;
+        }
     }
 
     [Fact]

@@ -23,6 +23,7 @@ public class IntegrationFlowTests : IDisposable
         var hostsFile = Path.Combine(_tempDir, "hosts");
         File.WriteAllText(hostsFile, "127.0.0.1 localhost\n");
         HostsBlocker.HostsPathOverride = hostsFile;
+        HostsBlocker.PreApplyPathOverride = Path.Combine(_tempDir, "hosts.pre");
         _db = new AppDatabase(Path.Combine(_tempDir, "test.db"));
         _blocklist = new BlocklistService(_db);
         _engine = new FocusEngine(_db);
@@ -31,6 +32,7 @@ public class IntegrationFlowTests : IDisposable
     public void Dispose()
     {
         HostsBlocker.HostsPathOverride = null;
+        HostsBlocker.PreApplyPathOverride = null;
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* 忽略 */ }
     }
 
@@ -193,12 +195,12 @@ public class IntegrationFlowTests : IDisposable
         _blocklist.EmergencyPass = true;
         Assert.True(_blocklist.EmergencyPass);
         // 模拟WindowActivityService拦截条件：!EmergencyPass时才拦截
-        bool shouldBlock = _engine.IsRunning && _blocklist.IsApplied() && !_blocklist.EmergencyPass;
+        bool shouldBlock = _engine.IsRunning && _blocklist.CanInterceptApps();
         Assert.False(shouldBlock); // 暂离模式下不拦截桌面应用
 
         // 5分钟后恢复（模拟计时器）
         _blocklist.EmergencyPass = false;
-        shouldBlock = _engine.IsRunning && _blocklist.IsApplied() && !_blocklist.EmergencyPass;
+        shouldBlock = _engine.IsRunning && _blocklist.CanInterceptApps();
         Assert.True(shouldBlock); // 恢复后拦截
 
         _engine.Finish(true);

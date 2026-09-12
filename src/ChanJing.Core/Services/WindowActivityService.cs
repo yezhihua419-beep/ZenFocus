@@ -78,13 +78,14 @@ public sealed class WindowActivityService : IDisposable
     /// <summary>立即生效：枚举所有已启用分类的进程并最小化（专注开始或手动屏蔽启用时调用）。</summary>
     public void ApplyShieldNow()
     {
-        if (!_blocklist.IsApplied() || _blocklist.EmergencyPass) return;
+        if (!_blocklist.CanInterceptApps()) return;
         try
         {
             foreach (var proc in _blocklist.GetActiveAppProcesses())
             {
                 MinimizeProcessWindows(proc);
             }
+            MinimizeStoreHostWindows(invokeBlocked: false);
         }
         catch { }
     }
@@ -92,13 +93,14 @@ public sealed class WindowActivityService : IDisposable
     /// <summary>专注开始时立即最小化所有已启用分类的桌面应用。</summary>
     private void OnFocusStarted()
     {
-        if (!_blocklist.IsApplied() || _blocklist.EmergencyPass) return;
+        if (!_blocklist.CanInterceptApps()) return;
         try
         {
             var processed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var p in Process.GetProcesses())
             {
                 var name = p.ProcessName;
+                if (BlocklistService.IsStoreHostProcess(name)) continue;
                 if (processed.Contains(name)) continue;
                 if (_blocklist.IsTempAllowed(name)) continue; // 临时放行的应用不拦截
                 var cat = _blocklist.MatchBlockedApp(name);
@@ -109,8 +111,38 @@ public sealed class WindowActivityService : IDisposable
                     AppBlocked?.Invoke(name, cat);
                 }
             }
+            MinimizeStoreHostWindows(invokeBlocked: true);
         }
         catch { }
+    }
+
+    /// <summary>商店壳只最小化命中标题的那扇窗，不按进程名一锅端。</summary>
+    private void MinimizeStoreHostWindows(bool invokeBlocked)
+    {
+        foreach (var p in Process.GetProcesses())
+        {
+            string name;
+            string title;
+            IntPtr hwnd;
+            try
+            {
+                name = p.ProcessName;
+                title = p.MainWindowTitle;
+                hwnd = p.MainWindowHandle;
+            }
+            catch { continue; }
+            if (!BlocklistService.IsStoreHostProcess(name) || hwnd == IntPtr.Zero) continue;
+            if (_blocklist.IsTempAllowed(name, title)) continue;
+            var cat = _blocklist.MatchBlockedApp(name, title);
+            if (cat is null) continue;
+            ShowWindow(hwnd, SW_MINIMIZE);
+            if (!invokeBlocked) continue;
+            var hits = _blocklist.MatchBlockedDomains(title);
+            var target = hits.Count > 0 ? hits[0] : name;
+            RememberBlockedTarget(target);
+            if (_engine.IsRunning && hits.Count > 0) _engine.RegisterDistraction(hits[0]);
+            AppBlocked?.Invoke(name, cat);
+        }
     }
 
     public bool IsRunning => _timer is not null;
@@ -185,14 +217,15 @@ public sealed class WindowActivityService : IDisposable
                 }
             }
 
-            // 专注中命中屏蔽站点 → 记分心（同域名每次专注只记一次/提醒一次）
-            if (_engine.IsRunning && info.TitleText is not null)
+            // 专注中命中屏蔽站点 → 记分心（同域名每次专注只记一次/提醒一次）。暂离时网站已放行，不再记。
+            if (_engine.IsRunning && !_blocklist.EmergencyPass && info.TitleText is not null)
             {
                 foreach (var domain in _blocklist.MatchBlockedDomains(info.TitleText))
                 {
                     var key = $"{_engine.Current!.StartedAt:o}|{domain}";
                     if (_notifiedDistractionKey == key) continue;
                     _notifiedDistractionKey = key;
+                    RememberBlockedTarget(domain);
                     _engine.RegisterDistraction(domain);
                     DistractionDetected?.Invoke(domain);
                 }
@@ -201,23 +234,29 @@ public sealed class WindowActivityService : IDisposable
             // 桌面应用拦截：仅在专注中生效（屏蔽绑定专注）。前台命中分心 App → 最小化 + 触发AppBlocked事件。
             // 杀进程由 UI 层在后台线程执行（避免阻塞 UI 线程）。
             // 专注中持续拦截（2 秒冷却，最小化后用户再点回会再次拦截）。
-            if ((_engine.IsRunning || _blocklist.IsManualShieldActive()) && _blocklist.IsApplied() && !_blocklist.EmergencyPass && info.Hwnd != IntPtr.Zero)
+            if ((_engine.IsRunning || _blocklist.IsManualShieldActive()) && _blocklist.CanInterceptApps() && info.Hwnd != IntPtr.Zero)
             {
-                if (!_blocklist.IsTempAllowed(info.ProcessName)) // 临时放行的应用不拦截
+                if (!_blocklist.IsTempAllowed(info.ProcessName, info.TitleText))
                 {
-                    var cat = _blocklist.MatchBlockedApp(info.ProcessName);
+                    var cat = _blocklist.MatchBlockedApp(info.ProcessName, info.TitleText);
                     if (cat is not null)
                     {
+                        var host = BlocklistService.IsStoreHostProcess(info.ProcessName);
+                        var cooldownKey = host ? "host:" + (info.TitleText ?? info.ProcessName) : info.ProcessName;
                         lock (_lock)
                         {
-                            var last = _lastAppBlockedAt.GetValueOrDefault(info.ProcessName);
+                            var last = _lastAppBlockedAt.GetValueOrDefault(cooldownKey);
                             if (DateTime.UtcNow - last > TimeSpan.FromSeconds(2))
                             {
-                                _lastAppBlockedAt[info.ProcessName] = DateTime.UtcNow;
-                                // 直接对该进程所有主窗口最小化（Process.MainWindowHandle对Electron应用可靠，EnumWindows找不到抖音窗口）
-                                MinimizeProcessWindows(info.ProcessName);
-                                // 专注中拦截桌面分心应用也记分心来源
-                                if (_engine.IsRunning) _engine.RegisterDistraction(info.ProcessName);
+                                _lastAppBlockedAt[cooldownKey] = DateTime.UtcNow;
+                                if (host)
+                                    ShowWindow(info.Hwnd, SW_MINIMIZE);
+                                else
+                                    MinimizeProcessWindows(info.ProcessName);
+                                var hits = host ? _blocklist.MatchBlockedDomains(info.TitleText) : Array.Empty<string>();
+                                var target = hits.Count > 0 ? hits[0] : info.ProcessName;
+                                RememberBlockedTarget(target);
+                                if (_engine.IsRunning) _engine.RegisterDistraction(target);
                                 AppBlocked?.Invoke(info.ProcessName, cat);
                             }
                         }
@@ -277,6 +316,16 @@ public sealed class WindowActivityService : IDisposable
         }
     }
 
+    /// <summary>最近一次分心目标（域名或进程名）。点「放行此站点」时前台已是禅净，不能只读当前窗口。</summary>
+    public string? LastBlockedTarget { get; private set; }
+
+    /// <summary>记录分心目标（标题命中或桌面 App 拦截时调用）。</summary>
+    public void RememberBlockedTarget(string target)
+    {
+        if (!string.IsNullOrWhiteSpace(target))
+            LastBlockedTarget = target;
+    }
+
     /// <summary>当前前台窗口标题命中的第一个屏蔽域名（供专注页快捷放行）。未命中返回 null。</summary>
     public string? GetCurrentBlockedDomain()
     {
@@ -284,6 +333,20 @@ public sealed class WindowActivityService : IDisposable
         if (info.TitleText is null) return null;
         var hits = _blocklist.MatchBlockedDomains(info.TitleText);
         return hits.Count > 0 ? hits[0] : null;
+    }
+
+    /// <summary>可放行目标：优先最近一次分心，其次当前前台标题。</summary>
+    public string? GetAllowableTarget()
+    {
+        if (!string.IsNullOrWhiteSpace(LastBlockedTarget))
+        {
+            if (_blocklist.MatchBlockedApp(LastBlockedTarget) is not null)
+                return LastBlockedTarget;
+            if (_blocklist.GetActiveDomains().Any(d =>
+                    string.Equals(d, LastBlockedTarget, StringComparison.OrdinalIgnoreCase)))
+                return LastBlockedTarget;
+        }
+        return GetCurrentBlockedDomain();
     }
 
     /// <summary>前台窗口信息。ProcessName 为 null 表示无前台窗口（如锁屏）。</summary>

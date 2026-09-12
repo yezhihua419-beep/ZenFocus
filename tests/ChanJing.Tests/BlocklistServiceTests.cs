@@ -18,6 +18,8 @@ public class BlocklistServiceTests : IDisposable
         var hostsFile = Path.Combine(_tempDir, "hosts");
         File.WriteAllText(hostsFile, "127.0.0.1 localhost\n");
         HostsBlocker.HostsPathOverride = hostsFile;
+        HostsBlocker.PreApplyPathOverride = Path.Combine(_tempDir, "hosts.pre");
+        BlocklistService.CatalogPathOverride = Path.Combine(_tempDir, "catalog.txt");
         _db = new AppDatabase(Path.Combine(_tempDir, "test.db"));
         _service = new BlocklistService(_db);
     }
@@ -25,14 +27,33 @@ public class BlocklistServiceTests : IDisposable
     public void Dispose()
     {
         HostsBlocker.HostsPathOverride = null;
+        HostsBlocker.PreApplyPathOverride = null;
+        BlocklistService.CatalogPathOverride = null;
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* 忽略 */ }
     }
 
     [Fact]
     public void DefaultCategories_ContainKeySites()
     {
-        Assert.Contains("douyin.com", BlocklistService.DefaultCategories["短视频"]);
-        Assert.Contains("bilibili.com", BlocklistService.DefaultCategories["视频娱乐"]);
+        var prev = BlocklistService.ResolveLocale;
+        try
+        {
+            BlocklistService.ResolveLocale = () => "zh-CN";
+            Assert.Contains("douyin.com", BlocklistService.DefaultCategories["短视频"]);
+            Assert.Contains("bilibili.com", BlocklistService.DefaultCategories["视频娱乐"]);
+            Assert.Contains("douyin", BlocklistService.DefaultAppCategories["短视频"]);
+
+            BlocklistService.ResolveLocale = () => "en-US";
+            Assert.Contains("tiktok.com", BlocklistService.DefaultCategories["短视频"]);
+            Assert.Contains("youtube.com", BlocklistService.DefaultCategories["视频娱乐"]);
+            Assert.Contains("TikTok", BlocklistService.DefaultAppCategories["短视频"]);
+            Assert.DoesNotContain("douyin.com", BlocklistService.DefaultCategories["短视频"]);
+            Assert.DoesNotContain("douyin", BlocklistService.DefaultAppCategories["短视频"]);
+        }
+        finally
+        {
+            BlocklistService.ResolveLocale = prev;
+        }
     }
 
     [Fact]
@@ -79,6 +100,27 @@ public class BlocklistServiceTests : IDisposable
     }
 
     [Fact]
+    public void SeedCategoriesIfEmpty_WritesOnlyWhenBlank()
+    {
+        Assert.Empty(_service.GetEnabledCategories());
+        _service.SeedCategoriesIfEmpty(new[] { "短视频", "购物" });
+        Assert.Equal(new[] { "短视频", "购物" }, _service.GetEnabledCategories());
+
+        _service.SeedCategoriesIfEmpty(new[] { "社交" });
+        Assert.Equal(new[] { "短视频", "购物" }, _service.GetEnabledCategories());
+    }
+
+    [Fact]
+    public void RemoveCustomDomain_RemovesOneKeepsOthers()
+    {
+        _service.SetCustomDomains(new[] { "example.com", "test.cn" });
+        _service.RemoveCustomDomain("HTTPS://Example.COM/");
+        var left = _service.GetCustomDomains();
+        Assert.DoesNotContain("example.com", left);
+        Assert.Contains("test.cn", left);
+    }
+
+    [Fact]
     public void SetCustomDomains_CleansInput()
     {
         _service.SetCustomDomains(new[] { "  HTTPS://Example.COM ", "example.com", "weibo.com/" });
@@ -88,6 +130,21 @@ public class BlocklistServiceTests : IDisposable
         Assert.Equal(2, domains.Count);
         Assert.Contains("example.com", domains);
         Assert.Contains("weibo.com", domains);
+    }
+
+    [Fact]
+    public void PauseSystemHosts_ClearsThenRestoreWritesBack()
+    {
+        _service.SetEnabledCategories(new[] { "短视频" });
+        HostsBlocker.Apply(_service.GetActiveDomains());
+        Assert.True(HostsBlocker.IsApplied());
+
+        _service.PauseSystemHosts();
+        Assert.False(HostsBlocker.IsApplied());
+
+        _service.RestoreSystemHostsIfNeeded(true);
+        Assert.True(HostsBlocker.IsApplied());
+        Assert.Contains("douyin.com", File.ReadAllText(HostsBlocker.HostsPath));
     }
 
     [Fact]
@@ -306,6 +363,79 @@ public class BlocklistServiceTests : IDisposable
         {
             _service.SetCooldownMinutes(m);
             Assert.Equal(m, _service.GetCooldownMinutes());
+        }
+    }
+
+    [Fact]
+    public void TryClearOrphanSystemHosts_ClearsWhenIdle()
+    {
+        HostsBlocker.Apply(new[] { "youtube.com" });
+        Assert.True(HostsBlocker.IsApplied());
+
+        Assert.True(_service.TryClearOrphanSystemHosts(focusRunning: false));
+        Assert.False(HostsBlocker.IsApplied());
+        Assert.DoesNotContain("# BEGIN CHANJING", File.ReadAllText(HostsBlocker.HostsPath));
+    }
+
+    [Fact]
+    public void TryClearOrphanSystemHosts_SkipsWhenFocusing()
+    {
+        HostsBlocker.Apply(new[] { "youtube.com" });
+        Assert.False(_service.TryClearOrphanSystemHosts(focusRunning: true));
+        Assert.True(HostsBlocker.IsApplied());
+    }
+
+    [Fact]
+    public void TryClearOrphanSystemHosts_SkipsWhenManualShield()
+    {
+        _service.SetEnabledCategories(new[] { "短视频" });
+        _service.EnableManualShield();
+        Assert.True(HostsBlocker.IsApplied());
+        Assert.False(_service.TryClearOrphanSystemHosts(focusRunning: false));
+        Assert.True(HostsBlocker.IsApplied());
+    }
+
+    [Fact]
+    public void TryClearOrphanSystemHosts_NoMarker_ReturnsFalse()
+    {
+        Assert.False(HostsBlocker.IsApplied());
+        Assert.False(_service.TryClearOrphanSystemHosts(focusRunning: false));
+    }
+
+    [Fact]
+    public void CatalogLocale_SeedsFallbackThenPersists()
+    {
+        var path = BlocklistService.CatalogPath;
+        Assert.False(File.Exists(path));
+
+        var first = BlocklistService.ReadCatalogLocale("en-US");
+        Assert.Equal("en-US", first);
+        Assert.True(File.Exists(path));
+        Assert.Equal("en-US", File.ReadAllText(path).Trim());
+
+        BlocklistService.CatalogPathOverride = path; // 清缓存再读
+        Assert.Equal("en-US", BlocklistService.ReadCatalogLocale("zh-CN"));
+    }
+
+    [Fact]
+    public void CatalogLocale_WriteDoesNotFollowFallback()
+    {
+        var prev = BlocklistService.ResolveLocale;
+        try
+        {
+            BlocklistService.ResolveLocale = () => BlocklistService.ReadCatalogLocale("en-US");
+            BlocklistService.WriteCatalogLocale("zh-CN");
+            Assert.Equal("zh-CN", BlocklistService.ReadCatalogLocale("en-US"));
+            Assert.Contains("douyin.com", BlocklistService.DefaultCategories["短视频"]);
+
+            BlocklistService.WriteCatalogLocale("en-US");
+            Assert.Equal("en-US", BlocklistService.ReadCatalogLocale("zh-CN"));
+            Assert.Contains("tiktok.com", BlocklistService.DefaultCategories["短视频"]);
+            Assert.DoesNotContain("douyin.com", BlocklistService.DefaultCategories["短视频"]);
+        }
+        finally
+        {
+            BlocklistService.ResolveLocale = prev;
         }
     }
 }

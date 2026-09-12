@@ -33,8 +33,70 @@ public sealed class BlocklistService
 
     public BlocklistService(AppDatabase db) => _db = db;
 
-    /// <summary>国内默认分类名单（域名不含 www，HostsBlocker 会自动补）。</summary>
-    public static IReadOnlyDictionary<string, string[]> DefaultCategories { get; } =
+    /// <summary>App 层注入当前名单语言。应读 catalog 文件，不要绑界面语言。</summary>
+    public static Func<string>? ResolveLocale { get; set; }
+
+    public static bool UseZhCatalog =>
+        (ResolveLocale?.Invoke() ?? "zh-CN").StartsWith("zh", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>测试注入：名单语言文件。切 UI 语言不得改这份文件。</summary>
+    private static string? _catalogPathOverride;
+    private static string? _catalogCache;
+    public static string? CatalogPathOverride
+    {
+        get => _catalogPathOverride;
+        set { _catalogPathOverride = value; _catalogCache = null; }
+    }
+
+    public static string CatalogPath =>
+        _catalogPathOverride ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ChanJing", "catalog.txt");
+
+    /// <summary>读名单语言。文件不存在时写入 fallback（通常是当前界面语言，只种一次）。</summary>
+    public static string ReadCatalogLocale(string fallback)
+    {
+        if (_catalogCache is "en-US" or "zh-CN") return _catalogCache;
+        var seed = fallback is "zh-CN" ? "zh-CN" : "en-US";
+        try
+        {
+            if (File.Exists(CatalogPath))
+            {
+                var saved = File.ReadAllText(CatalogPath).Trim();
+                if (saved is "en-US" or "zh-CN")
+                {
+                    _catalogCache = saved;
+                    return saved;
+                }
+            }
+        }
+        catch { }
+        WriteCatalogLocale(seed);
+        return seed;
+    }
+
+    public static void WriteCatalogLocale(string lang)
+    {
+        if (lang is not ("en-US" or "zh-CN")) lang = "en-US";
+        try
+        {
+            var dir = Path.GetDirectoryName(CatalogPath);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+            File.WriteAllText(CatalogPath, lang);
+        }
+        catch { }
+        _catalogCache = lang;
+    }
+
+    /// <summary>当前语言的默认网站分类（域名不含 www）。分类 key 固定中文。</summary>
+    public static IReadOnlyDictionary<string, string[]> DefaultCategories =>
+        UseZhCatalog ? CategoriesZh : CategoriesEn;
+
+    /// <summary>当前语言的桌面应用预设（进程名不含 .exe）。</summary>
+    public static IReadOnlyDictionary<string, string[]> DefaultAppCategories =>
+        UseZhCatalog ? AppsZh : AppsEn;
+
+    public static readonly IReadOnlyDictionary<string, string[]> CategoriesZh =
         new Dictionary<string, string[]>
         {
             ["短视频"] = new[] { "douyin.com", "kuaishou.com" },
@@ -45,15 +107,33 @@ public sealed class BlocklistService
             ["沟通工具"] = new[] { "wx.qq.com", "web.wechat.com", "im.dingtalk.com", "dingtalk.com", "im.qq.com", "web.qq.com", "work.weixin.qq.com", "feishu.cn", "larkoffice.com", "web.telegram.org", "discord.com", "slack.com" }
         };
 
-    /// <summary>桌面应用拦截预设：分类 → 进程名（不含 .exe，匹配忽略大小写）。
-    /// 只收录有独立桌面客户端的常见分心应用；用户可自行添加更多。</summary>
-    public static IReadOnlyDictionary<string, string[]> DefaultAppCategories { get; } =
+    public static readonly IReadOnlyDictionary<string, string[]> CategoriesEn =
+        new Dictionary<string, string[]>
+        {
+            ["短视频"] = new[] { "tiktok.com", "instagram.com" },
+            ["视频娱乐"] = new[] { "youtube.com", "netflix.com", "twitch.tv", "disneyplus.com", "hulu.com" },
+            ["社交"] = new[] { "x.com", "twitter.com", "facebook.com", "reddit.com" },
+            ["资讯"] = new[] { "cnn.com", "bbc.com", "nytimes.com" },
+            ["购物"] = new[] { "amazon.com", "ebay.com", "etsy.com" },
+            ["沟通工具"] = new[] { "web.whatsapp.com", "web.telegram.org", "discord.com", "slack.com", "teams.microsoft.com", "messenger.com" }
+        };
+
+    public static readonly IReadOnlyDictionary<string, string[]> AppsZh =
         new Dictionary<string, string[]>
         {
             ["短视频"] = new[] { "douyin", "kwai" },
             ["视频娱乐"] = new[] { "bilibili", "huya", "douyu", "iqiyi", "youku" },
             ["购物"] = new[] { "taobao", "jd", "pinduoduo" },
             ["沟通工具"] = new[] { "WeChat", "DingTalk", "QQ", "WXWork", "Lark", "Feishu", "Telegram", "Discord", "slack", "WeChatApp", "DingTalkLauncher" }
+        };
+
+    public static readonly IReadOnlyDictionary<string, string[]> AppsEn =
+        new Dictionary<string, string[]>
+        {
+            ["短视频"] = new[] { "TikTok", "Instagram" },
+            ["视频娱乐"] = new[] { "Spotify", "Steam", "Netflix" },
+            ["购物"] = new[] { "Amazon" },
+            ["沟通工具"] = new[] { "Discord", "slack", "Telegram", "WhatsApp", "Teams", "ms-teams", "Signal" }
         };
 
     /// <summary>桌面应用预设中文显示名（进程名 → 中文名）。未知进程显示原名。</summary>
@@ -77,16 +157,87 @@ public sealed class BlocklistService
             ["Lark"] = "飞书",
             ["Feishu"] = "飞书",
             ["Telegram"] = "Telegram",
+            ["TelegramDesktop"] = "Telegram",
             ["Discord"] = "Discord",
-            ["slack"] = "Slack"
+            ["DiscordPTB"] = "Discord",
+            ["DiscordCanary"] = "Discord",
+            ["slack"] = "Slack",
+            ["TikTok"] = "TikTok",
+            ["TikTokLIVEStudio"] = "TikTok",
+            ["Instagram"] = "Instagram",
+            ["Spotify"] = "Spotify",
+            ["Steam"] = "Steam",
+            ["steam"] = "Steam",
+            ["steamwebhelper"] = "Steam",
+            ["Netflix"] = "Netflix",
+            ["Amazon"] = "Amazon",
+            ["WhatsApp"] = "WhatsApp",
+            ["WhatsAppDesktop"] = "WhatsApp",
+            ["Teams"] = "Teams",
+            ["ms-teams"] = "Teams",
+            ["Signal"] = "Signal",
+            ["Weixin"] = "微信"
         };
+
+    /// <summary>进程别名：商店/Electron/预览版的真实 ProcessName 常与展示名不同。UI 仍只显示规范名。</summary>
+    public static readonly IReadOnlyDictionary<string, string[]> AppProcessAliases =
+        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["TikTok"] = new[] { "TikTok", "TikTokLIVEStudio" },
+            ["Discord"] = new[] { "Discord", "DiscordPTB", "DiscordCanary" },
+            ["WhatsApp"] = new[] { "WhatsApp", "WhatsAppDesktop" },
+            ["Steam"] = new[] { "steam", "steamwebhelper" },
+            ["steam"] = new[] { "steam", "steamwebhelper" },
+            ["Teams"] = new[] { "Teams", "ms-teams" },
+            ["ms-teams"] = new[] { "Teams", "ms-teams" },
+            ["Telegram"] = new[] { "Telegram", "TelegramDesktop" },
+            ["WeChat"] = new[] { "WeChat", "WeChatApp", "Weixin" },
+            ["DingTalk"] = new[] { "DingTalk", "DingTalkLauncher" }
+        };
+
+    /// <summary>站点附属域名：写 hosts / 标题匹配用，不进分类 UI。</summary>
+    public static readonly IReadOnlyDictionary<string, string[]> DomainHostExtras =
+        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["tiktok.com"] = new[] { "vm.tiktok.com" },
+            ["youtube.com"] = new[] { "youtu.be", "m.youtube.com", "music.youtube.com", "youtube-nocookie.com" },
+            ["x.com"] = new[] { "mobile.twitter.com", "mobile.x.com" },
+            ["twitter.com"] = new[] { "mobile.twitter.com" },
+            ["facebook.com"] = new[] { "fb.com", "m.facebook.com" },
+            ["reddit.com"] = new[] { "old.reddit.com", "m.reddit.com" },
+            ["amazon.com"] = new[] { "smile.amazon.com" },
+            ["discord.com"] = new[] { "discordapp.com" },
+            ["web.whatsapp.com"] = new[] { "whatsapp.com" }
+        };
+
+    /// <summary>规范进程名展开为真实可拦截 ProcessName（含自身）。</summary>
+    public static IReadOnlyList<string> ExpandAppProcesses(string listed)
+    {
+        if (string.IsNullOrWhiteSpace(listed)) return Array.Empty<string>();
+        return AppProcessAliases.TryGetValue(listed, out var aliases)
+            ? aliases
+            : new[] { listed };
+    }
+
+    /// <summary>进程名是否命中某条预设（含别名）。</summary>
+    public static bool ProcessMatches(string listed, string actual) =>
+        ExpandAppProcesses(listed).Any(a => string.Equals(a, actual, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>进程名 → 中文显示名（仅预设应用有映射，未知返回原名）。</summary>
     public static string GetAppDisplayName(string processName) =>
         AppDisplayNames.TryGetValue(processName, out var name) ? name : processName;
 
-    /// <summary>桌面应用进程名是否命中已启用分类（预设 + 用户自定义）。返回命中分类名，未命中返回 null。</summary>
-    public string? MatchBlockedApp(string processName)
+    /// <summary>商店/UWP 壳进程：只能按窗口标题拦当前窗口，禁止按进程名杀光。</summary>
+    public static bool IsStoreHostProcess(string? processName) =>
+        processName is not null && StoreHostProcesses.Contains(processName);
+
+    private static readonly HashSet<string> StoreHostProcesses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "ApplicationFrameHost", "WWAHost", "WinStore.App"
+    };
+
+    /// <summary>桌面应用进程名是否命中已启用分类（预设 + 用户自定义）。商店壳可再对标题匹配。未命中返回 null。</summary>
+    public string? MatchBlockedApp(string processName, string? windowTitle = null)
     {
         if (string.IsNullOrWhiteSpace(processName)) return null;
         var enabled = GetEnabledCategories().ToHashSet(StringComparer.Ordinal);
@@ -97,7 +248,7 @@ public sealed class BlocklistService
             // FocusOnlyCommunication：非专注中时排除沟通工具分类
             if (IsFocusOnlyCommunication() && !IsFocusRunning && kv.Key == "沟通工具") continue;
             if (enabled.Contains(kv.Key) &&
-                kv.Value.Any(p => string.Equals(p, processName, StringComparison.OrdinalIgnoreCase)))
+                kv.Value.Any(p => ProcessMatches(p, processName)))
             {
                 return kv.Key;
             }
@@ -108,6 +259,43 @@ public sealed class BlocklistService
                 string.Equals(proc, processName, StringComparison.OrdinalIgnoreCase))
             {
                 return cat;
+            }
+        }
+        return MatchStoreHostByTitle(processName, windowTitle);
+    }
+
+    /// <summary>仅商店壳：用标题对已启用网站/App 名。浏览器（chrome/msedge）绝不走这里。</summary>
+    private string? MatchStoreHostByTitle(string processName, string? windowTitle)
+    {
+        if (!IsStoreHostProcess(processName) || string.IsNullOrWhiteSpace(windowTitle)) return null;
+        var hits = MatchBlockedDomains(windowTitle);
+        if (hits.Count > 0)
+            return CategoryOfDomain(hits[0]) ?? GetEnabledCategories().FirstOrDefault();
+
+        var enabled = GetEnabledCategories().ToHashSet(StringComparer.Ordinal);
+        foreach (var kv in DefaultAppCategories)
+        {
+            if (IsFocusOnlyCommunication() && !IsFocusRunning && kv.Key == "沟通工具") continue;
+            if (!enabled.Contains(kv.Key)) continue;
+            foreach (var proc in kv.Value)
+            {
+                if (proc.Length >= 4 && windowTitle.Contains(proc, StringComparison.OrdinalIgnoreCase))
+                    return kv.Key;
+            }
+        }
+        return null;
+    }
+
+    private string? CategoryOfDomain(string domain)
+    {
+        foreach (var kv in DefaultCategories)
+        {
+            foreach (var d in kv.Value)
+            {
+                if (d.Equals(domain, StringComparison.OrdinalIgnoreCase)) return kv.Key;
+                if (DomainHostExtras.TryGetValue(d, out var extras) &&
+                    extras.Any(e => e.Equals(domain, StringComparison.OrdinalIgnoreCase)))
+                    return kv.Key;
             }
         }
         return null;
@@ -122,7 +310,9 @@ public sealed class BlocklistService
         var result = new List<string>();
         foreach (var kv in DefaultAppCategories)
         {
-            if (enabled.Contains(kv.Key)) result.AddRange(kv.Value);
+            if (!enabled.Contains(kv.Key)) continue;
+            foreach (var proc in kv.Value)
+                result.AddRange(ExpandAppProcesses(proc));
         }
         result.AddRange(GetCustomApps().Where(a => enabled.Contains(a.Category)).Select(a => a.Process));
         return result.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -317,6 +507,23 @@ public sealed class BlocklistService
         _db.SetSetting(SettingKeyCategories, string.Join(",", categories));
     }
 
+    /// <summary>还没勾过分类时写入兜底名单，不覆盖用户已保存的屏蔽页勾选。</summary>
+    public void SeedCategoriesIfEmpty(IEnumerable<string> fallback)
+    {
+        if (GetEnabledCategories().Count > 0) return;
+        var list = fallback.Where(c => !string.IsNullOrWhiteSpace(c)).ToArray();
+        if (list.Length == 0) return;
+        SetEnabledCategories(list);
+    }
+
+    /// <summary>删除一条自定义域名（清洗后精确匹配）。</summary>
+    public void RemoveCustomDomain(string domain)
+    {
+        var clean = DomainUtil.Clean(domain);
+        if (string.IsNullOrWhiteSpace(clean)) return;
+        SetCustomDomains(GetCustomDomains().Where(d => !d.Equals(clean, StringComparison.OrdinalIgnoreCase)));
+    }
+
     // ---------- 自定义域名 ----------
 
     public IReadOnlyList<string> GetCustomDomains()
@@ -392,12 +599,16 @@ public sealed class BlocklistService
         SaveTempAllows(active);
     }
 
-    /// <summary>检查进程名是否在临时放行列表中（桌面应用拦截用）。</summary>
-    public bool IsTempAllowed(string processName)
+    /// <summary>进程名或商店壳标题对应域名是否在临时放行中。</summary>
+    public bool IsTempAllowed(string processName, string? windowTitle = null)
     {
-        if (string.IsNullOrWhiteSpace(processName)) return false;
-        return GetTempAllows().Any(a =>
-            string.Equals(a.Domain, processName, StringComparison.OrdinalIgnoreCase));
+        var allows = GetTempAllows();
+        if (!string.IsNullOrWhiteSpace(processName) &&
+            allows.Any(a => string.Equals(a.Domain, processName, StringComparison.OrdinalIgnoreCase)))
+            return true;
+        if (string.IsNullOrWhiteSpace(windowTitle)) return false;
+        return MatchBlockedDomains(windowTitle).Any(d =>
+            allows.Any(a => string.Equals(a.Domain, d, StringComparison.OrdinalIgnoreCase)));
     }
 
     /// <summary>清除所有临时放行（专注结束时调用）。</summary>
@@ -422,7 +633,12 @@ public sealed class BlocklistService
             if (IsFocusOnlyCommunication() && !IsFocusRunning && category == "沟通工具") continue;
             if (DefaultCategories.TryGetValue(category, out var domains))
             {
-                result.AddRange(domains.Where(d => !allowed.Contains(d)));
+                foreach (var d in domains)
+                {
+                    if (!allowed.Contains(d)) result.Add(d);
+                    if (!DomainHostExtras.TryGetValue(d, out var extras)) continue;
+                    result.AddRange(extras.Where(e => !allowed.Contains(e)));
+                }
             }
         }
         result.AddRange(GetCustomDomains().Where(d => !allowed.Contains(d)));
@@ -467,6 +683,44 @@ public sealed class BlocklistService
 
     /// <summary>屏蔽是否已生效。</summary>
     public bool IsApplied() => HostsBlocker.IsPreApplied();
+
+    /// <summary>桌面应用拦截是否允许执行。名单命中不够，还要已 Apply 且非紧急放行。专注/手动开关由调用方判断。</summary>
+    public bool CanInterceptApps() => IsApplied() && !EmergencyPass;
+
+    /// <summary>启动清残留：无专注且非手动屏蔽时，清掉崩溃留下的系统 hosts 标记段。清掉返回 true。</summary>
+    public bool TryClearOrphanSystemHosts(bool focusRunning)
+    {
+        if (focusRunning || IsManualShieldActive()) return false;
+        if (!HostsBlocker.IsApplied()) return false;
+        try
+        {
+            HostsBlocker.Remove();
+            return true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>暂离：清系统 hosts（网站暂时能开）。权限不足时静默，桌面拦截仍靠 EmergencyPass。</summary>
+    public void PauseSystemHosts()
+    {
+        try { HostsBlocker.Remove(); }
+        catch (UnauthorizedAccessException) { }
+    }
+
+    /// <summary>暂离结束：专注中或手动屏蔽时把 hosts 写回去。</summary>
+    public void RestoreSystemHostsIfNeeded(bool focusOrManual)
+    {
+        if (!focusOrManual) return;
+        try { HostsBlocker.Apply(GetActiveDomains()); }
+        catch (UnauthorizedAccessException) { }
+    }
 
     // ---------- 导入/导出 ----------
 

@@ -21,10 +21,14 @@ public static class HostsBlocker
 
     public static string HostsPath => HostsPathOverride ?? DefaultHostsPath;
 
+    /// <summary>测试注入点：可替换 hosts.pre 路径，避免单测改用户真实配置。</summary>
+    public static string? PreApplyPathOverride { get; set; }
+
     /// <summary>预应用临时文件路径（屏蔽配置先存这里，专注开始后才同步到系统hosts）。</summary>
-    private static readonly string PreApplyPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "ChanJing", "hosts.pre");
+    private static string PreApplyPath =>
+        PreApplyPathOverride ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ChanJing", "hosts.pre");
 
     /// <summary>当前是否已应用屏蔽段（系统hosts中）。</summary>
     public static bool IsApplied()

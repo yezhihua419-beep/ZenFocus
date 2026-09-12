@@ -38,18 +38,47 @@ public static class DomainUtil
             ["douyu.com"] = new[] { "斗鱼" },
             ["huya.com"] = new[] { "虎牙" },
             ["iqiyi.com"] = new[] { "爱奇艺" },
-            ["youku.com"] = new[] { "优酷" }
+            ["youku.com"] = new[] { "优酷" },
+            ["tiktok.com"] = new[] { "tiktok" },
+            ["instagram.com"] = new[] { "instagram" },
+            ["youtube.com"] = new[] { "youtube" },
+            ["youtu.be"] = new[] { "youtube" },
+            ["m.youtube.com"] = new[] { "youtube" },
+            ["music.youtube.com"] = new[] { "youtube" },
+            ["netflix.com"] = new[] { "netflix" },
+            ["twitch.tv"] = new[] { "twitch" },
+            ["hulu.com"] = new[] { "hulu" },
+            ["disneyplus.com"] = new[] { "disney+" },
+            ["x.com"] = new[] { "twitter", "x.com", " / x" },
+            ["twitter.com"] = new[] { "twitter" },
+            ["facebook.com"] = new[] { "facebook" },
+            ["reddit.com"] = new[] { "reddit" },
+            ["amazon.com"] = new[] { "amazon" },
+            ["ebay.com"] = new[] { "ebay" },
+            ["etsy.com"] = new[] { "etsy" },
+            ["cnn.com"] = new[] { "cnn" },
+            ["bbc.com"] = new[] { "bbc" },
+            ["nytimes.com"] = new[] { "nytimes", "new york times" },
+            ["discord.com"] = new[] { "discord" },
+            ["web.whatsapp.com"] = new[] { "whatsapp" },
+            ["slack.com"] = new[] { "slack" },
+            ["teams.microsoft.com"] = new[] { "microsoft teams" },
+            ["messenger.com"] = new[] { "messenger" }
         };
 
-    /// <summary>标题是否命中某域名：完整域名 / 主域（≥5 字符防误配）/ 品牌词。</summary>
+    /// <summary>标题是否命中某域名：完整域名 / 两段主域（≥5 字符防误配）/ 品牌词。三段及以上（如 teams.microsoft.com）不用主域，避免误伤 microsoft/google。</summary>
     public static bool TitleMatches(string? title, string domain)
     {
         if (string.IsNullOrWhiteSpace(title)) return false;
         var lower = title.ToLowerInvariant();
         if (lower.Contains(domain, StringComparison.Ordinal)) return true;
 
-        var main = MainDomain(domain);
-        if (main.Length >= 5 && lower.Contains(main, StringComparison.Ordinal)) return true;
+        var labels = domain.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (labels.Length == 2)
+        {
+            var main = MainDomain(domain);
+            if (main.Length >= 5 && lower.Contains(main, StringComparison.Ordinal)) return true;
+        }
 
         return Aliases.TryGetValue(domain, out var aliases) &&
                aliases.Any(a => lower.Contains(a, StringComparison.Ordinal));

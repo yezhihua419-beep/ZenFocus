@@ -28,7 +28,8 @@ public class FocusController
     /// </summary>
     public string Toggle()
     {
-        return _engine.IsRunning ? Stop() : Start();
+        // 托盘/快捷键没有「圆满/放下」选择，一律提前结束，避免把连续天数刷高
+        return _engine.IsRunning ? StopEarly() : Start();
     }
 
     /// <summary>
@@ -45,12 +46,16 @@ public class FocusController
             var sceneConfig = SceneManager.GetSceneConfig(_db, sceneTag);
             if (!string.IsNullOrEmpty(sceneConfig.Wish))
             {
-                _blocklist.SetEnabledCategories(sceneConfig.Categories);
-                _blocklist.Apply(); // 写 hosts.pre，专注开始时同步到系统 hosts
-                FocusContext.CurrentWish = sceneConfig.Wish;
-                var startMinutes = FocusContext.DeepMode ? 0 : sceneConfig.Minutes;
+                // 分类以屏蔽页为准，场景只提供愿望/时长；空名单才按场景默认补一次
+                _blocklist.SeedCategoriesIfEmpty(SceneManager.GetDefaultCategories(sceneTag));
+                _blocklist.Apply();
+                var wish = FocusContext.ResolveWish?.Invoke(sceneTag, sceneConfig.Wish) ?? sceneConfig.Wish;
+                FocusContext.CurrentWish = wish;
+                var startMinutes = FocusContext.DeepMode ? 0
+                    : FocusContext.AdhdMode ? 15
+                    : sceneConfig.Minutes;
                 FocusContext.CurrentMinutes = startMinutes;
-                _engine.Start(sceneConfig.Wish, startMinutes);
+                _engine.Start(wish, startMinutes, isAdhd: FocusContext.AdhdMode && !FocusContext.DeepMode);
                 return $"开始专注 {sceneConfig.Minutes}分钟（场景 {sceneTag}）";
             }
         }
@@ -58,11 +63,13 @@ public class FocusController
         // 未选场景或场景配置无效，用默认配置
         // 关键：即使未选场景，也要调用Apply()确保hosts.pre存在，
         // 否则IsApplied()返回false，OnFocusStarted和前台轮询都不工作，抖音不会被屏蔽
+        _blocklist.SeedCategoriesIfEmpty(SceneManager.GetDefaultCategories(FocusContext.CurrentSceneTag ?? "work"));
         _blocklist.Apply();
-        FocusContext.CurrentWish = "专注";
-        var defaultMinutes = FocusContext.DeepMode ? 0 : 25;
+        var fallback = FocusContext.ResolveWish?.Invoke(null, "专注") ?? "专注";
+        FocusContext.CurrentWish = fallback;
+        var defaultMinutes = FocusContext.DeepMode ? 0 : (FocusContext.AdhdMode ? 15 : 25);
         FocusContext.CurrentMinutes = defaultMinutes;
-        _engine.Start("专注", defaultMinutes);
+        _engine.Start(fallback, defaultMinutes, isAdhd: FocusContext.AdhdMode && !FocusContext.DeepMode);
         return $"开始专注{defaultMinutes}分钟（未选场景）";
     }
 

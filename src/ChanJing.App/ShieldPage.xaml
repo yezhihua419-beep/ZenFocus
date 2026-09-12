@@ -35,7 +35,11 @@
                     <TextBlock FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
                                x:Uid="ShieldPage_Subtitle" Text="" />
-                    <ToggleSwitch x:Name="ManualShieldSwitch" x:Uid="ShieldPage_ManualShield" Header="" OffContent="" OnContent=""
+                    <TextBlock x:Name="AdminHint" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushWarning}" Visibility="Collapsed" />
+                    <Button x:Name="ElevateButton" Click="Elevate_Click" Margin="0,8,0,0"
+                            Padding="16,8" CornerRadius="16" Visibility="Collapsed" />
+                    <ToggleSwitch x:Name="ManualShieldSwitch"
                                   Toggled="ManualShield_Toggled" Margin="0,12,0,0" />
                     <TextBlock x:Name="ManualShieldHint" FontSize="12" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
@@ -46,6 +50,16 @@
                 <StackPanel Grid.Row="1" Margin="0,20,0,0" Spacing="8">
                     <TextBlock x:Uid="ShieldPage_CategoryTitle" Text="" FontSize="15" FontWeight="SemiBold"
                                Foreground="{StaticResource BrushTextPrimary}" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock x:Name="CatalogLabel" VerticalAlignment="Center" FontSize="13"
+                                   Foreground="{StaticResource BrushTextSecondary}" />
+                        <ComboBox x:Name="CatalogBox" Width="280" SelectionChanged="Catalog_Changed">
+                            <ComboBoxItem x:Name="CatalogIntl" Tag="en-US" />
+                            <ComboBoxItem x:Name="CatalogChina" Tag="zh-CN" />
+                        </ComboBox>
+                    </StackPanel>
+                    <TextBlock x:Name="CatalogHint" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}" />
                     <ItemsControl x:Name="CategoryPanel">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -65,8 +79,8 @@
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <TextBlock x:Uid="ShieldPage_AppModeLabel" Text="" VerticalAlignment="Center" />
                         <ComboBox x:Name="AppModeBox" Width="160" SelectionChanged="AppMode_Changed">
-                            <ComboBoxItem x:Uid="ShieldPage_AppModeMinimize" Content="" Tag="minimize" />
-                            <ComboBoxItem x:Uid="ShieldPage_AppModeKill" Content="" Tag="kill" />
+                            <ComboBoxItem x:Name="ModeMinimize" Tag="minimize" Content="Minimize" />
+                            <ComboBoxItem x:Name="ModeKill" Tag="kill" Content="Kill process" />
                         </ComboBox>
                     </StackPanel>
                     <TextBlock FontSize="11" TextWrapping="Wrap"
@@ -88,24 +102,24 @@
                             <ComboBoxItem Content="5" Tag="5" />
                             <ComboBoxItem Content="10" Tag="10" IsSelected="True" />
                             <ComboBoxItem Content="15" Tag="15" />
-                            <ComboBoxItem x:Uid="ShieldPage_Cooldown20" Content="" Tag="20" />
-                            <ComboBoxItem x:Uid="ShieldPage_Cooldown30" Content="" Tag="30" />
+                            <ComboBoxItem x:Name="Cooldown20" Tag="20" Content="20" />
+                            <ComboBoxItem x:Name="Cooldown30" Tag="30" Content="30" />
                         </ComboBox>
                     </StackPanel>
                     <TextBlock x:Name="CooldownHint" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
                                x:Uid="ShieldPage_CooldownHint" Text="" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                        <TextBox x:Name="AppBox" x:Uid="ShieldPage_AppBox" PlaceholderText="" Width="200" />
+                        <TextBox x:Name="AppBox" PlaceholderText="Process name" Width="200" />
                         <ComboBox x:Name="AppCategoryBox" Width="120">
-                            <ComboBoxItem x:Uid="ShieldPage_AppCatShort" Content="" IsSelected="True" />
-                            <ComboBoxItem x:Uid="ShieldPage_AppCatVideo" Content="" />
-                            <ComboBoxItem x:Uid="ShieldPage_AppCatSocial" Content="" />
-                            <ComboBoxItem x:Uid="ShieldPage_AppCatNews" Content="" />
-                            <ComboBoxItem x:Uid="ShieldPage_AppCatShop" Content="" />
-                            <ComboBoxItem x:Uid="ShieldPage_AppCatComm" Content="" />
+                            <ComboBoxItem x:Name="CatShort" Tag="短视频" Content="短视频" IsSelected="True" />
+                            <ComboBoxItem x:Name="CatVideo" Tag="视频娱乐" Content="视频娱乐" />
+                            <ComboBoxItem x:Name="CatSocial" Tag="社交" Content="社交" />
+                            <ComboBoxItem x:Name="CatNews" Tag="资讯" Content="资讯" />
+                            <ComboBoxItem x:Name="CatShop" Tag="购物" Content="购物" />
+                            <ComboBoxItem x:Name="CatComm" Tag="沟通工具" Content="沟通工具" />
                         </ComboBox>
-                        <Button x:Uid="ShieldPage_AddApp" Content="" Click="AddApp_Click" Padding="16,8" />
+                        <Button x:Name="AddAppButton" Content="Add" Click="AddApp_Click" Padding="16,8" />
                     </StackPanel>
                     <ItemsControl x:Name="AppList">
                         <ItemsControl.ItemTemplate>
@@ -119,7 +133,7 @@
                                         <TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Process}" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <Button Grid.Column="2" x:Uid="ShieldPage_RemoveApp" Content="" Tag="{Binding Process}"
+                                    <Button Grid.Column="2" Content="{Binding RemoveLabel}" Tag="{Binding Process}"
                                             Visibility="{Binding RemoveVis}"
                                             Click="RemoveApp_Click" FontSize="11" Padding="10,2" />
                                 </Grid>
@@ -132,19 +146,27 @@
                 </StackPanel>
 
                 <!-- 自定义域名（低频，折叠） -->
-                <Expander Grid.Row="3" x:Uid="ShieldPage_CustomDomain" Header="" Margin="0,16,0,0">
+                <Expander x:Name="CustomDomainExpander" Grid.Row="3" Header="Custom domains" Margin="0,16,0,0">
                     <StackPanel Spacing="8" Padding="0,10,0,0">
                         <TextBlock FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    x:Uid="ShieldPage_CustomDomainHint" Text="" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox x:Name="DomainBox" x:Uid="ShieldPage_DomainBox" PlaceholderText="" Width="280" />
-                            <Button x:Uid="ShieldPage_AddDomain" Content="" Click="AddDomain_Click" Padding="16,8" />
+                            <TextBox x:Name="DomainBox" PlaceholderText="example.com" Width="280" />
+                            <Button x:Name="AddDomainButton" Content="Add" Click="AddDomain_Click" Padding="16,8" />
                         </StackPanel>
                         <ItemsControl x:Name="DomainList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding}" Margin="0,2" />
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Domain}" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1" Content="{Binding RemoveLabel}" Tag="{Binding Domain}"
+                                                Click="RemoveDomain_Click" FontSize="11" Padding="10,2" />
+                                    </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -152,16 +174,16 @@
                 </Expander>
 
                 <!-- 每日限额（低频，折叠） -->
-                <Expander Grid.Row="4" x:Uid="ShieldPage_DailyLimit" Header="" Margin="0,16,0,0">
+                <Expander x:Name="DailyLimitExpander" Grid.Row="4" Header="Daily limits" Margin="0,16,0,0">
                     <StackPanel Spacing="8" Padding="0,10,0,0">
                         <TextBlock FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    x:Uid="ShieldPage_DailyLimitHint" Text="" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox x:Name="LimitDomainBox" x:Uid="ShieldPage_LimitDomainBox" PlaceholderText="" Width="200" />
-                            <NumberBox x:Name="LimitMinutesBox" x:Uid="ShieldPage_LimitMinutes" Header="" Minimum="5" Maximum="1440"
+                            <TextBox x:Name="LimitDomainBox" PlaceholderText="bilibili.com" Width="200" />
+                            <NumberBox x:Name="LimitMinutesBox" Header="Minutes/day" Minimum="5" Maximum="1440"
                                        Value="30" SmallChange="5" LargeChange="30" Width="110" SpinButtonPlacementMode="Compact" />
-                            <Button x:Uid="ShieldPage_AddLimit" Content="" Click="AddLimit_Click" Padding="16,8" VerticalAlignment="Bottom" />
+                            <Button x:Name="AddLimitButton" Content="Add" Click="AddLimit_Click" Padding="16,8" VerticalAlignment="Bottom" />
                         </StackPanel>
                         <ItemsControl x:Name="LimitList">
                             <ItemsControl.ItemTemplate>
@@ -177,7 +199,7 @@
                                             <TextBlock Text="{Binding Minutes}" />
                                             <TextBlock x:Uid="ShieldPage_LimitUnit" Text="" Foreground="{StaticResource BrushTextSecondary}" />
                                         </StackPanel>
-                                        <Button Grid.Column="2" x:Uid="ShieldPage_DeleteLimit" Content="" Tag="{Binding Domain}"
+                                        <Button Grid.Column="2" Content="{Binding DeleteLabel}" Tag="{Binding Domain}"
                                                 Click="DeleteLimit_Click" FontSize="11" Padding="10,2" />
                                     </Grid>
                                 </DataTemplate>
@@ -187,23 +209,23 @@
                 </Expander>
 
                 <!-- 临时放行（低频，折叠） -->
-                <Expander Grid.Row="5" x:Uid="ShieldPage_TempAllow" Header="" Margin="0,16,0,0">
+                <Expander x:Name="TempAllowExpander" Grid.Row="5" Header="Temporary allow" Margin="0,16,0,0">
                     <StackPanel Spacing="8" Padding="0,10,0,0">
                         <TextBlock FontSize="12" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    x:Uid="ShieldPage_TempAllowHint" Text="" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox x:Name="AllowDomainBox" PlaceholderText="域名如 bilibili.com" Width="200" />
-                            <Button x:Uid="ShieldPage_AllowButton" Content="" Padding="16,8">
+                            <TextBox x:Name="AllowDomainBox" PlaceholderText="example.com" Width="200" />
+                            <Button x:Name="AllowButton" Content="Allow…" Padding="16,8">
                                 <Button.Flyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Text="放行 5 分钟" Tag="5" Click="AddAllowMenu_Click" />
-                                        <MenuFlyoutItem Text="放行 15 分钟" Tag="15" Click="AddAllowMenu_Click" />
-                                        <MenuFlyoutItem Text="放行 30 分钟" Tag="30" Click="AddAllowMenu_Click" />
+                                        <MenuFlyoutItem x:Name="Allow5Item" Tag="5" Click="AddAllowMenu_Click" />
+                                        <MenuFlyoutItem x:Name="Allow15Item" Tag="15" Click="AddAllowMenu_Click" />
+                                        <MenuFlyoutItem x:Name="Allow30Item" Tag="30" Click="AddAllowMenu_Click" />
                                     </MenuFlyout>
                                 </Button.Flyout>
                             </Button>
-                            <Button x:Uid="ShieldPage_ClearAllow" Content="" Click="ClearAllow_Click" Padding="16,8" />
+                            <Button x:Name="ClearAllowButton" Content="Clear allows" Click="ClearAllow_Click" Padding="16,8" />
                         </StackPanel>
                         <ItemsControl x:Name="AllowList">
                             <ItemsControl.ItemTemplate>
@@ -225,22 +247,22 @@
                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0">
             <StackPanel Padding="48,12" Spacing="6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
-                    <Button x:Name="ApplyButton" x:Uid="ShieldPage_Apply" Content="" Click="Apply_Click"
+                    <Button x:Name="ApplyButton" Content="Save config" Click="Apply_Click"
                             Background="{StaticResource BrushState}" Foreground="White"
                             Padding="28,10" CornerRadius="24" />
-                    <Button x:Uid="ShieldPage_Clear" Content="" Click="Remove_Click"
+                    <Button x:Name="ClearButton" Content="Clear" Click="Remove_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="28,10" CornerRadius="24" />
-                    <Button x:Uid="ShieldPage_Export" Content="" Click="ExportConfig_Click"
+                    <Button x:Name="ExportButton" Content="Export" Click="ExportConfig_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />
-                    <Button x:Uid="ShieldPage_Import" Content="" Click="ImportConfig_Click"
+                    <Button x:Name="ImportButton" Content="Import" Click="ImportConfig_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />
-                    <Button x:Uid="ShieldPage_Feedback" Content="" Click="Feedback_Click"
+                    <Button x:Name="FeedbackButton" Content="Feedback" Click="Feedback_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />

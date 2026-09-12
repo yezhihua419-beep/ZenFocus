@@ -1,3 +1,4 @@
+using ChanJing.Core.Models;
 using ChanJing.Core.Services;
 using Xunit;
 
@@ -23,6 +24,7 @@ public class FocusControllerTests : IDisposable
         var hostsFile = Path.Combine(_tempDir, "hosts");
         File.WriteAllText(hostsFile, "127.0.0.1 localhost\n");
         HostsBlocker.HostsPathOverride = hostsFile;
+        HostsBlocker.PreApplyPathOverride = Path.Combine(_tempDir, "hosts.pre");
         _db = new AppDatabase(Path.Combine(_tempDir, "test.db"));
         _engine = new FocusEngine(_db);
         _blocklist = new BlocklistService(_db);
@@ -33,11 +35,13 @@ public class FocusControllerTests : IDisposable
         FocusContext.CurrentWish = null;
         FocusContext.CurrentMinutes = 25;
         FocusContext.DeepMode = false;
+        FocusContext.AdhdMode = false;
     }
 
     public void Dispose()
     {
         HostsBlocker.HostsPathOverride = null;
+        HostsBlocker.PreApplyPathOverride = null;
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* 忽略 */ }
     }
 
@@ -62,7 +66,9 @@ public class FocusControllerTests : IDisposable
 
         Assert.False(_controller.IsRunning); // 已结束，不是暂停
         Assert.False(_engine.IsPaused);
-        Assert.Contains("结束专注", result);
+        Assert.Contains("提前结束专注", result);
+        var last = _db.GetSessions(DateTime.Today, DateTime.Today.AddDays(1)).Last();
+        Assert.Equal(FocusSessionState.Broken, last.State);
     }
 
     [Fact]
@@ -79,6 +85,37 @@ public class FocusControllerTests : IDisposable
         Assert.Contains("work", result);
         // 屏蔽分类应已应用
         Assert.True(_blocklist.IsApplied());
+    }
+
+    [Fact]
+    public void Start_DoesNotOverwriteExistingCategories()
+    {
+        _blocklist.SetEnabledCategories(new[] { "资讯" });
+        FocusContext.CurrentSceneTag = "work";
+
+        _controller.Start();
+
+        Assert.Single(_blocklist.GetEnabledCategories());
+        Assert.Contains("资讯", _blocklist.GetEnabledCategories());
+        Assert.True(_blocklist.IsApplied());
+    }
+
+    [Fact]
+    public void UiPrefs_LoadSave_RoundTrip()
+    {
+        FocusContext.CurrentSceneTag = "study";
+        FocusContext.DeepMode = true;
+        FocusContext.AdhdMode = true; // 与深度互斥，Load 后应丢掉 ADHD
+        FocusContext.Save(_db);
+
+        FocusContext.CurrentSceneTag = null;
+        FocusContext.DeepMode = false;
+        FocusContext.AdhdMode = false;
+        FocusContext.Load(_db);
+
+        Assert.Equal("study", FocusContext.CurrentSceneTag);
+        Assert.True(FocusContext.DeepMode);
+        Assert.False(FocusContext.AdhdMode);
     }
 
     [Fact]
@@ -112,6 +149,19 @@ public class FocusControllerTests : IDisposable
         Assert.True(_controller.IsRunning);
         Assert.True(_blocklist.IsApplied()); // Start()应自动调用Apply()
         Assert.Contains("未选场景", result);
+    }
+
+    [Fact]
+    public void Start_WithAdhd_Uses15MinutesAndFlag()
+    {
+        FocusContext.CurrentSceneTag = null;
+        FocusContext.AdhdMode = true;
+
+        _controller.Start();
+
+        Assert.True(_controller.IsRunning);
+        Assert.Equal(15, FocusContext.CurrentMinutes);
+        Assert.True(_engine.Current?.IsAdhd);
     }
 
     [Fact]

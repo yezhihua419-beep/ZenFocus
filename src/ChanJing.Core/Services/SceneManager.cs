@@ -29,6 +29,15 @@ public static class SceneManager
         _ => tag
     };
 
+    /// <summary>场景默认分类。英文工作场景多拦「社交」（X/Reddit），中文仍是短视频+视频+购物。</summary>
+    public static string[] GetDefaultCategories(string tag)
+    {
+        if (!ScenePresets.TryGetValue(tag, out var preset)) return Array.Empty<string>();
+        if (tag == "work" && !BlocklistService.UseZhCatalog)
+            return new[] { "短视频", "视频娱乐", "购物", "社交" };
+        return preset.Categories;
+    }
+
     /// <summary>读取场景配置：优先用户自定义，没有则用预设默认值。</summary>
     public static SceneConfig GetSceneConfig(AppDatabase db, string tag)
     {
@@ -44,12 +53,12 @@ public static class SceneManager
                     var minutes = json.RootElement.TryGetProperty("minutes", out var m) ? m.GetInt32() : preset.Minutes;
                     var categories = json.RootElement.TryGetProperty("categories", out var c)
                         ? c.EnumerateArray().Select(x => x.GetString()).Where(s => !string.IsNullOrEmpty(s)).ToArray()
-                        : preset.Categories;
+                        : GetDefaultCategories(tag);
                     return new SceneConfig(wish, minutes, categories!);
                 }
                 catch { /* JSON解析失败，回退预设 */ }
             }
-            return new SceneConfig(preset.Wish, preset.Minutes, preset.Categories);
+            return new SceneConfig(preset.Wish, preset.Minutes, GetDefaultCategories(tag));
         }
         return new SceneConfig("", 25, Array.Empty<string>());
     }

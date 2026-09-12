@@ -3,7 +3,6 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -34,6 +33,8 @@ public partial class App : Application
     public void ReleaseSingleInstanceMutex()
     {
         try { _mutex?.ReleaseMutex(); } catch { }
+        try { _mutex?.Dispose(); } catch { }
+        _mutex = null;
     }
 
     [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
@@ -45,10 +46,12 @@ public partial class App : Application
     /// </summary>
     public App()
     {
-        // 语言设置：默认英文（必须在 InitializeComponent 之前设置，且不能访问数据库）
-        // ApplicationLanguages.PrimaryLanguageOverride = "en-US";
+        // 未打包进程必须用 WASDK API；Windows.Globalization 那套需要包身份，会 0xC000027B。
+        // 必须在任何资源（InitializeComponent / ResourceLoader）加载之前设置。
+        ApplyLanguageOverride();
 
         InitializeComponent();
+
         // 全局异常兜底：任何 UI 线程/后台线程异常先落盘 crash.log，再决定是否放行。
         // UI 线程异常若 Handled=false 会以 stowed exception 形式闪退，这里记录后放行。
         UnhandledException += OnUnhandledException;
@@ -56,22 +59,96 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
     }
 
-    /// <summary>切换语言（需重启应用生效）。</summary>
-    public static void SetLanguage(string lang)
+    private static string LanguageFilePath =>
+        System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ChanJing", "language.txt");
+
+    /// <summary>读取语言偏好。只读独立小文件，启动路径禁止碰 SQLite。</summary>
+    public static string GetLanguage()
     {
         try
         {
-            AppServices.Db?.SetSetting("app_language", lang);
-            ApplicationLanguages.PrimaryLanguageOverride = lang;
+            if (File.Exists(LanguageFilePath))
+            {
+                var saved = File.ReadAllText(LanguageFilePath).Trim();
+                if (saved is "en-US" or "zh-CN") return saved;
+            }
         }
         catch { }
+        return "en-US";
     }
 
-    /// <summary>获取当前语言。</summary>
-    public static string GetLanguage()
+    /// <summary>保存语言偏好。未打包下 WASDK 覆盖不持久化，必须自己落盘。</summary>
+    public static void SetLanguage(string lang)
     {
-        var saved = AppServices.Db?.GetSetting("app_language");
-        return string.IsNullOrEmpty(saved) ? "en-US" : saved;
+        if (lang is not ("en-US" or "zh-CN")) lang = "en-US";
+        try
+        {
+            var dir = System.IO.Path.GetDirectoryName(LanguageFilePath);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+            File.WriteAllText(LanguageFilePath, lang);
+        }
+        catch { }
+        try { AppServices.Db.SetSetting("app_language", lang); } catch { }
+    }
+
+    /// <summary>切换语言并重启，供托盘/设置共用。</summary>
+    public static void SwitchLanguage(string lang)
+    {
+        SetLanguage(lang);
+        LogAction("语言切换重启", lang);
+        if (Current is App app)
+            app.RestartForLanguageChange();
+    }
+
+    private static void ApplyLanguageOverride()
+    {
+        var lang = GetLanguage();
+        try
+        {
+            Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = lang;
+            ChanJing.Core.Services.FocusContext.ResolveWish = I18n.DisplayWish;
+            // 名单语言独立落盘：切界面语言不得把抖音名单换成 TikTok
+            ChanJing.Core.Services.BlocklistService.ResolveLocale = () =>
+                ChanJing.Core.Services.BlocklistService.ReadCatalogLocale(GetLanguage());
+            LogAction("语言覆盖", lang + " catalog=" + ChanJing.Core.Services.BlocklistService.ReadCatalogLocale(lang));
+        }
+        catch (Exception ex)
+        {
+            LogCrash("LanguageOverride", ex);
+        }
+    }
+
+    /// <summary>语言切换后重启：先放单实例锁，再拉起新进程。</summary>
+    public void RestartForLanguageChange()
+    {
+        try
+        {
+            try
+            {
+                if (AppServices.Engine.IsRunning)
+                    AppServices.Engine.Finish(completed: false);
+                AppServices.Blocklist.EmergencyPass = false;
+                if (!AppServices.Blocklist.IsManualShieldActive())
+                    AppServices.Blocklist.PauseSystemHosts();
+            }
+            catch (Exception ex) { LogCrash("LanguageRestart.Cleanup", ex); }
+
+            ReleaseSingleInstanceMutex();
+            var exe = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(exe))
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe)
+                {
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            LogCrash("LanguageRestart", ex);
+        }
+        Environment.Exit(0);
     }
 
     /// <summary>
@@ -89,14 +166,26 @@ public partial class App : Application
             _mutex = new System.Threading.Mutex(true, @"Local\ChanJing.App.SingleInstance", out createdNew);
             if (!createdNew)
             {
-                MessageBox(IntPtr.Zero, "禅净已在运行，可在右下角托盘找到它。", "禅净", 0x40);
+                MessageBox(IntPtr.Zero, I18n.Get("App_AlreadyRunning", "ZenFocus is already running. Find it in the system tray."), I18n.Get("App_AlreadyRunningTitle", "ZenFocus"), 0x40);
                 Exit();
                 return;
             }
         }
 
+#if DEBUG
+        // 虚拟测试钩子：写偏好并走与托盘相同的重启路径（子进程不继承此变量）
+        var smokeRestart = Environment.GetEnvironmentVariable("CHANJING_SMOKE_RESTART");
+        if (smokeRestart is "en-US" or "zh-CN")
+        {
+            Environment.SetEnvironmentVariable("CHANJING_SMOKE_RESTART", null);
+            SwitchLanguage(smokeRestart);
+            return;
+        }
+#endif
+
         _window = new MainWindow();
         MainWindow = _window;
+        try { AppServices.LoadUi(); } catch (Exception ex) { LogCrash("LoadUi", ex); }
         _window.Activate();
         LogAction("应用启动");
 
@@ -132,6 +221,23 @@ public partial class App : Application
             LogCrash("伴侣服务启动失败", ex);
         }
 
+        try
+        {
+            if (AppServices.Blocklist.TryClearOrphanSystemHosts(AppServices.Engine.IsRunning))
+            {
+                LogAction("启动清残留hosts", "已清除");
+                AppServices.Notify(I18n.Get("Notify_OrphanHostsCleared", "Cleared leftover website blocks from last exit."));
+            }
+            else if (!AppServices.Engine.IsRunning
+                     && !AppServices.Blocklist.IsManualShieldActive()
+                     && ChanJing.Core.Services.HostsBlocker.IsApplied())
+            {
+                LogAction("启动清残留hosts", "需要管理员，已跳过");
+                AppServices.Notify(I18n.Get("Notify_OrphanHostsNeedAdmin", "Leftover website blocks found. Run as administrator to clear them."), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
+            }
+        }
+        catch (Exception ex) { LogCrash("启动清残留hosts", ex); }
+
         // 屏蔽绑定专注：开始专注时把预应用配置同步到系统hosts，结束专注时清除系统hosts
         AppServices.Engine.FocusStarted += () =>
         {
@@ -158,6 +264,7 @@ public partial class App : Application
                         catch (UnauthorizedAccessException)
                         {
                             LogAction("专注开始", "网站屏蔽需要管理员权限，已跳过（桌面App屏蔽仍生效）");
+                            AppServices.Notify(I18n.Get("Notify_HostsSkipped", "Website blocking skipped (needs administrator). Desktop app blocking is still on."), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
                         }
                     });
                 }
@@ -168,13 +275,14 @@ public partial class App : Application
                 if (!string.IsNullOrEmpty(sceneTag) && SceneManager.IsCustomized(AppServices.Db, sceneTag))
                 {
                     var cats = AppServices.Blocklist.GetEnabledCategories().ToArray();
-                    SceneManager.SaveSceneConfig(AppServices.Db, sceneTag, new SceneManager.SceneConfig(AppServices.CurrentWish ?? "", AppServices.CurrentMinutes, cats));
+                    SceneManager.SaveSceneConfig(AppServices.Db, sceneTag, new SceneManager.SceneConfig(I18n.StoreWish(sceneTag, AppServices.CurrentWish), AppServices.CurrentMinutes, cats));
                     LogAction("场景自动记忆", $"{sceneTag} {AppServices.CurrentMinutes}分钟 屏蔽=[{string.Join("/", cats)}]");
                 }
             }
             catch (UnauthorizedAccessException)
             {
                 LogAction("专注开始", "网站屏蔽需要管理员权限，已跳过（桌面App屏蔽仍生效）");
+                AppServices.Notify(I18n.Get("Notify_HostsSkipped", "Website blocking skipped (needs administrator). Desktop app blocking is still on."), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
             }
             catch (Exception ex)
             {
@@ -219,9 +327,9 @@ public partial class App : Application
         };
         // 提权重启后的自动执行：--apply-shield / --remove-shield / --cleanup
         var cmd = Environment.GetCommandLineArgs();
-        if (cmd.Contains("--apply-shield")) { RunElevatedAction("apply", "屏蔽已应用。"); }
-        else if (cmd.Contains("--remove-shield")) { RunElevatedAction("remove", "屏蔽已撤销。"); }
-        else if (cmd.Contains("--cleanup")) { RunElevatedAction("cleanup", "已清理禅净的 hosts 标记段。"); }
+        if (cmd.Contains("--apply-shield")) { RunElevatedAction("apply", I18n.Get("Elevated_Apply", "Blocking applied.")); }
+        else if (cmd.Contains("--remove-shield")) { RunElevatedAction("remove", I18n.Get("Elevated_Remove", "Blocking removed.")); }
+        else if (cmd.Contains("--cleanup")) { RunElevatedAction("cleanup", I18n.Get("Elevated_Cleanup", "ZenFocus hosts markers cleaned.")); }
     }
 
     /// <summary>管理员权限下执行屏蔽动作并提示结果（提权重启后的入口）。</summary>
@@ -247,9 +355,9 @@ public partial class App : Application
             {
                 var dialog = new ContentDialog
                 {
-                    Title = "ZenFocus",
+                    Title = I18n.Get("App_AlreadyRunningTitle", "ZenFocus"),
                     Content = successMessage,
-                    CloseButtonText = "OK",
+                    CloseButtonText = I18n.Get("Common_OK.Content", "OK"),
                     XamlRoot = root
                 };
                 await dialog.ShowAsync();
@@ -262,9 +370,9 @@ public partial class App : Application
             {
                 var dialog = new ContentDialog
                 {
-                    Title = "Operation Failed",
-                    Content = $"Failed to complete: {ex.Message}",
-                    CloseButtonText = "OK",
+                    Title = I18n.Get("Stats_ShareFail", "Operation failed"),
+                    Content = I18n.GetFormat("Elevated_Fail", ex.Message),
+                    CloseButtonText = I18n.Get("Common_OK.Content", "OK"),
                     XamlRoot = root
                 };
                 await dialog.ShowAsync();

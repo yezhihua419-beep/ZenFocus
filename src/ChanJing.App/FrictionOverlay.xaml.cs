@@ -24,7 +24,14 @@ public sealed partial class FrictionOverlay : Window
     {
         InitializeComponent();
         _processName = processName;
-        _category = category;
+        _category = I18n.CategoryName(category);
+        I18n.SetContent(HintText, "FrictionOverlay_Hint.Text", "Take a deep breath, decide in 5 seconds");
+        I18n.SetContent(ContinueButton, "FrictionOverlay_Continue.Content", "Continue Focus");
+        I18n.SetContent(GiveInButton, "FrictionOverlay_GiveIn.Content", "I want to distract");
+        I18n.SetContent(Allow5Item, "FrictionOverlay_Allow5.Text", "Allow 5 min");
+        I18n.SetContent(Allow15Item, "FrictionOverlay_Allow15.Text", "Allow 15 min");
+        I18n.SetContent(Allow30Item, "FrictionOverlay_Allow30.Text", "Allow 30 min");
+        I18n.SetContent(AllowSessionItem, "FrictionOverlay_AllowSession.Text", "Allow for this session");
 
         // 全屏置顶
         Activate();
@@ -99,7 +106,7 @@ public sealed partial class FrictionOverlay : Window
 
     private void GiveInWithMinutes(int minutes)
     {
-        var desc = minutes == 0 ? "本次专注期间" : $"{minutes}分钟";
+        var desc = minutes == 0 ? I18n.Get("Allow_Session", "this session") : I18n.GetFormat("Allow_Minutes", minutes);
         App.LogAction("摩擦拦截", $"{_processName} 用户选择分心，临时放行{desc}");
         GiveIn?.Invoke(this, minutes);
         Close();

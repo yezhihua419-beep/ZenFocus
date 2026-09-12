@@ -47,12 +47,31 @@ public sealed partial class MainWindow : Window
 
         Nav.SelectedItem = Nav.MenuItems[0];
         ContentFrame.Navigate(typeof(MainPage));
+#if DEBUG
+        var smokeNav = Environment.GetEnvironmentVariable("CHANJING_SMOKE_NAV");
+        if (smokeNav == "shield")
+        {
+            Nav.SelectedItem = NavBlock;
+            ContentFrame.Navigate(typeof(ShieldPage));
+        }
+        else if (smokeNav == "stats")
+        {
+            Nav.SelectedItem = NavStats;
+            ContentFrame.Navigate(typeof(StatsPage));
+        }
+#endif
 
         // 前台窗口采集常驻（进程名 + 标题哈希，本地存储）。
         AppServices.Activity.Start();
 
+        var title = I18n.Get("MainPage_Title.Text", "ZenFocus");
+        Title = title;
+        AppTitleBar.Title = title;
+        I18n.SetContent(NavFocus, "MainWindow_NavFocus.Content", "Focus");
+        I18n.SetContent(NavBlock, "MainWindow_NavBlock.Content", "Block");
+        I18n.SetContent(NavStats, "MainWindow_NavStats.Content", "Stats");
         _tray = new TrayIconService(ShowMain, ExitApp, ToggleFocus, ToggleShield, QuickShield, RestBreak);
-        _tray.Show("禅净 — 先管住手，再看清时间");
+        _tray.Show(I18n.Get("Tray_Tooltip", "ZenFocus — First block, then see your time"));
 
         // 全局快捷键检测：Ctrl+Alt+F 开始/结束专注
         var hotkeyTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
@@ -160,7 +179,7 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                _tray.ShowBalloon($"「{domain}」已达今日限额，休息一下吧。", "禅净 · 每日限额");
+                _tray.ShowBalloon(I18n.GetFormat("Balloon_Limit", domain), I18n.Get("Balloon_LimitTitle", "ZenFocus · Daily limit"));
                 App.LogAction("限额提醒", domain);
             }
             catch (Exception ex)
@@ -234,7 +253,7 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                _tray.ShowBalloon($"你打开了「{domain}」。深呼吸，回到眼前的事。", "禅净 · 分心提醒");
+                _tray.ShowBalloon(I18n.GetFormat("Balloon_Dist", domain), I18n.Get("Balloon_DistTitle", "ZenFocus · Distraction"));
                 App.LogAction("分心提醒", domain);
             }
             catch (Exception ex)
@@ -257,13 +276,18 @@ public sealed partial class MainWindow : Window
                 _sceneRecommendCount++;
                 if (_sceneRecommendCount >= 3)
                 {
-                    // 渐进式自动化：推荐满3次后自动切换「工作」场景（仅当未在专注中）
-                    App.LogAction("场景自动推荐", "第3次触发，自动切换工作场景");
-                    AppServices.Notify(I18n.Get("Notify_CodingDetected", "Detected continuous coding. Suggest switching to Work scene"), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational);
                     _sceneRecommendCount = 0;
+                    if (AppServices.Engine.IsRunning)
+                    {
+                        AppServices.Notify(I18n.Get("Notify_CodingDetected", "Detected continuous coding. Suggest Work scene after this session."));
+                        return;
+                    }
+                    AppServices.ApplyScenePreset("work");
+                    App.LogAction("场景自动推荐", "第3次触发，已切换工作场景（分类未改）");
+                    AppServices.Notify(I18n.Get("Notify_CodingSwitched", "Switched to Work scene (wish/time). Categories stay as on the Block page."));
                     return;
                 }
-                _tray.ShowBalloon($"检测到你在「{processName}」中持续编码2分钟了，建议开启专注模式，屏蔽分心应用。（第{_sceneRecommendCount}/3次，之后自动切换场景）", "禅净 · 场景推荐");
+                _tray.ShowBalloon(I18n.GetFormat("Balloon_Coding", processName, _sceneRecommendCount), I18n.Get("Balloon_CodingTitle", "ZenFocus · Scene tip"));
                 App.LogAction("场景推荐提示", $"{processName} 第{_sceneRecommendCount}次");
             }
             catch (Exception ex)
@@ -282,10 +306,13 @@ public sealed partial class MainWindow : Window
             try
             {
                 var mode = AppServices.Blocklist.GetAppBlockMode();
+                // 商店壳不能杀进程，否则计算器/设置会一起没
+                if (mode == "kill" && BlocklistService.IsStoreHostProcess(processName))
+                    mode = "minimize";
                 if (mode == "kill")
                 {
                     // 先弹提示给3秒保存时间，然后后台杀进程
-                    _tray.ShowBalloon($"「{processName}」属于{category}，3秒后将强制结束，请尽快保存未保存内容。", "禅净 · 桌面应用拦截");
+                    _tray.ShowBalloon(I18n.GetFormat("Balloon_Kill", processName, I18n.CategoryName(category)), I18n.Get("Balloon_AppTitle", "ZenFocus · App block"));
                     _ = Task.Run(() =>
                     {
                         Thread.Sleep(3000); // 给用户3秒保存时间
@@ -325,18 +352,22 @@ public sealed partial class MainWindow : Window
                         _frictionOverlay.GiveIn += (_, minutes) =>
                         {
                             _frictionOverlay = null;
-                            var desc = minutes == 0 ? "本次专注期间" : $"{minutes}分钟";
+                            var desc = minutes == 0 ? I18n.Get("Allow_Session", "this session") : I18n.GetFormat("Allow_Minutes", minutes);
                             // 本次专注期间：用24小时（足够长），专注结束时统一清除
                             var actualMinutes = minutes == 0 ? 1440 : minutes;
-                            AppServices.Blocklist.AddTempAllow(processName, actualMinutes);
-                            AppServices.Notify(I18n.GetFormat("Notify_AppAllowed", processName, desc));
+                            var allowKey = BlocklistService.IsStoreHostProcess(processName)
+                                && AppServices.Activity.LastBlockedTarget is { Length: > 0 } t
+                                && !BlocklistService.IsStoreHostProcess(t)
+                                ? t : processName;
+                            AppServices.Blocklist.AddTempAllow(allowKey, actualMinutes);
+                            AppServices.Notify(I18n.GetFormat("Notify_AppAllowed", allowKey, desc));
                             App.LogAction("摩擦拦截结果", $"{processName} 用户选择分心，临时放行{desc}");
                         };
                         _frictionOverlay.Closed += (_, _) => { _frictionOverlay = null; };
                     }
                     else if (!AppServices.Engine.IsRunning)
                     {
-                        _tray.ShowBalloon($"「{processName}」属于{category}，已自动最小化。", "禅净 · 桌面应用拦截");
+                        _tray.ShowBalloon(I18n.GetFormat("Balloon_Min", processName, I18n.CategoryName(category)), I18n.Get("Balloon_AppTitle", "ZenFocus · App block"));
                     }
                 }
                 App.LogAction("拦截桌面应用", $"{processName}({category}) 方式={mode}");

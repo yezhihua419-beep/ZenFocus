@@ -14,7 +14,7 @@ public sealed partial class ShieldPage : Page
 {
     private readonly BlocklistService _blocklist = AppServices.Blocklist;
     private readonly DailyLimitService _limits = AppServices.DailyLimits;
-    private bool _isLoading; // OnLoaded刷新期间不触发SelectionChanged保存，避免页面销毁时ComboBox重置覆盖用户设置
+    private bool _isLoading = true; // 初始化/刷新期间不触发下拉保存，避免构造时弹确认框
 
     /// <summary>以管理员身份重启本程序并执行指定屏蔽动作（apply/remove/cleanup）。
     /// 同时传递 --db-path 确保管理员进程读写同一个数据库。
@@ -39,10 +39,10 @@ public sealed partial class ShieldPage : Page
     {
         var dialog = new ContentDialog
         {
-            Title = "Admin Rights Required",
-            Content = $"「{label}」需要写入系统 hosts 文件，需要管理员权限。\n\n是否以管理员身份重启禅净并自动执行？",
-            PrimaryButtonText = "Restart as Admin",
-            CloseButtonText = "Cancel",
+            Title = I18n.Get("Admin_ElevateTitle", "Administrator required"),
+            Content = I18n.GetFormat("Admin_ElevateContent", label),
+            PrimaryButtonText = I18n.Get("Admin_ElevatePrimary", "Restart as admin"),
+            CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -57,7 +57,7 @@ public sealed partial class ShieldPage : Page
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.Elevate", ex);
-            StatusText.Text = "未能以管理员身份启动：可能取消了授权。请右键「以管理员身份运行」本程序后重试。";
+            StatusText.Text = I18n.Get("Admin_ElevateFailed", "Could not elevate. Right-click → Run as administrator.");
             return false;
         }
     }
@@ -65,7 +65,62 @@ public sealed partial class ShieldPage : Page
     public ShieldPage()
     {
         InitializeComponent();
+        ApplyLocalized();
         Loaded += OnLoaded;
+    }
+
+    /// <summary>屏蔽页 x:Uid 缺 key 会变成空按钮，文案一律走 PRI。</summary>
+    private void ApplyLocalized()
+    {
+        I18n.SetContent(ManualShieldSwitch, "ShieldPage_ManualShield.Header", "Manual blocking");
+        I18n.SetContent(ManualShieldSwitch, "ShieldPage_ManualShield.OnContent", "On");
+        I18n.SetContent(ManualShieldSwitch, "ShieldPage_ManualShield.OffContent", "Off");
+        I18n.SetContent(ModeMinimize, "ShieldPage_AppModeMinimize.Content", "Minimize");
+        I18n.SetContent(ModeKill, "ShieldPage_AppModeKill.Content", "Kill process");
+        I18n.SetContent(CatShort, "ShieldPage_AppCatShort.Content", "Short video");
+        I18n.SetContent(CatVideo, "ShieldPage_AppCatVideo.Content", "Video");
+        I18n.SetContent(CatSocial, "ShieldPage_AppCatSocial.Content", "Social");
+        I18n.SetContent(CatNews, "ShieldPage_AppCatNews.Content", "News");
+        I18n.SetContent(CatShop, "ShieldPage_AppCatShop.Content", "Shopping");
+        I18n.SetContent(CatComm, "ShieldPage_AppCatComm.Content", "Messaging");
+        I18n.SetContent(AddAppButton, "ShieldPage_AddApp.Content", "Add");
+        I18n.SetContent(AppBox, "ShieldPage_AppBox.PlaceholderText", "Process name, e.g. Douyin");
+        I18n.SetContent(CustomDomainExpander, "ShieldPage_CustomDomain.Header", "Custom domains");
+        I18n.SetContent(AddDomainButton, "ShieldPage_AddDomain.Content", "Add");
+        I18n.SetContent(DomainBox, "ShieldPage_DomainBox.PlaceholderText", "Domain, e.g. example.com");
+        I18n.SetContent(DailyLimitExpander, "ShieldPage_DailyLimit.Header", "Daily limits");
+        I18n.SetContent(AddLimitButton, "ShieldPage_AddLimit.Content", "Add");
+        I18n.SetContent(LimitDomainBox, "ShieldPage_LimitDomainBox.PlaceholderText", "Domain, e.g. bilibili.com");
+        I18n.SetContent(LimitMinutesBox, "ShieldPage_LimitMinutes.Header", "Minutes/day");
+        I18n.SetContent(TempAllowExpander, "ShieldPage_TempAllow.Header", "Temporary allow");
+        I18n.SetContent(AllowButton, "ShieldPage_AllowButton.Content", "Allow…");
+        I18n.SetContent(ClearAllowButton, "ShieldPage_ClearAllow.Content", "Clear allows");
+        I18n.SetContent(ElevateButton, "Admin_ElevatePrimary", "Restart as admin");
+        I18n.SetContent(ApplyButton, "ShieldPage_Apply.Content", "Save config");
+        I18n.SetContent(ClearButton, "ShieldPage_Clear.Content", "Clear");
+        I18n.SetContent(ExportButton, "ShieldPage_Export.Content", "Export");
+        I18n.SetContent(ImportButton, "ShieldPage_Import.Content", "Import");
+        I18n.SetContent(FeedbackButton, "ShieldPage_Feedback.Content", "Feedback");
+        I18n.SetContent(Allow5Item, "MainPage_Allow5.Text", "Allow 5 min");
+        I18n.SetContent(Allow15Item, "MainPage_Allow15.Text", "Allow 15 min");
+        I18n.SetContent(Allow30Item, "MainPage_Allow30.Text", "Allow 30 min");
+        I18n.SetContent(AllowDomainBox, "Shield_AllowPlaceholder", "Domain, e.g. example.com");
+        CatalogLabel.Text = I18n.Get("Shield_CatalogLabel", "Site list");
+        I18n.SetContent(CatalogIntl, "Shield_CatalogIntl", "International (YouTube / TikTok)");
+        I18n.SetContent(CatalogChina, "Shield_CatalogChina", "China (Douyin / Bilibili)");
+        ApplyAdminHint();
+        RefreshCatalogHint();
+        var appSample = string.Join("+", BlocklistService.DefaultAppCategories.SelectMany(kv => kv.Value).Take(6));
+        var siteSample = string.Join("+", BlocklistService.DefaultCategories.SelectMany(kv => kv.Value).Take(4));
+        App.LogAction("i18n-shield", $"apply={ApplyButton.Content} mode={ModeMinimize.Content} add={AddAppButton.Content} apps={appSample} sites={siteSample}");
+    }
+
+    private void ApplyAdminHint()
+    {
+        var show = !I18n.IsElevated();
+        AdminHint.Text = I18n.Get("Admin_Hint", "Not administrator: YouTube/TikTok tabs will stay open (hosts skipped). Desktop apps can still be minimized. Right-click → Run as administrator.");
+        AdminHint.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        ElevateButton.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>每次进入屏蔽页都刷新（跨页面同步场景/状态）。</summary>
@@ -95,7 +150,7 @@ public sealed partial class ShieldPage : Page
                 var siteCount = BlocklistService.DefaultCategories[category].Length;
                 var checkBox = new CheckBox
                 {
-                    Content = $"{category}（{siteCount}站）",
+                    Content = I18n.GetFormat("Shield_CatLabel", I18n.CategoryName(category), siteCount),
                     IsChecked = enabled.Contains(category),
                     Tag = category,
                     FontSize = 13,
@@ -118,8 +173,8 @@ public sealed partial class ShieldPage : Page
                 var curCats = _blocklist.GetEnabledCategories().ToHashSet(StringComparer.Ordinal);
                 var scnCats = sceneCfg.Categories.ToHashSet(StringComparer.Ordinal);
                 var hasDiff = !curCats.SetEquals(scnCats);
-                var diffHint = hasDiff ? $" · 当前勾选{curCats.Count}类（有未保存修改，点「保存配置」或开始专注时记录）" : "";
-                SceneStateHint.Text = $"当前场景：{SceneManager.GetSceneName(sceneTag)} · {sceneCfg.Minutes}分钟 · 屏蔽{sceneCfg.Categories.Length}类{diffHint}";
+                var diffHint = hasDiff ? I18n.GetFormat("Scene_Unsaved", curCats.Count) : "";
+                SceneStateHint.Text = I18n.GetFormat("Shield_SceneState", I18n.SceneName(sceneTag), sceneCfg.Minutes, sceneCfg.Categories.Length, diffHint);
                 SceneStateHint.Visibility = Visibility.Visible;
             }
             else
@@ -137,6 +192,9 @@ public sealed partial class ShieldPage : Page
                 ManualShieldHint.Visibility = ManualShieldSwitch.IsOn ? Visibility.Visible : Visibility.Collapsed;
             }
             RefreshApps();
+            var catalog = BlocklistService.ReadCatalogLocale(App.GetLanguage());
+            CatalogBox.SelectedItem = catalog == "zh-CN" ? CatalogChina : CatalogIntl;
+            RefreshCatalogHint();
             AppModeBox.SelectedIndex = blockMode == "kill" ? 1 : 0;
             FocusOnlyCommSwitch.IsOn = _blocklist.IsFocusOnlyCommunication();
             // 初始化ADHD缓冲期时长
@@ -149,11 +207,58 @@ public sealed partial class ShieldPage : Page
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.RefreshAll", ex);
-            StatusText.Text = $"页面加载异常：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_LoadFail", ex.Message);
         }
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    private void RefreshCatalogHint()
+    {
+        var zh = BlocklistService.UseZhCatalog;
+        CatalogHint.Text = zh
+            ? I18n.Get("Shield_CatalogHintZh", "China list: Douyin, Bilibili, Weibo. Switching UI language will not change this.")
+            : I18n.Get("Shield_CatalogHintEn", "International list: YouTube, TikTok, Reddit. Switching UI language will not change this.");
+    }
+
+    /// <summary>切名单语言：勾选分类不变，域名/App 从抖音换成 TikTok（或反过来）。</summary>
+    private async void Catalog_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (_isLoading) return;
+        var next = (CatalogBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+        if (next is not ("en-US" or "zh-CN")) return;
+        var current = BlocklistService.ReadCatalogLocale(App.GetLanguage());
+        if (next == current) return;
+        try
+        {
+            var dialog = new ContentDialog
+            {
+                Title = I18n.Get("Shield_CatalogConfirmTitle", "Switch site list?"),
+                Content = I18n.Get("Shield_CatalogConfirmContent", "Checked categories stay. Sites and apps switch between China and International lists. UI language is unchanged."),
+                PrimaryButtonText = I18n.Get("Shield_CatalogConfirmPrimary", "Switch list"),
+                CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
+                XamlRoot = XamlRoot
+            };
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+            {
+                _isLoading = true;
+                CatalogBox.SelectedItem = current == "zh-CN" ? CatalogChina : CatalogIntl;
+                _isLoading = false;
+                return;
+            }
+            BlocklistService.WriteCatalogLocale(next);
+            _blocklist.Apply();
+            _blocklist.RestoreSystemHostsIfNeeded(AppServices.Engine.IsRunning || _blocklist.IsManualShieldActive());
+            RefreshAll();
+            AppServices.Notify(I18n.Get(next == "zh-CN" ? "Notify_CatalogZh" : "Notify_CatalogEn",
+                next == "zh-CN" ? "Switched to China site list." : "Switched to International site list."));
+            App.LogAction("切换屏蔽名单", next);
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.Catalog", ex);
         }
     }
 
@@ -204,7 +309,7 @@ public sealed partial class ShieldPage : Page
     private void ShowLimitHint()
     {
         LimitHint.Visibility = Visibility.Visible;
-        StatusText.Text = $"免费版自定义域名最多 {BlocklistService.FreeTargetLimit} 个，激活后不限。分类屏蔽全开放。";
+        StatusText.Text = I18n.GetFormat("Shield_FreeDomainLimit", BlocklistService.FreeTargetLimit);
     }
 
     // ---------- 自定义域名 ----------
@@ -234,14 +339,37 @@ public sealed partial class ShieldPage : Page
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.AddDomain", ex);
-            StatusText.Text = $"添加失败：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_AddFail", ex.Message);
         }
     }
 
     private void RefreshCustomDomains()
     {
-        DomainList.ItemsSource = _blocklist.GetCustomDomains().ToList();
+        var remove = I18n.Get("ShieldPage_RemoveApp.Content", "Remove");
+        DomainList.ItemsSource = _blocklist.GetCustomDomains()
+            .Select(d => new DomainItem(d, remove))
+            .ToList();
     }
+
+    private void RemoveDomain_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is Button { Tag: string domain })
+            {
+                _blocklist.RemoveCustomDomain(domain);
+                RefreshCustomDomains();
+                RefreshStatus();
+                App.LogAction("移除自定义域名", domain);
+            }
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.RemoveDomain", ex);
+        }
+    }
+
+    private sealed record DomainItem(string Domain, string RemoveLabel);
 
     // ---------- 每日限额 ----------
 
@@ -261,7 +389,7 @@ public sealed partial class ShieldPage : Page
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.AddLimit", ex);
-            StatusText.Text = $"添加限额失败：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_AddLimitFail", ex.Message);
         }
     }
 
@@ -285,7 +413,7 @@ public sealed partial class ShieldPage : Page
     private void RefreshLimits()
     {
         var items = _limits.GetLimits()
-            .Select(kv => new LimitItem(kv.Key, $"{kv.Key} — 每日 {kv.Value} 分钟", kv.Key))
+            .Select(kv => new LimitItem(kv.Key, kv.Value, I18n.Get("ShieldPage_DeleteLimit.Content", "Delete")))
             .ToList();
         LimitList.ItemsSource = items;
     }
@@ -342,38 +470,40 @@ public sealed partial class ShieldPage : Page
     {
         var allows = _blocklist.GetTempAllows();
         AllowStatus.Text = allows.Count == 0
-            ? "当前无临时放行"
-            : string.Join("，", allows.Select(a => $"{a.Domain}（至 {a.Expires:HH:mm}）"));
+            ? I18n.Get("Shield_NoAllow", "No temporary allows")
+            : string.Join(" · ", allows.Select(a => I18n.GetFormat("Shield_AllowUntil", a.Domain, a.Expires)));
     }
 
     // ---------- 应用 / 撤销 / 清理 ----------
+
+    private async void Elevate_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _blocklist.Apply();
+            await AskElevateAsync("--apply-shield", I18n.Get("Admin_ElevateHosts", "Write website block to hosts"));
+        }
+        catch (Exception ex)
+        {
+            App.LogCrash("ShieldPage.ElevateClick", ex);
+        }
+    }
 
     private void Apply_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             _blocklist.Apply();
-            // 保存到场景配置。未选场景时自动选中「工作」场景，避免配置无归属导致选场景后被覆盖丢失
-            var sceneTag = AppServices.CurrentSceneTag;
-            if (string.IsNullOrEmpty(sceneTag))
-            {
-                sceneTag = "work";
-                AppServices.CurrentSceneTag = sceneTag;
-                AppServices.Notify(I18n.Get("Notify_NoSceneAuto", "No scene selected. Auto-selected Work scene and saved config."));
-            }
-            var cats = _blocklist.GetEnabledCategories().ToArray();
-            // 用当前场景的愿望和时长，只更新屏蔽分类
-            var existing = ChanJing.Core.Services.SceneManager.GetSceneConfig(AppServices.Db, sceneTag);
-            ChanJing.Core.Services.SceneManager.SaveSceneConfig(AppServices.Db, sceneTag,
-                new ChanJing.Core.Services.SceneManager.SceneConfig(existing.Wish, existing.Minutes, cats));
-            App.LogAction("保存场景配置", $"{sceneTag} 屏蔽=[{string.Join("/", cats)}]");
-            RefreshStatus(I18n.Get("Notify_ConfigSaved", "Config saved. Applies when focus starts."));
+            // 只写 hosts.pre，不 SaveSceneConfig：避免把免费「自定义场景」额度吃掉
+            RefreshStatus();
+            if (!I18n.IsElevated())
+                AppServices.Notify(I18n.Get("Notify_SaveNeedAdmin", "Saved. Desktop apps will block. Websites need administrator."));
             App.LogAction("保存屏蔽配置", "成功");
         }
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.Apply", ex);
-            StatusText.Text = $"保存失败：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_SaveFail", ex.Message);
         }
     }
 
@@ -383,23 +513,23 @@ public sealed partial class ShieldPage : Page
         {
             var confirm = new ContentDialog
             {
-                Title = "Confirm Clear",
-                Content = "This will clear all saved block categories and custom domains. This cannot be undone. Continue?",
-                PrimaryButtonText = "Confirm Clear",
-                CloseButtonText = "取消",
+                Title = I18n.Get("Shield_ClearTitle", "Clear all rules?"),
+                Content = I18n.Get("Shield_ClearContent", "This clears saved categories and custom domains. Cannot undo."),
+                PrimaryButtonText = I18n.Get("Shield_ClearPrimary", "Clear"),
+                CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
                 XamlRoot = this.Content.XamlRoot
             };
             var result = await confirm.ShowAsync();
             if (result != ContentDialogResult.Primary) return;
             _blocklist.ResetAll();
             RefreshAll();
-            RefreshStatus("所有屏蔽配置已清除（场景配置保留，可在首页右键场景单独重置）。");
+            RefreshStatus(I18n.Get("Shield_Cleared", "All block rules cleared."));
             App.LogAction("清除屏蔽配置", "成功");
         }
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.Remove", ex);
-            StatusText.Text = $"清除失败：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_ClearFail", ex.Message);
         }
     }
 
@@ -408,25 +538,25 @@ public sealed partial class ShieldPage : Page
         try
         {
             _blocklist.Remove(); // 幂等：无标记段时无操作
-            RefreshStatus("已检查并清理禅净的 hosts 标记段。");
+            RefreshStatus(I18n.Get("Shield_Cleaned", "Checked and cleaned ZenFocus hosts markers."));
             App.LogAction("清理标记段", "成功");
         }
         catch (UnauthorizedAccessException)
         {
             App.LogAction("清理标记段", "需要管理员权限(UnauthorizedAccess)");
-            if (await AskElevateAsync("--cleanup", "清理残留"))
+            if (await AskElevateAsync("--cleanup", I18n.Get("Admin_CleanupLabel", "Clean leftovers")))
             {
                 App.Current.Exit();
             }
             else
             {
-                StatusText.Text = "需要管理员权限清理残留：请以管理员身份运行后重试。";
+                StatusText.Text = I18n.Get("Admin_CleanupNeed", "Cleaning leftovers needs administrator.");
             }
         }
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.CleanUp", ex);
-            StatusText.Text = $"清理失败：{ex.Message}。";
+            StatusText.Text = I18n.GetFormat("Shield_CleanFail", ex.Message);
         }
     }
 
@@ -438,8 +568,9 @@ public sealed partial class ShieldPage : Page
             .Select(a => a.Process)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var items = _blocklist.GetActiveApps()
-            .Select(a => new AppItem(a.Process, a.Category, BlocklistService.GetAppDisplayName(a.Process),
-                customProcs.Contains(a.Process) ? Visibility.Visible : Visibility.Collapsed))
+            .Select(a => new AppItem(a.Process, a.Category, $"{I18n.AppName(a.Process)} · {I18n.CategoryName(a.Category)}",
+                customProcs.Contains(a.Process) ? Visibility.Visible : Visibility.Collapsed,
+                I18n.Get("ShieldPage_RemoveApp.Content", "Remove")))
             .ToList();
         AppList.ItemsSource = items;
     }
@@ -451,10 +582,10 @@ public sealed partial class ShieldPage : Page
             var proc = AppBox.Text?.Trim();
             if (string.IsNullOrWhiteSpace(proc))
             {
-                StatusText.Text = "请输入进程名，如 Douyin。";
+                StatusText.Text = I18n.Get("Shield_NeedProc", "Enter a process name, e.g. Douyin.");
                 return;
             }
-            var category = (AppCategoryBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "短视频";
+            var category = (AppCategoryBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "短视频";
             _blocklist.AddCustomApp(proc, category);
             AppBox.Text = string.Empty;
             RefreshApps();
@@ -464,7 +595,7 @@ public sealed partial class ShieldPage : Page
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.AddApp", ex);
-            StatusText.Text = $"添加失败：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_AddFail", ex.Message);
         }
     }
 
@@ -514,10 +645,10 @@ public sealed partial class ShieldPage : Page
                 {
                     var dialog = new ContentDialog
                     {
-                        Title = "Kill-Process Mode",
-                        Content = "Kill-Process will force close blocked apps. Unsaved content may be lost.\n\nUse this mode?",
-                        PrimaryButtonText = "Confirm Use",
-                        CloseButtonText = "Cancel",
+                        Title = I18n.Get("Shield_KillTitle", "Kill-process mode"),
+                        Content = I18n.Get("Shield_KillContent", "This will force-close blocked apps. Unsaved work may be lost."),
+                        PrimaryButtonText = I18n.Get("Shield_KillPrimary", "Use it"),
+                        CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
                         DefaultButton = ContentDialogButton.Close,
                         XamlRoot = XamlRoot
                     };
@@ -567,7 +698,7 @@ public sealed partial class ShieldPage : Page
         }
     }
 
-    private sealed record AppItem(string Process, string Category, string Text, Visibility RemoveVis);
+    private sealed record AppItem(string Process, string Category, string Text, Visibility RemoveVis, string RemoveLabel);
 
     private void RefreshStatus(string? overrideText = null)
     {
@@ -577,12 +708,17 @@ public sealed partial class ShieldPage : Page
             return;
         }
         var active = _blocklist.GetActiveDomains();
-        StatusText.Text = _blocklist.IsApplied()
-            ? $"屏蔽已生效（{active.Count} 个域名）"
-            : $"未配置（已选 {active.Count} 个域名，点击「保存配置」）";
+        if (HostsBlocker.IsApplied())
+            StatusText.Text = I18n.GetFormat("Shield_HostsActive", active.Count);
+        else if (_blocklist.IsApplied())
+            StatusText.Text = I18n.IsElevated()
+                ? I18n.GetFormat("Shield_SavedPendingFocus", active.Count)
+                : I18n.GetFormat("Shield_SavedAppsOnly", active.Count);
+        else
+            StatusText.Text = I18n.GetFormat("Shield_NotApplied", active.Count);
     }
 
-    private sealed record LimitItem(string Domain, string Text, object Tag);
+    private sealed record LimitItem(string Domain, int Minutes, string DeleteLabel);
 
     // ---------- 导入/导出配置 ----------
 
@@ -593,13 +729,13 @@ public sealed partial class ShieldPage : Page
             var json = _blocklist.ExportConfig();
             var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync("chanjing-config.json", Windows.Storage.CreationCollisionOption.GenerateUniqueName);
             await Windows.Storage.FileIO.WriteTextAsync(file, json);
-            StatusText.Text = $"配置已导出到：{file.Path}";
+            StatusText.Text = I18n.GetFormat("Shield_Exported", file.Path);
             App.LogAction("导出配置", file.Path);
         }
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.ExportConfig", ex);
-            StatusText.Text = $"导出失败：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_ExportFail", ex.Message);
         }
     }
 
@@ -617,13 +753,13 @@ public sealed partial class ShieldPage : Page
             var json = await Windows.Storage.FileIO.ReadTextAsync(file);
             _blocklist.ImportConfig(json);
             RefreshAll();
-            StatusText.Text = "配置已导入，点击「保存配置」，开始专注时自动生效。";
+            StatusText.Text = I18n.Get("Shield_Imported", "Config imported. Tap Save config.");
             App.LogAction("导入配置", file.Path);
         }
         catch (Exception ex)
         {
             App.LogCrash("ShieldPage.ImportConfig", ex);
-            StatusText.Text = $"导入失败：{ex.Message}";
+            StatusText.Text = I18n.GetFormat("Shield_ImportFail", ex.Message);
         }
     }
 
@@ -654,8 +790,8 @@ public sealed partial class ShieldPage : Page
         {
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "v0.8.0";
             var os = Environment.OSVersion.VersionString;
-            var subject = Uri.EscapeDataString($"禅净反馈 - v{version}");
-            var body = Uri.EscapeDataString($"版本：{version}\n系统：{os}\n\n请描述您遇到的问题或建议：\n");
+            var subject = Uri.EscapeDataString(I18n.GetFormat("FeedbackMail_Subject", version));
+            var body = Uri.EscapeDataString(I18n.GetFormat("FeedbackMail_Body", version, os));
             var url = $"mailto:yezhihua_yzh@163.com?subject={subject}&body={body}";
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             App.LogAction("反馈建议", "打开邮件客户端");

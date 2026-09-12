@@ -15,10 +15,10 @@
                 <!-- 标题 -->
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Spacing="4">
-                        <TextBlock x:Uid="StatsPage_Title" Text="" FontSize="26" FontWeight="SemiBold"
+                        <TextBlock x:Name="TitleText" FontSize="26" FontWeight="SemiBold"
                                    Foreground="{StaticResource BrushTextPrimary}" />
                     </StackPanel>
-                    <Button Grid.Column="1" x:Uid="StatsPage_Export" Content="" Click="ExportData_Click"
+                    <Button x:Name="ExportButton" Grid.Column="1" Click="ExportData_Click"
                             VerticalAlignment="Center"
                             Background="{StaticResource BrushPanel}"
                             Foreground="{StaticResource BrushTextPrimary}"
@@ -39,34 +39,34 @@
                     <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="TodayCount" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock x:Uid="StatsPage_TodayCountLabel" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="TodayCountLabel" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="TodayMinutes" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextPrimary}" />
-                        <TextBlock x:Uid="StatsPage_TodayMinutesLabel" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="TodayMinutesLabel" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="StreakDays" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
-                        <TextBlock x:Uid="StatsPage_StreakLabel" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="StreakLabel" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="DistractionCount" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}" />
-                        <TextBlock x:Uid="StatsPage_DistractionLabel" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="DistractionLabel" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
                     <StackPanel Spacing="2" VerticalAlignment="Center">
                         <TextBlock x:Name="QualityScore" FontSize="22" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="{StaticResource BrushState}" />
-                        <TextBlock x:Uid="StatsPage_QualityLabel" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="QualityLabel" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushTextSecondary}" />
                     </StackPanel>
-                    <Button x:Uid="StatsPage_ShareCard" Content="" Click="ShareCard_Click"
+                    <Button x:Name="ShareCardButton" Click="ShareCard_Click"
                             VerticalAlignment="Center" HorizontalAlignment="Center"
                             Background="{StaticResource BrushPanel}"
                             Foreground="{StaticResource BrushTextPrimary}"
@@ -77,10 +77,10 @@
                 <Border Background="{StaticResource BrushPanel}" CornerRadius="8" Padding="16,12" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PremiumPreview">
                     <StackPanel Spacing="8">
                         <StackPanel Spacing="4">
-                            <TextBlock x:Uid="StatsPage_UpgradeTitle" Text="" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" />
-                            <TextBlock x:Uid="StatsPage_UpgradeDesc" Text="" FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
+                            <TextBlock x:Name="UpgradeTitleText" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" />
+                            <TextBlock x:Name="UpgradeDescText" FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" />
                         </StackPanel>
-                        <Button x:Uid="StatsPage_UpgradeButton" Content="" Click="Upgrade_Click"
+                        <Button x:Name="UpgradeButton" Click="Upgrade_Click"
                                 Background="{StaticResource BrushState}" Foreground="White"
                                 Padding="20,8" CornerRadius="16" HorizontalAlignment="Left" FontSize="12" />
                     </StackPanel>
@@ -88,7 +88,7 @@
 
                 <!-- 高效时段分析（付费） -->
                 <StackPanel x:Name="PeakHourSection" Margin="0,0,0,0" Spacing="4" Visibility="Collapsed">
-                    <TextBlock x:Uid="StatsPage_PeakHourTitle" Text="" FontSize="13"
+                    <TextBlock x:Name="PeakHourTitle" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <TextBlock x:Name="PeakHourText" FontSize="14" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushState}" />
@@ -96,7 +96,7 @@
 
                 <!-- 连续纪录历史（付费） -->
                 <StackPanel x:Name="StreakHistorySection" Margin="0,0,0,0" Spacing="4" Visibility="Collapsed">
-                    <TextBlock x:Uid="StatsPage_StreakHistoryTitle" Text="" FontSize="13"
+                    <TextBlock x:Name="StreakHistoryTitle" FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}" />
                     <TextBlock x:Name="StreakHistoryText" FontSize="14" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushAccent}" />
@@ -113,12 +113,12 @@
                           BorderBrush="{StaticResource BrushBorder}"
                           Foreground="{StaticResource BrushTextPrimary}">
                     <Expander.Header>
-                        <TextBlock x:Uid="StatsPage_ChartExpander" Text="" FontSize="13" Foreground="{StaticResource BrushTextPrimary}" />
+                        <TextBlock x:Name="ChartExpanderHeader" FontSize="13" Foreground="{StaticResource BrushTextPrimary}" />
                     </Expander.Header>
                     <StackPanel Spacing="16" Padding="0,12,0,4">
                         <!-- 近 7 天柱状 -->
                         <StackPanel x:Name="WeekSection" Spacing="0">
-                            <TextBlock x:Uid="StatsPage_WeekTitle" Text="" FontSize="13"
+                            <TextBlock x:Name="WeekTitle" FontSize="13"
                                        Foreground="{StaticResource BrushTextSecondary}" />
                             <Grid x:Name="WeekChart" Height="110" Margin="0,4,0,0" />
                             <Grid x:Name="WeekLabels" Height="18" />
@@ -126,7 +126,7 @@
 
                         <!-- 今日 24 小时时间轴 -->
                         <StackPanel x:Name="HourSection" Spacing="0">
-                            <TextBlock x:Uid="StatsPage_HourTitle" Text="" FontSize="13"
+                            <TextBlock x:Name="HourTitle" FontSize="13"
                                        Foreground="{StaticResource BrushTextSecondary}" />
                             <Grid x:Name="HourlyChart" Height="90" Margin="0,4,0,0" />
                             <Grid x:Name="HourlyLabels" Height="16" />
@@ -134,14 +134,14 @@
 
                         <!-- 本月热力 -->
                         <StackPanel x:Name="MonthSection" Spacing="0">
-                            <TextBlock x:Uid="StatsPage_MonthTitle" Text="" FontSize="13"
+                            <TextBlock x:Name="MonthTitle" FontSize="13"
                                        Foreground="{StaticResource BrushTextSecondary}" />
                             <Grid x:Name="MonthChart" Margin="0,4,0,0" HorizontalAlignment="Left" />
                         </StackPanel>
 
                         <!-- 分心来源TOP3 -->
                         <StackPanel x:Name="DistractionSourcesSection" Spacing="0">
-                            <TextBlock x:Uid="StatsPage_DistractionSourcesTitle" Text="" FontSize="13"
+                            <TextBlock x:Name="DistSourcesTitle" FontSize="13"
                                        Foreground="{StaticResource BrushTextSecondary}" />
                             <TextBlock x:Name="DistractionSourcesText" FontSize="13" TextWrapping="Wrap"
                                        Foreground="{StaticResource BrushWarning}" Margin="0,4,0,0" />
@@ -149,7 +149,7 @@
 
                         <!-- 今日使用分布 -->
                         <StackPanel x:Name="UsageSection" Spacing="0">
-                            <TextBlock x:Uid="StatsPage_UsageTitle" Text="" FontSize="13"
+                            <TextBlock x:Name="UsageTitle" FontSize="13"
                                        Foreground="{StaticResource BrushTextSecondary}" />
                             <ItemsControl x:Name="UsageList" Margin="0,4,0,0">
                                 <ItemsControl.ItemTemplate>
@@ -182,36 +182,36 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <!-- 左侧大"定"字 -->
-            <TextBlock x:Uid="StatsPage_ShareZenChar" Text="" FontSize="96" FontWeight="Light"
+            <TextBlock x:Name="ShareZenChar" FontSize="96" FontWeight="Light"
                        Foreground="#C9A84C" Margin="0,0,28,0"
                        VerticalAlignment="Center" />
             <!-- 右侧数据 -->
             <StackPanel Grid.Column="1" Spacing="8">
-                <TextBlock x:Uid="StatsPage_ShareTitle" Text="" FontSize="14"
+                <TextBlock x:Name="ShareTitleText" FontSize="14"
                            Foreground="#C9A84C" />
                 <StackPanel Orientation="Horizontal" Spacing="36" Margin="0,4,0,0">
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="ShareCount" FontSize="36" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="#F4F1E8" />
-                        <TextBlock x:Uid="StatsPage_ShareCountUnit" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="ShareCountUnit" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="#A8A092" />
                     </StackPanel>
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="ShareMinutes" FontSize="36" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="#F4F1E8" />
-                        <TextBlock x:Uid="StatsPage_ShareMinutesUnit" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="ShareMinutesUnit" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="#A8A092" />
                     </StackPanel>
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="ShareStreak" FontSize="36" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="#C9A84C" />
-                        <TextBlock x:Uid="StatsPage_ShareStreakUnit" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="ShareStreakUnit" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="#A8A092" />
                     </StackPanel>
                     <StackPanel Spacing="2">
                         <TextBlock x:Name="ShareQuality" FontSize="36" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Foreground="#9AB08A" />
-                        <TextBlock x:Uid="StatsPage_ShareQualityUnit" Text="" FontSize="12" HorizontalAlignment="Center"
+                        <TextBlock x:Name="ShareQualityUnit" FontSize="12" HorizontalAlignment="Center"
                                    Foreground="#A8A092" />
                     </StackPanel>
                 </StackPanel>

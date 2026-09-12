@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
   <data name="MainPage_Title.Text" xml:space="preserve"><value>禅定</value></data>
-  <data name="MainPage_SettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>模式设置</value></data>
   <data name="MainPage_SettingsTitle.Text" xml:space="preserve"><value>模式设置</value></data>
   <data name="MainPage_DeepModeSwitch.Header" xml:space="preserve"><value>深度模式（不计时，随心而定）</value></data>
   <data name="MainPage_DeepModeSwitch.OffContent" xml:space="preserve"><value>关</value></data>
@@ -14,9 +13,9 @@
   <data name="MainPage_SceneWrite.Content" xml:space="preserve"><value>写作</value></data>
   <data name="MainPage_SceneStudy.Content" xml:space="preserve"><value>学习</value></data>
   <data name="MainPage_SceneMeeting.Content" xml:space="preserve"><value>会议</value></data>
-  <data name="MainPage_SceneConfigHint.Text" xml:space="preserve"><value>选择场景一键进入 · 右键可自定义</value></data>
+  <data name="MainPage_SceneConfigHint.Text" xml:space="preserve"><value>点场景只应用配置，再点开始专注 · 右键可自定义</value></data>
   <data name="MainPage_GuideTitle.Text" xml:space="preserve"><value>欢迎使用禅净 · 三步上手</value></data>
-  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>① 写下「今日一愿」，点开始专注（或直接点上方场景快捷进入）</value></data>
+  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>① 写下「今日一愿」，点场景应用配置，再点开始专注</value></data>
   <data name="MainPage_GuideStep2.Text" xml:space="preserve"><value>② 到「屏蔽」页勾选想拦的网站/应用，开始专注时自动生效</value></data>
   <data name="MainPage_GuideStep3.Text" xml:space="preserve"><value>③ 到「统计」页回看专注数据；关窗口只是最小化到托盘，不会退出</value></data>
   <data name="MainPage_GuideClose.Content" xml:space="preserve"><value>开始使用</value></data>
@@ -53,14 +52,61 @@
   <data name="MainPage_BlockStatusLabel.Text" xml:space="preserve"><value>屏蔽规则</value></data>
   <data name="MainPage_CompanionTitle.Text" xml:space="preserve"><value>手机扫码连接</value></data>
   <data name="MainPage_CompanionDesc.Text" xml:space="preserve"><value>手机和电脑需在同一WiFi下，手机浏览器扫码，查看专注统计、远程开始/结束专注</value></data>
-  <data name="MainPage_CompanionUpgrade.Text" xml:space="preserve"><value>手机伴侣为付费功能 · $19 买断后扫码连接</value></data>
+  <data name="MainPage_CompanionUpgrade.Text" xml:space="preserve"><value>手机伴侣为付费功能 · ¥69 买断后扫码连接</value></data>
   <data name="ShieldPage_Title.Text" xml:space="preserve"><value>屏蔽</value></data>
   <data name="ShieldPage_Subtitle.Text" xml:space="preserve"><value>勾选专注时想屏蔽的网站和应用</value></data>
+  <data name="ShieldPage_ManualShield.Header" xml:space="preserve"><value>手动屏蔽（不计时）</value></data>
+  <data name="ShieldPage_ManualShield.OffContent" xml:space="preserve"><value>关</value></data>
+  <data name="ShieldPage_ManualShield.OnContent" xml:space="preserve"><value>开</value></data>
+  <data name="ShieldPage_ManualShieldHint.Text" xml:space="preserve"><value>手动屏蔽在专注结束后仍保持开启</value></data>
+  <data name="ShieldPage_CategoryTitle.Text" xml:space="preserve"><value>网站分类</value></data>
+  <data name="ShieldPage_LimitHint.Text" xml:space="preserve"><value>免费版自定义域名最多 3 个。分类屏蔽全开放。</value></data>
+  <data name="ShieldPage_AppBlockTitle.Text" xml:space="preserve"><value>桌面应用拦截</value></data>
+  <data name="ShieldPage_AppModeLabel.Text" xml:space="preserve"><value>拦截方式</value></data>
+  <data name="ShieldPage_AppModeMinimize.Content" xml:space="preserve"><value>最小化</value></data>
+  <data name="ShieldPage_AppModeKill.Content" xml:space="preserve"><value>结束进程</value></data>
+  <data name="ShieldPage_AppModeHint.Text" xml:space="preserve"><value>最小化较温和；结束进程更强（请先保存未保存内容）。</value></data>
+  <data name="ShieldPage_FocusOnlyCommLabel.Text" xml:space="preserve"><value>沟通工具仅专注时拦截</value></data>
+  <data name="ShieldPage_FocusOnlyCommHint.Text" xml:space="preserve"><value>微信/QQ 等在非专注时可用。</value></data>
+  <data name="ShieldPage_CooldownLabel.Text" xml:space="preserve"><value>ADHD 缓冲期</value></data>
+  <data name="ShieldPage_Cooldown20.Content" xml:space="preserve"><value>20</value></data>
+  <data name="ShieldPage_Cooldown30.Content" xml:space="preserve"><value>30</value></data>
+  <data name="ShieldPage_CooldownHint.Text" xml:space="preserve"><value>ADHD 专注结束后继续屏蔽 N 分钟。</value></data>
+  <data name="ShieldPage_AppBox.PlaceholderText" xml:space="preserve"><value>进程名，如 Douyin</value></data>
+  <data name="ShieldPage_AppCatShort.Content" xml:space="preserve"><value>短视频</value></data>
+  <data name="ShieldPage_AppCatVideo.Content" xml:space="preserve"><value>视频娱乐</value></data>
+  <data name="ShieldPage_AppCatSocial.Content" xml:space="preserve"><value>社交</value></data>
+  <data name="ShieldPage_AppCatNews.Content" xml:space="preserve"><value>资讯</value></data>
+  <data name="ShieldPage_AppCatShop.Content" xml:space="preserve"><value>购物</value></data>
+  <data name="ShieldPage_AppCatComm.Content" xml:space="preserve"><value>沟通工具</value></data>
+  <data name="ShieldPage_AddApp.Content" xml:space="preserve"><value>添加</value></data>
+  <data name="ShieldPage_RemoveApp.Content" xml:space="preserve"><value>删除</value></data>
+  <data name="ShieldPage_AppListHint.Text" xml:space="preserve"><value>预设应用不可删除，自定义应用可以。</value></data>
+  <data name="ShieldPage_CustomDomain.Header" xml:space="preserve"><value>自定义域名</value></data>
+  <data name="ShieldPage_CustomDomainHint.Text" xml:space="preserve"><value>额外屏蔽的网站。免费版限 3 个。</value></data>
+  <data name="ShieldPage_DomainBox.PlaceholderText" xml:space="preserve"><value>域名，如 example.com</value></data>
+  <data name="ShieldPage_AddDomain.Content" xml:space="preserve"><value>添加</value></data>
+  <data name="ShieldPage_DailyLimit.Header" xml:space="preserve"><value>每日限额</value></data>
+  <data name="ShieldPage_DailyLimitHint.Text" xml:space="preserve"><value>某个域名每天可用分钟数，超限弹窗阻断。</value></data>
+  <data name="ShieldPage_LimitDomainBox.PlaceholderText" xml:space="preserve"><value>域名，如 bilibili.com</value></data>
+  <data name="ShieldPage_LimitMinutes.Header" xml:space="preserve"><value>分钟/天</value></data>
+  <data name="ShieldPage_AddLimit.Content" xml:space="preserve"><value>添加</value></data>
+  <data name="ShieldPage_LimitUnit.Text" xml:space="preserve"><value> 分钟/天</value></data>
+  <data name="ShieldPage_DeleteLimit.Content" xml:space="preserve"><value>删除</value></data>
+  <data name="ShieldPage_TempAllow.Header" xml:space="preserve"><value>临时放行</value></data>
+  <data name="ShieldPage_TempAllowHint.Text" xml:space="preserve"><value>临时放行某个域名，不改已保存规则。</value></data>
+  <data name="ShieldPage_AllowButton.Content" xml:space="preserve"><value>放行…</value></data>
+  <data name="ShieldPage_ClearAllow.Content" xml:space="preserve"><value>清除放行</value></data>
+  <data name="ShieldPage_Apply.Content" xml:space="preserve"><value>保存配置</value></data>
+  <data name="ShieldPage_Clear.Content" xml:space="preserve"><value>清除</value></data>
+  <data name="ShieldPage_Export.Content" xml:space="preserve"><value>导出</value></data>
+  <data name="ShieldPage_Import.Content" xml:space="preserve"><value>导入</value></data>
+  <data name="ShieldPage_Feedback.Content" xml:space="preserve"><value>反馈</value></data>
   <data name="StatsPage_Title.Text" xml:space="preserve"><value>统计</value></data>
   <data name="StatsPage_Export.Content" xml:space="preserve"><value>导出数据</value></data>
   <data name="StatsPage_UpgradeTitle.Text" xml:space="preserve"><value>升级解锁更多洞察</value></data>
   <data name="StatsPage_UpgradeDesc.Text" xml:space="preserve"><value>付费版：最专注时段分析 · 分心模式识别 · 跨设备同步屏蔽 · 无限自定义场景 · 手机伴侣 · 数据导出</value></data>
-  <data name="StatsPage_UpgradeButton.Content" xml:space="preserve"><value>立即升级 $19 终身买断</value></data>
+  <data name="StatsPage_UpgradeButton.Content" xml:space="preserve"><value>立即升级 ¥69 终身买断</value></data>
   <data name="Common_OK.Content" xml:space="preserve"><value>确定</value></data>
   <data name="Common_Cancel.Content" xml:space="preserve"><value>取消</value></data>
   <data name="Common_Close.Content" xml:space="preserve"><value>关闭</value></data>
@@ -78,6 +124,10 @@
   <data name="FrictionOverlay_Allow15.Text" xml:space="preserve"><value>临时放行 15 分钟</value></data>
   <data name="FrictionOverlay_Allow30.Text" xml:space="preserve"><value>临时放行 30 分钟</value></data>
   <data name="FrictionOverlay_AllowSession.Text" xml:space="preserve"><value>本次专注期间都放行</value></data>
+  <data name="MainWindow_NavFocus.Content" xml:space="preserve"><value>专注</value></data>
+  <data name="MainWindow_NavBlock.Content" xml:space="preserve"><value>屏蔽</value></data>
+  <data name="MainWindow_NavStats.Content" xml:space="preserve"><value>统计</value></data>
+  <data name="Tray_Tooltip" xml:space="preserve"><value>禅净 — 先管住手，再看清时间</value></data>
   <data name="Tray_Title" xml:space="preserve"><value>禅净</value></data>
   <data name="Tray_Focusing" xml:space="preserve"><value>专注中 · 今日 {0} 分钟</value></data>
   <data name="Tray_Idle" xml:space="preserve"><value>空闲 · 今日 {0} 分钟</value></data>
@@ -96,7 +146,10 @@
   <data name="LimitDialog_Primary" xml:space="preserve"><value>我就要继续（放行5分钟）</value></data>
   <data name="LimitDialog_Close" xml:space="preserve"><value>今天就到这里</value></data>
   <data name="Notify_LimitAllowed" xml:space="preserve"><value>已临时放行「{0}」5分钟，到点后重新阻断。</value></data>
-  <data name="Notify_CodingDetected" xml:space="preserve"><value>检测到你持续编码，建议切换到「工作」场景 · 首页点击「工作」即可</value></data>
+  <data name="Notify_CodingDetected" xml:space="preserve"><value>检测到持续编码。本次专注结束后再切到「工作」场景（只改愿望/时长）。</value></data>
+  <data name="Notify_CodingSwitched" xml:space="preserve"><value>已切换到「工作」场景（愿望/时长）。屏蔽分类仍以屏蔽页为准。</value></data>
+  <data name="Notify_OrphanHostsCleared" xml:space="preserve"><value>已清除上次异常退出留下的网站屏蔽。</value></data>
+  <data name="Notify_OrphanHostsNeedAdmin" xml:space="preserve"><value>发现上次留下的网站屏蔽。请以管理员运行后再清除。</value></data>
   <data name="Notify_AppAllowed" xml:space="preserve"><value>已临时放行「{0}」{1}，超时后重新屏蔽</value></data>
   <data name="Notify_ShieldOff" xml:space="preserve"><value>屏蔽已关闭</value></data>
   <data name="Notify_ShieldOn" xml:space="preserve"><value>屏蔽已开启（不计时）</value></data>
@@ -104,7 +157,7 @@
   <data name="Notify_Resumed" xml:space="preserve"><value>已恢复定心</value></data>
   <data name="Notify_Paused" xml:space="preserve"><value>已暂停计时 · 暂停期间不计入定心时长</value></data>
   <data name="Notify_Rest30" xml:space="preserve"><value>已经专注30分钟了，注意休息一下哦</value></data>
-  <data name="Notify_AdhdOn" xml:space="preserve"><value>ADHD模式已开启：15分钟短周期·结束进程强屏蔽·正反馈鼓励</value></data>
+  <data name="Notify_AdhdOn" xml:space="preserve"><value>ADHD模式已开启：15分钟短周期·正反馈。拦截方式仍用屏蔽页的设置。</value></data>
   <data name="Notify_AdhdOnShield" xml:space="preserve"><value>ADHD模式已开启：已自动切换为结束进程强屏蔽，15分钟短周期。屏蔽分类跟随当前场景，可在屏蔽页修改。</value></data>
   <data name="Notify_DomainAllowed" xml:space="preserve"><value>「{0}」已临时放行 {1} 分钟，期间可正常访问。</value></data>
   <data name="SceneDialog_Categories" xml:space="preserve"><value>屏蔽分类</value></data>
@@ -113,7 +166,7 @@
   <data name="SceneDialog_Close" xml:space="preserve"><value>取消</value></data>
   <data name="Notify_SceneSaved" xml:space="preserve"><value>已保存：{0}场景 · {1}分钟 · {2}个分类</value></data>
   <data name="Notify_SceneReset" xml:space="preserve"><value>已恢复默认：{0}</value></data>
-  <data name="MainPage_AdhdHint" xml:space="preserve"><value>ADHD友好模式 · 15分钟短周期 · 结束进程强屏蔽 · 正反馈鼓励</value></data>
+  <data name="MainPage_AdhdHint" xml:space="preserve"><value>ADHD友好模式 · 15分钟短周期 · 正反馈鼓励</value></data>
   <data name="SceneDialog_WishHeader" xml:space="preserve"><value>愿望文案</value></data>
   <data name="SceneDialog_WishPlaceholder" xml:space="preserve"><value>此刻，你最想完成的一件事…</value></data>
   <data name="SceneDialog_Quota" xml:space="preserve"><value>（免费版已用{0}/1个自定义额度）</value></data>
@@ -135,6 +188,274 @@
   <data name="FrictionOverlay_Decision" xml:space="preserve"><value>「{0}」属于{1}，真的要分心吗？选择放行时长</value></data>
   <data name="RestLabel_Short" xml:space="preserve"><value>喘口气</value></data>
   <data name="RestLabel_Long" xml:space="preserve"><value>暂离模式</value></data>
-  <data name="Notify_RestStart" xml:space="preserve"><value>{0}已开启 · 桌面应用暂停拦截 · {1}分钟后自动恢复</value></data>
+  <data name="Notify_RestStart" xml:space="preserve"><value>{0}已开启 · 网站和桌面应用暂停拦截 · {1}分钟后自动恢复</value></data>
   <data name="Notify_RestEnd" xml:space="preserve"><value>{0}结束 · 桌面应用拦截已恢复</value></data>
+  <data name="Price_Buyout" xml:space="preserve"><value>¥69 买断，一次付费终身使用。</value></data>
+  <data name="Price_BuyoutTitle" xml:space="preserve"><value>¥69 买断，一次付费终身使用</value></data>
+  <data name="Admin_Hint" xml:space="preserve"><value>当前不是管理员：浏览器里的 YouTube/抖音不会被关掉（hosts 会跳过）。桌面应用仍可最小化。请右键「以管理员身份运行」。</value></data>
+  <data name="Admin_StartTooltip" xml:space="preserve"><value>没有管理员权限时，浏览器标签不会被关掉。桌面应用拦截仍生效。</value></data>
+  <data name="Notify_HostsSkipped" xml:space="preserve"><value>网站屏蔽已跳过（需要管理员）。浏览器里的 YouTube/抖音不会被关掉。桌面应用拦截仍生效。</value></data>
+  <data name="Admin_ElevateTitle" xml:space="preserve"><value>需要管理员权限</value></data>
+  <data name="Admin_ElevateContent" xml:space="preserve"><value>「{0}」需要写入系统 hosts 文件。\n\n是否以管理员身份重启禅净并自动执行？</value></data>
+  <data name="Admin_ElevatePrimary" xml:space="preserve"><value>以管理员身份重启</value></data>
+  <data name="Admin_ElevateFailed" xml:space="preserve"><value>未能以管理员身份启动：可能取消了授权。请右键「以管理员身份运行」本程序后重试。</value></data>
+  <data name="Admin_CleanupNeed" xml:space="preserve"><value>需要管理员权限清理残留：请以管理员身份运行后重试。</value></data>
+  <data name="Admin_CleanupLabel" xml:space="preserve"><value>清理残留</value></data>
+  <data name="App_AlreadyRunning" xml:space="preserve"><value>禅净已在运行，可在右下角托盘找到它。</value></data>
+  <data name="App_AlreadyRunningTitle" xml:space="preserve"><value>禅净</value></data>
+  <data name="Scene_Summary" xml:space="preserve"><value>{0} · {1}分钟 · 屏蔽页{2}类</value></data>
+  <data name="Scene_Hint" xml:space="preserve"><value>{0} · {1}分钟 · 分类以屏蔽页为准：{2}类（{3}） · 右键改愿望/时长</value></data>
+  <data name="Scene_Unsaved" xml:space="preserve"><value> · 当前勾选{0}类（有未保存修改，点「保存配置」或开始专注时记录）</value></data>
+  <data name="Shield_SceneState" xml:space="preserve"><value>当前场景：{0} · {1}分钟 · 屏蔽{2}类{3}</value></data>
+  <data name="Block_On" xml:space="preserve"><value>已启用</value></data>
+  <data name="Block_Off" xml:space="preserve"><value>未启用</value></data>
+  <data name="MainPage_MinutesFmt" xml:space="preserve"><value>{0} 分钟</value></data>
+  <data name="MainPage_Paused" xml:space="preserve"><value>已暂停</value></data>
+  <data name="MainPage_DeepHint" xml:space="preserve"><value>深度模式 · 不计时 · 随心而定 · 手动结束</value></data>
+  <data name="MainPage_WishShow" xml:space="preserve"><value>今日一愿：{0}</value></data>
+  <data name="MainPage_WishDefault" xml:space="preserve"><value>心无旁骛，只做眼前这一件事</value></data>
+  <data name="MainPage_DeepFocusHint" xml:space="preserve"><value>深度模式 · 随心而定 · 完成后手动结束</value></data>
+  <data name="MainPage_AdhdSoftTarget" xml:space="preserve"><value>已超过15分钟，状态不错，随时可结束</value></data>
+  <data name="MainPage_FeedbackStreak" xml:space="preserve"><value>✨ 今日已完成 {0} 次定心</value></data>
+  <data name="MainPage_Encourage5" xml:space="preserve"><value>心已定，功自成，继续保持</value></data>
+  <data name="MainPage_Encourage3" xml:space="preserve"><value>状态渐入佳境，继续保持</value></data>
+  <data name="MainPage_Encourage1" xml:space="preserve"><value>好的开始，念念不忘必有回响</value></data>
+  <data name="MainPage_FeedbackMinutes" xml:space="preserve"><value>今日定心 {0} 分钟\n{1}</value></data>
+  <data name="MainPage_CooldownText" xml:space="preserve"><value>专注结束，休息一下\n屏蔽还剩 {0} 分钟</value></data>
+  <data name="MainPage_CooldownReleaseTitle" xml:space="preserve"><value>提前解除屏蔽</value></data>
+  <data name="MainPage_CooldownReleaseContent" xml:space="preserve"><value>缓冲期还剩 {0} 分钟，确定现在解除屏蔽吗？</value></data>
+  <data name="MainPage_CooldownReleasePrimary" xml:space="preserve"><value>确认解除</value></data>
+  <data name="MainPage_CooldownReleaseClose" xml:space="preserve"><value>再等等</value></data>
+  <data name="MainPage_RestContent" xml:space="preserve"><value>{0} {1} 分钟，网站和桌面应用都暂停拦截。期间仍记录专注时长。</value></data>
+  <data name="MainPage_RestPrimary" xml:space="preserve"><value>确认放行</value></data>
+  <data name="MainPage_BreakHintWait" xml:space="preserve"><value>深呼吸三次。禅净不会拦你——但你真的要现在结束吗？\n\n请等 3 秒再决定。</value></data>
+  <data name="MainPage_BreakHintReady" xml:space="preserve"><value>深呼吸三次。禅净不会拦你——但你真的要现在结束吗？</value></data>
+  <data name="MainPage_BreakEndCountdown" xml:space="preserve"><value>结束（{0}）</value></data>
+  <data name="MainPage_BreakEnd" xml:space="preserve"><value>结束</value></data>
+  <data name="MainPage_BreakTitle" xml:space="preserve"><value>发生了什么？</value></data>
+  <data name="MainPage_BreakContinue" xml:space="preserve"><value>再定心一会</value></data>
+  <data name="MainPage_PauseTitle" xml:space="preserve"><value>暂停专注？</value></data>
+  <data name="MainPage_PauseContent" xml:space="preserve"><value>ADHD 模式下暂停后常常一去不回。建议结束或继续，而不是暂停。</value></data>
+  <data name="MainPage_PausePrimary" xml:space="preserve"><value>仍要暂停</value></data>
+  <data name="MainPage_PauseClose" xml:space="preserve"><value>继续专注</value></data>
+  <data name="MainPage_NoSiteTitle" xml:space="preserve"><value>没有可放行的网站</value></data>
+  <data name="MainPage_NoSiteContent" xml:space="preserve"><value>没有最近的屏蔽站点。请先打开被拦页面，或等一次分心提醒。</value></data>
+  <data name="MainPage_NoSiteClose" xml:space="preserve"><value>知道了</value></data>
+  <data name="MainPage_TodayFeedback" xml:space="preserve"><value>今日已专注 {0} 分钟 · 每一次定心都是进步</value></data>
+  <data name="MainPage_SoftLandingBody" xml:space="preserve"><value>你已经休息了 {0} 分钟\n接下来想做什么？</value></data>
+  <data name="MainPage_DateFmt" xml:space="preserve"><value>M 月 d 日 dddd</value></data>
+  <data name="MainPage_CompanionPaidTitle" xml:space="preserve"><value>手机伴侣（付费功能）</value></data>
+  <data name="MainPage_CompanionPaidDesc" xml:space="preserve"><value>升级后可手机扫码查看专注统计、远程开始/结束专注</value></data>
+  <data name="MainPage_CompanionNoServer" xml:space="preserve"><value>伴侣服务未启动</value></data>
+  <data name="MainPage_CompanionNoNet" xml:space="preserve"><value>未检测到网络</value></data>
+  <data name="MainPage_CompanionLanHint" xml:space="preserve"><value>{0}（手机和电脑需在同一WiFi下）</value></data>
+  <data name="MainPage_CompanionNeedAdmin" xml:space="preserve"><value>需管理员权限运行才能让手机访问（当前仅本机）</value></data>
+  <data name="MainPage_CompanionQrFail" xml:space="preserve"><value>二维码生成失败</value></data>
+  <data name="SceneDialog_MinutesHeader" xml:space="preserve"><value>专注时长（分钟）</value></data>
+  <data name="SceneUpgrade_Title" xml:space="preserve"><value>自定义「{0}」场景</value></data>
+  <data name="SceneUpgrade_Head" xml:space="preserve"><value>自定义场景额度已用完</value></data>
+  <data name="SceneUpgrade_Body" xml:space="preserve"><value>免费版可自定义 1 个场景（时长 + 屏蔽分类 + 愿望）。额度已用完。</value></data>
+  <data name="SceneUpgrade_More" xml:space="preserve"><value>升级后可自定义全部 4 个场景。</value></data>
+  <data name="SceneUpgrade_Primary" xml:space="preserve"><value>了解升级</value></data>
+  <data name="AdhdOnboard_T1" xml:space="preserve"><value>ADHD友好模式 · 1/3</value></data>
+  <data name="AdhdOnboard_C1" xml:space="preserve"><value>为容易分心的人设计：\n\n[15分钟短周期]\n门槛低，坐不住也能开始。\n\n[拦截方式不改]\n最小化或结束进程以屏蔽页设置为准，本模式不会偷偷改成结束进程。\n\n[正反馈]\n只夸你完成的，不批评分心。</value></data>
+  <data name="AdhdOnboard_T2" xml:space="preserve"><value>ADHD友好模式 · 2/3</value></data>
+  <data name="AdhdOnboard_C2" xml:space="preserve"><value>[缓冲期]\n专注结束后屏蔽还会保持。\n\n[软着陆]\n由你选择再来15分钟或自由使用。\n\n[暂停摩擦]\n暂停会再确认一次，避免一去不回。</value></data>
+  <data name="AdhdOnboard_T3" xml:space="preserve"><value>ADHD友好模式 · 3/3</value></data>
+  <data name="AdhdOnboard_C3" xml:space="preserve"><value>[注意]\n• 结束进程可能丢失未保存内容\n• 屏蔽分类跟随当前场景\n• 可随时改回最小化\n• ADHD 与深度模式互斥\n\n准备好了吗？</value></data>
+  <data name="AdhdOnboard_Next" xml:space="preserve"><value>下一步</value></data>
+  <data name="AdhdOnboard_Start" xml:space="preserve"><value>开始使用</value></data>
+  <data name="Feedback_Done" xml:space="preserve"><value>心已定。本次定心 {0} 分钟</value></data>
+  <data name="Feedback_Broken" xml:space="preserve"><value>发生了什么？本次定心 {0} 分钟</value></data>
+  <data name="Feedback_NoDist" xml:space="preserve"><value>，全程未切换，滴水穿石。</value></data>
+  <data name="Feedback_Dist1" xml:space="preserve"><value>，中途分心 1 次——下次试试把手机放远一点。</value></data>
+  <data name="Feedback_DistN" xml:space="preserve"><value>，中途分心 {0} 次——每一次觉察，都是一次练习。</value></data>
+  <data name="Feedback_Better" xml:space="preserve"><value> 比昨日平均多 {0} 分钟，心已更进一步。</value></data>
+  <data name="Feedback_Same" xml:space="preserve"><value> 与昨日平均持平，稳即是进。</value></data>
+  <data name="Shield_CatLabel" xml:space="preserve"><value>{0}（{1}站）</value></data>
+  <data name="Shield_LoadFail" xml:space="preserve"><value>页面加载异常：{0}</value></data>
+  <data name="Shield_FreeDomainLimit" xml:space="preserve"><value>免费版自定义域名最多 {0} 个，激活后不限。分类屏蔽全开放。</value></data>
+  <data name="Shield_AddFail" xml:space="preserve"><value>添加失败：{0}</value></data>
+  <data name="Shield_AddLimitFail" xml:space="preserve"><value>添加限额失败：{0}</value></data>
+  <data name="Shield_NoAllow" xml:space="preserve"><value>当前无临时放行</value></data>
+  <data name="Shield_AllowUntil" xml:space="preserve"><value>{0}（至 {1:HH:mm}）</value></data>
+  <data name="Shield_SaveFail" xml:space="preserve"><value>保存失败：{0}</value></data>
+  <data name="Shield_ClearTitle" xml:space="preserve"><value>确认清除</value></data>
+  <data name="Shield_ClearContent" xml:space="preserve"><value>将清除已保存的屏蔽分类和自定义域名，不可撤销。继续？</value></data>
+  <data name="Shield_ClearPrimary" xml:space="preserve"><value>确认清除</value></data>
+  <data name="Shield_Cleared" xml:space="preserve"><value>所有屏蔽配置已清除（场景配置保留，可在首页右键场景单独重置）。</value></data>
+  <data name="Shield_ClearFail" xml:space="preserve"><value>清除失败：{0}</value></data>
+  <data name="Shield_Cleaned" xml:space="preserve"><value>已检查并清理禅净的 hosts 标记段。</value></data>
+  <data name="Shield_CleanFail" xml:space="preserve"><value>清理失败：{0}。</value></data>
+  <data name="Shield_NeedProc" xml:space="preserve"><value>请输入进程名，如 Douyin。</value></data>
+  <data name="Shield_KillTitle" xml:space="preserve"><value>结束进程模式</value></data>
+  <data name="Shield_KillContent" xml:space="preserve"><value>结束进程会强制关闭被拦应用，未保存内容可能丢失。\n\n使用此模式？</value></data>
+  <data name="Shield_KillPrimary" xml:space="preserve"><value>确认使用</value></data>
+  <data name="Shield_Applied" xml:space="preserve"><value>配置已保存（{0} 个域名）。网站在开始专注后生效。</value></data>
+  <data name="Shield_NotApplied" xml:space="preserve"><value>未配置（已选 {0} 个域名，点击「保存配置」）</value></data>
+  <data name="Shield_Exported" xml:space="preserve"><value>配置已导出到：{0}</value></data>
+  <data name="Shield_ExportFail" xml:space="preserve"><value>导出失败：{0}</value></data>
+  <data name="Shield_Imported" xml:space="preserve"><value>配置已导入，点击「保存配置」，开始专注时自动生效。</value></data>
+  <data name="Shield_ImportFail" xml:space="preserve"><value>导入失败：{0}</value></data>
+  <data name="Shield_AllowPlaceholder" xml:space="preserve"><value>域名如 example.com</value></data>
+  <data name="FeedbackMail_Subject" xml:space="preserve"><value>禅净反馈 - v{0}</value></data>
+  <data name="FeedbackMail_Body" xml:space="preserve"><value>版本：{0}\n系统：{1}\n\n请描述您遇到的问题或建议：\n</value></data>
+  <data name="Elevated_Apply" xml:space="preserve"><value>屏蔽已应用。</value></data>
+  <data name="Elevated_Remove" xml:space="preserve"><value>屏蔽已撤销。</value></data>
+  <data name="Elevated_Cleanup" xml:space="preserve"><value>已清理禅净的 hosts 标记段。</value></data>
+  <data name="Elevated_Fail" xml:space="preserve"><value>未能完成：{0}</value></data>
+  <data name="Allow_Session" xml:space="preserve"><value>本次专注期间</value></data>
+  <data name="Allow_Minutes" xml:space="preserve"><value>{0}分钟</value></data>
+  <data name="Balloon_Limit" xml:space="preserve"><value>「{0}」已达今日限额，休息一下吧。</value></data>
+  <data name="Balloon_LimitTitle" xml:space="preserve"><value>禅净 · 每日限额</value></data>
+  <data name="Balloon_Dist" xml:space="preserve"><value>你打开了「{0}」。深呼吸，回到眼前的事。</value></data>
+  <data name="Balloon_DistTitle" xml:space="preserve"><value>禅净 · 分心提醒</value></data>
+  <data name="Balloon_Coding" xml:space="preserve"><value>检测到你在「{0}」中持续编码2分钟了，建议开启专注。（第{1}/3次，之后切换工作愿望/时长，不改屏蔽分类）</value></data>
+  <data name="Balloon_CodingTitle" xml:space="preserve"><value>禅净 · 场景推荐</value></data>
+  <data name="Balloon_Kill" xml:space="preserve"><value>「{0}」属于{1}，3秒后将强制结束，请尽快保存。</value></data>
+  <data name="Balloon_AppTitle" xml:space="preserve"><value>禅净 · 桌面应用拦截</value></data>
+  <data name="Balloon_Min" xml:space="preserve"><value>「{0}」属于{1}，已自动最小化。</value></data>
+  <data name="StatsPage_InsightDefault.Text" xml:space="preserve"><value>完成第一次专注后，这里会出现今日洞察</value></data>
+  <data name="StatsPage_TodayCountLabel.Text" xml:space="preserve"><value>今日次数</value></data>
+  <data name="StatsPage_TodayMinutesLabel.Text" xml:space="preserve"><value>今日分钟</value></data>
+  <data name="StatsPage_StreakLabel.Text" xml:space="preserve"><value>连续天数</value></data>
+  <data name="StatsPage_DistractionLabel.Text" xml:space="preserve"><value>分心次数</value></data>
+  <data name="StatsPage_QualityLabel.Text" xml:space="preserve"><value>质量分</value></data>
+  <data name="StatsPage_ShareCard.Content" xml:space="preserve"><value>分享卡片</value></data>
+  <data name="StatsPage_PeakHourTitle.Text" xml:space="preserve"><value>高效时段</value></data>
+  <data name="StatsPage_StreakHistoryTitle.Text" xml:space="preserve"><value>连续纪录</value></data>
+  <data name="StatsPage_EmptyHint.Text" xml:space="preserve"><value>还没有专注记录。回到「禅定」页开始第一次定心。</value></data>
+  <data name="StatsPage_ChartExpander.Text" xml:space="preserve"><value>详细图表</value></data>
+  <data name="StatsPage_WeekTitle.Text" xml:space="preserve"><value>近 7 天</value></data>
+  <data name="StatsPage_HourTitle.Text" xml:space="preserve"><value>今日时段</value></data>
+  <data name="StatsPage_MonthTitle.Text" xml:space="preserve"><value>本月热力</value></data>
+  <data name="StatsPage_DistractionSourcesTitle.Text" xml:space="preserve"><value>分心来源</value></data>
+  <data name="StatsPage_UsageTitle.Text" xml:space="preserve"><value>今日使用</value></data>
+  <data name="StatsPage_ShareZenChar.Text" xml:space="preserve"><value>定</value></data>
+  <data name="StatsPage_ShareTitle.Text" xml:space="preserve"><value>今日定心</value></data>
+  <data name="StatsPage_ShareCountUnit.Text" xml:space="preserve"><value>次</value></data>
+  <data name="StatsPage_ShareMinutesUnit.Text" xml:space="preserve"><value>分钟</value></data>
+  <data name="StatsPage_ShareStreakUnit.Text" xml:space="preserve"><value>连续</value></data>
+  <data name="StatsPage_ShareQualityUnit.Text" xml:space="preserve"><value>质量</value></data>
+  <data name="Stats_InsightHas" xml:space="preserve"><value>今日已专注 {0} 分钟 · 完成 {1} 次定心 · 继续保持</value></data>
+  <data name="Stats_InsightEmpty" xml:space="preserve"><value>今日还没有专注记录 · 回到「禅定」页开始第一次定心</value></data>
+  <data name="Stats_PeriodDawn" xml:space="preserve"><value>清晨</value></data>
+  <data name="Stats_PeriodMorning" xml:space="preserve"><value>上午</value></data>
+  <data name="Stats_PeriodNoon" xml:space="preserve"><value>午间</value></data>
+  <data name="Stats_PeriodAfternoon" xml:space="preserve"><value>下午</value></data>
+  <data name="Stats_PeriodEvening" xml:space="preserve"><value>晚间</value></data>
+  <data name="Stats_PeriodNight" xml:space="preserve"><value>深夜</value></data>
+  <data name="Stats_Pattern" xml:space="preserve"><value>观察：你在{0}（{1}点前后）最容易起身活动，近7天{2}%的活动集中在这个时段。可在屏蔽页为此时段加设每日限额。</value></data>
+  <data name="Stats_Weekday1" xml:space="preserve"><value>一</value></data>
+  <data name="Stats_Weekday2" xml:space="preserve"><value>二</value></data>
+  <data name="Stats_Weekday3" xml:space="preserve"><value>三</value></data>
+  <data name="Stats_Weekday4" xml:space="preserve"><value>四</value></data>
+  <data name="Stats_Weekday5" xml:space="preserve"><value>五</value></data>
+  <data name="Stats_Weekday6" xml:space="preserve"><value>六</value></data>
+  <data name="Stats_Weekday7" xml:space="preserve"><value>日</value></data>
+  <data name="Stats_DayTip" xml:space="preserve"><value>{0}月{1}日：{2} 分钟</value></data>
+  <data name="Stats_UsageDist" xml:space="preserve"><value>{0}（分心）</value></data>
+  <data name="Stats_UsageMin" xml:space="preserve"><value>{0} 分</value></data>
+  <data name="Stats_DistNone" xml:space="preserve"><value>近7天没有分心记录，定心状态很好</value></data>
+  <data name="Stats_DistItem" xml:space="preserve"><value>{0} {1}次</value></data>
+  <data name="Stats_ExportCsv" xml:space="preserve"><value>CSV 表格</value></data>
+  <data name="Stats_ExportJson" xml:space="preserve"><value>JSON 数据</value></data>
+  <data name="Stats_ExportName" xml:space="preserve"><value>禅净专注数据_{0:yyyyMMdd}</value></data>
+  <data name="Stats_CsvHeader" xml:space="preserve"><value>开始时间,结束时间,计划分钟,实际分钟,状态,今日一愿,分心次数,分心来源TOP3,ADHD</value></data>
+  <data name="Stats_StateDone" xml:space="preserve"><value>圆满结束</value></data>
+  <data name="Stats_StateBroken" xml:space="preserve"><value>破功</value></data>
+  <data name="Stats_StateRunning" xml:space="preserve"><value>进行中</value></data>
+  <data name="Stats_Yes" xml:space="preserve"><value>是</value></data>
+  <data name="Stats_No" xml:space="preserve"><value>否</value></data>
+  <data name="Stats_ShareDlgTitle" xml:space="preserve"><value>今日定心卡片</value></data>
+  <data name="Stats_ShareSave" xml:space="preserve"><value>保存图片</value></data>
+  <data name="Stats_ShareSaved" xml:space="preserve"><value>卡片已保存到：\n{0}\n且已复制到剪贴板，可直接粘贴分享。</value></data>
+  <data name="Stats_ShareFail" xml:space="preserve"><value>保存失败</value></data>
+  <data name="Stats_PeakEmpty" xml:space="preserve"><value>近30天暂无专注记录</value></data>
+  <data name="Stats_PeakMorning" xml:space="preserve"><value>上午6-12点</value></data>
+  <data name="Stats_PeakAfternoon" xml:space="preserve"><value>下午12-18点</value></data>
+  <data name="Stats_PeakEvening" xml:space="preserve"><value>晚上18-24点</value></data>
+  <data name="Stats_PeakNight" xml:space="preserve"><value>凌晨0-6点</value></data>
+  <data name="Stats_PeakText" xml:space="preserve"><value>你在{0}最专注，近30天共{1}分钟（占{2}%）。建议把重要工作安排在这个时段。</value></data>
+  <data name="Stats_PeakFail" xml:space="preserve"><value>时段分析暂不可用</value></data>
+  <data name="Stats_StreakEmpty" xml:space="preserve"><value>暂无专注纪录</value></data>
+  <data name="Stats_StreakText" xml:space="preserve"><value>当前连续{0}天 · 最长连续{1}天 · 本月专注{2}天</value></data>
+  <data name="Stats_StreakFail" xml:space="preserve"><value>纪录统计暂不可用</value></data>
+  <data name="Stats_Quote0" xml:space="preserve"><value>不积跬步，无以至千里。</value></data>
+  <data name="Stats_Quote1" xml:space="preserve"><value>心之所向，素履以往。</value></data>
+  <data name="Stats_Quote2" xml:space="preserve"><value>日拱一卒，功不唐捐。</value></data>
+  <data name="Stats_Quote3" xml:space="preserve"><value>静水流深，专注致远。</value></data>
+  <data name="Stats_Quote4" xml:space="preserve"><value>念念不忘，必有回响。</value></data>
+  <data name="Stats_Quote5" xml:space="preserve"><value>千里之行，始于足下。</value></data>
+  <data name="Stats_Quote6" xml:space="preserve"><value>知之者不如好之者，好之者不如乐之者。</value></data>
+  <data name="Upgrade_Title" xml:space="preserve"><value>升级正式版</value></data>
+  <data name="Upgrade_Primary" xml:space="preserve"><value>输入激活码</value></data>
+  <data name="Upgrade_Later" xml:space="preserve"><value>稍后再说</value></data>
+  <data name="Upgrade_PaidHead" xml:space="preserve"><value>付费功能：</value></data>
+  <data name="Upgrade_F1" xml:space="preserve"><value>• 无限自定义域名（免费版最多 3 个）</value></data>
+  <data name="Upgrade_F2" xml:space="preserve"><value>• 4 个场景全部可自定义（免费版 1 个）</value></data>
+  <data name="Upgrade_F3" xml:space="preserve"><value>• 手机伴侣（扫码看统计 + 远程控制）</value></data>
+  <data name="Upgrade_F4" xml:space="preserve"><value>• 数据导出（CSV/JSON）</value></data>
+  <data name="Upgrade_F5" xml:space="preserve"><value>• 进阶统计（高效时段 + 连续纪录）</value></data>
+  <data name="Upgrade_F6" xml:space="preserve"><value>• ADHD 缓冲期 20/30 分钟（免费版 5/10/15）</value></data>
+  <data name="Upgrade_How" xml:space="preserve"><value>\n购买：发邮件到 yezhihua_yzh@163.com，付款后人工发送激活码。</value></data>
+  <data name="Activate_Placeholder" xml:space="preserve"><value>请输入购买后收到的激活码</value></data>
+  <data name="SceneWish_Work" xml:space="preserve"><value>完成今日工作任务</value></data>
+  <data name="SceneWish_Write" xml:space="preserve"><value>专注写作，心无旁骛</value></data>
+  <data name="SceneWish_Study" xml:space="preserve"><value>深度学习，理解透彻</value></data>
+  <data name="SceneWish_Meeting" xml:space="preserve"><value>专注会议，高效沟通</value></data>
+  <data name="SceneWish_Default" xml:space="preserve"><value>专注</value></data>
+  <data name="AppName_douyin" xml:space="preserve"><value>抖音</value></data>
+  <data name="AppName_kwai" xml:space="preserve"><value>快手</value></data>
+  <data name="AppName_bilibili" xml:space="preserve"><value>哔哩哔哩</value></data>
+  <data name="AppName_huya" xml:space="preserve"><value>虎牙</value></data>
+  <data name="AppName_douyu" xml:space="preserve"><value>斗鱼</value></data>
+  <data name="AppName_iqiyi" xml:space="preserve"><value>爱奇艺</value></data>
+  <data name="AppName_youku" xml:space="preserve"><value>优酷</value></data>
+  <data name="AppName_taobao" xml:space="preserve"><value>淘宝</value></data>
+  <data name="AppName_jd" xml:space="preserve"><value>京东</value></data>
+  <data name="AppName_pinduoduo" xml:space="preserve"><value>拼多多</value></data>
+  <data name="AppName_WeChat" xml:space="preserve"><value>微信</value></data>
+  <data name="AppName_DingTalk" xml:space="preserve"><value>钉钉</value></data>
+  <data name="AppName_QQ" xml:space="preserve"><value>QQ</value></data>
+  <data name="AppName_WXWork" xml:space="preserve"><value>企业微信</value></data>
+  <data name="AppName_Lark" xml:space="preserve"><value>飞书</value></data>
+  <data name="AppName_Feishu" xml:space="preserve"><value>飞书</value></data>
+  <data name="AppName_Telegram" xml:space="preserve"><value>Telegram</value></data>
+  <data name="AppName_Discord" xml:space="preserve"><value>Discord</value></data>
+  <data name="AppName_slack" xml:space="preserve"><value>Slack</value></data>
+  <data name="AppName_TikTok" xml:space="preserve"><value>TikTok</value></data>
+  <data name="AppName_Instagram" xml:space="preserve"><value>Instagram</value></data>
+  <data name="AppName_Spotify" xml:space="preserve"><value>Spotify</value></data>
+  <data name="AppName_Steam" xml:space="preserve"><value>Steam</value></data>
+  <data name="AppName_Netflix" xml:space="preserve"><value>Netflix</value></data>
+  <data name="AppName_Amazon" xml:space="preserve"><value>Amazon</value></data>
+  <data name="AppName_WhatsApp" xml:space="preserve"><value>WhatsApp</value></data>
+  <data name="AppName_Teams" xml:space="preserve"><value>Teams</value></data>
+  <data name="AppName_ms-teams" xml:space="preserve"><value>Teams</value></data>
+  <data name="AppName_Signal" xml:space="preserve"><value>Signal</value></data>
+  <data name="Lang_Label" xml:space="preserve"><value>语言</value></data>
+  <data name="Lang_English" xml:space="preserve"><value>English</value></data>
+  <data name="Lang_Chinese" xml:space="preserve"><value>中文</value></data>
+  <data name="Lang_ConfirmTitle" xml:space="preserve"><value>切换语言？</value></data>
+  <data name="Lang_ConfirmContent" xml:space="preserve"><value>应用将重启。当前专注会结束，网站屏蔽会先清掉。屏蔽名单（国内/国际）不会跟着变，要换请去屏蔽页。</value></data>
+  <data name="Lang_ConfirmPrimary" xml:space="preserve"><value>重启</value></data>
+  <data name="MainPage_SettingsTooltip" xml:space="preserve"><value>模式与语言</value></data>
+  <data name="Shield_HostsActive" xml:space="preserve"><value>网站和桌面应用正在拦截（{0} 个域名）。</value></data>
+  <data name="Shield_SavedPendingFocus" xml:space="preserve"><value>已保存（{0} 个域名）。网站在开始专注后生效。</value></data>
+  <data name="Shield_SavedAppsOnly" xml:space="preserve"><value>已保存（{0} 个域名）。桌面应用会拦。网站需要管理员。</value></data>
+  <data name="Notify_SaveNeedAdmin" xml:space="preserve"><value>已保存。桌面应用会拦。网站需要管理员。</value></data>
+  <data name="Admin_ElevateHosts" xml:space="preserve"><value>把网站屏蔽写入 hosts</value></data>
+  <data name="Stats_HourTooltip" xml:space="preserve"><value>{0} — {1} 分钟</value></data>
+  <data name="MainPage_Hotkeys" xml:space="preserve"><value>快捷键：Ctrl+Alt+F 开始/结束 · P 暂停 · R 休息3分钟 · S 屏蔽页</value></data>
+  <data name="Shield_CatalogLabel" xml:space="preserve"><value>屏蔽名单</value></data>
+  <data name="Shield_CatalogIntl" xml:space="preserve"><value>国际站（YouTube / TikTok）</value></data>
+  <data name="Shield_CatalogChina" xml:space="preserve"><value>国内站（抖音 / B站）</value></data>
+  <data name="Shield_CatalogHintEn" xml:space="preserve"><value>国际名单：YouTube、TikTok、Reddit。切换界面语言不会改这份名单。</value></data>
+  <data name="Shield_CatalogHintZh" xml:space="preserve"><value>国内名单：抖音、B站、微博。切换界面语言不会改这份名单。</value></data>
+  <data name="Shield_CatalogConfirmTitle" xml:space="preserve"><value>切换屏蔽名单？</value></data>
+  <data name="Shield_CatalogConfirmContent" xml:space="preserve"><value>已勾选的分类不变。网站和应用会在国内/国际名单之间切换。界面语言不变。</value></data>
+  <data name="Shield_CatalogConfirmPrimary" xml:space="preserve"><value>切换名单</value></data>
+  <data name="Notify_CatalogEn" xml:space="preserve"><value>已切换到国际站名单。</value></data>
+  <data name="Notify_CatalogZh" xml:space="preserve"><value>已切换到国内站名单。</value></data>
 </root>

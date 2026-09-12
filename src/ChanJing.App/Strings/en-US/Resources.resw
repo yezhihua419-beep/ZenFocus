@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
   <data name="MainPage_Title.Text" xml:space="preserve"><value>ZenFocus</value></data>
-  <data name="MainPage_SettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>Mode Settings</value></data>
   <data name="MainPage_SettingsTitle.Text" xml:space="preserve"><value>Mode Settings</value></data>
   <data name="MainPage_DeepModeSwitch.Header" xml:space="preserve"><value>Deep Mode (untimed, follow your rhythm)</value></data>
   <data name="MainPage_DeepModeSwitch.OffContent" xml:space="preserve"><value>Off</value></data>
@@ -14,9 +13,9 @@
   <data name="MainPage_SceneWrite.Content" xml:space="preserve"><value>Write</value></data>
   <data name="MainPage_SceneStudy.Content" xml:space="preserve"><value>Study</value></data>
   <data name="MainPage_SceneMeeting.Content" xml:space="preserve"><value>Meeting</value></data>
-  <data name="MainPage_SceneConfigHint.Text" xml:space="preserve"><value>Tap a scene to start · Right-click to customize</value></data>
+  <data name="MainPage_SceneConfigHint.Text" xml:space="preserve"><value>Tap a scene to apply it, then Start Focus · Right-click to customize</value></data>
   <data name="MainPage_GuideTitle.Text" xml:space="preserve"><value>Welcome to ZenFocus · Get started in 3 steps</value></data>
-  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>1. Write your intention, tap Start (or tap a scene above)</value></data>
+  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>1. Write your intention, tap a scene to apply it, then Start Focus</value></data>
   <data name="MainPage_GuideStep2.Text" xml:space="preserve"><value>2. Go to Block page, check sites/apps to block — auto-applies when focus starts</value></data>
   <data name="MainPage_GuideStep3.Text" xml:space="preserve"><value>3. Go to Stats page to review your data · Closing the window minimizes to tray</value></data>
   <data name="MainPage_GuideClose.Content" xml:space="preserve"><value>Get Started</value></data>
@@ -56,6 +55,53 @@
   <data name="MainPage_CompanionUpgrade.Text" xml:space="preserve"><value>Phone companion is a paid feature · $19 lifetime to unlock</value></data>
   <data name="ShieldPage_Title.Text" xml:space="preserve"><value>Block</value></data>
   <data name="ShieldPage_Subtitle.Text" xml:space="preserve"><value>Check sites and apps to block during focus</value></data>
+  <data name="ShieldPage_ManualShield.Header" xml:space="preserve"><value>Manual blocking (no timer)</value></data>
+  <data name="ShieldPage_ManualShield.OffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="ShieldPage_ManualShield.OnContent" xml:space="preserve"><value>On</value></data>
+  <data name="ShieldPage_ManualShieldHint.Text" xml:space="preserve"><value>Manual blocking stays on after focus ends</value></data>
+  <data name="ShieldPage_CategoryTitle.Text" xml:space="preserve"><value>Website categories</value></data>
+  <data name="ShieldPage_LimitHint.Text" xml:space="preserve"><value>Free version: up to 3 custom domains. Categories are unlimited.</value></data>
+  <data name="ShieldPage_AppBlockTitle.Text" xml:space="preserve"><value>Desktop app blocking</value></data>
+  <data name="ShieldPage_AppModeLabel.Text" xml:space="preserve"><value>Block mode</value></data>
+  <data name="ShieldPage_AppModeMinimize.Content" xml:space="preserve"><value>Minimize</value></data>
+  <data name="ShieldPage_AppModeKill.Content" xml:space="preserve"><value>Kill process</value></data>
+  <data name="ShieldPage_AppModeHint.Text" xml:space="preserve"><value>Minimize is gentle; kill process is stronger (save work first).</value></data>
+  <data name="ShieldPage_FocusOnlyCommLabel.Text" xml:space="preserve"><value>Block messaging only during focus</value></data>
+  <data name="ShieldPage_FocusOnlyCommHint.Text" xml:space="preserve"><value>WeChat / QQ etc. stay available when not focusing.</value></data>
+  <data name="ShieldPage_CooldownLabel.Text" xml:space="preserve"><value>ADHD cooldown</value></data>
+  <data name="ShieldPage_Cooldown20.Content" xml:space="preserve"><value>20</value></data>
+  <data name="ShieldPage_Cooldown30.Content" xml:space="preserve"><value>30</value></data>
+  <data name="ShieldPage_CooldownHint.Text" xml:space="preserve"><value>Keep blocking for N minutes after ADHD focus ends.</value></data>
+  <data name="ShieldPage_AppBox.PlaceholderText" xml:space="preserve"><value>Process name, e.g. Douyin</value></data>
+  <data name="ShieldPage_AppCatShort.Content" xml:space="preserve"><value>Short video</value></data>
+  <data name="ShieldPage_AppCatVideo.Content" xml:space="preserve"><value>Video</value></data>
+  <data name="ShieldPage_AppCatSocial.Content" xml:space="preserve"><value>Social</value></data>
+  <data name="ShieldPage_AppCatNews.Content" xml:space="preserve"><value>News</value></data>
+  <data name="ShieldPage_AppCatShop.Content" xml:space="preserve"><value>Shopping</value></data>
+  <data name="ShieldPage_AppCatComm.Content" xml:space="preserve"><value>Messaging</value></data>
+  <data name="ShieldPage_AddApp.Content" xml:space="preserve"><value>Add</value></data>
+  <data name="ShieldPage_RemoveApp.Content" xml:space="preserve"><value>Remove</value></data>
+  <data name="ShieldPage_AppListHint.Text" xml:space="preserve"><value>Preset apps cannot be removed. Custom apps can.</value></data>
+  <data name="ShieldPage_CustomDomain.Header" xml:space="preserve"><value>Custom domains</value></data>
+  <data name="ShieldPage_CustomDomainHint.Text" xml:space="preserve"><value>Add extra sites to block. Free version: 3.</value></data>
+  <data name="ShieldPage_DomainBox.PlaceholderText" xml:space="preserve"><value>Domain, e.g. example.com</value></data>
+  <data name="ShieldPage_AddDomain.Content" xml:space="preserve"><value>Add</value></data>
+  <data name="ShieldPage_DailyLimit.Header" xml:space="preserve"><value>Daily limits</value></data>
+  <data name="ShieldPage_DailyLimitHint.Text" xml:space="preserve"><value>Minutes per day for a domain. Over limit triggers a block dialog.</value></data>
+  <data name="ShieldPage_LimitDomainBox.PlaceholderText" xml:space="preserve"><value>Domain, e.g. bilibili.com</value></data>
+  <data name="ShieldPage_LimitMinutes.Header" xml:space="preserve"><value>Minutes/day</value></data>
+  <data name="ShieldPage_AddLimit.Content" xml:space="preserve"><value>Add</value></data>
+  <data name="ShieldPage_LimitUnit.Text" xml:space="preserve"><value> min/day</value></data>
+  <data name="ShieldPage_DeleteLimit.Content" xml:space="preserve"><value>Delete</value></data>
+  <data name="ShieldPage_TempAllow.Header" xml:space="preserve"><value>Temporary allow</value></data>
+  <data name="ShieldPage_TempAllowHint.Text" xml:space="preserve"><value>Temporarily allow a domain without changing saved rules.</value></data>
+  <data name="ShieldPage_AllowButton.Content" xml:space="preserve"><value>Allow…</value></data>
+  <data name="ShieldPage_ClearAllow.Content" xml:space="preserve"><value>Clear allows</value></data>
+  <data name="ShieldPage_Apply.Content" xml:space="preserve"><value>Save config</value></data>
+  <data name="ShieldPage_Clear.Content" xml:space="preserve"><value>Clear</value></data>
+  <data name="ShieldPage_Export.Content" xml:space="preserve"><value>Export</value></data>
+  <data name="ShieldPage_Import.Content" xml:space="preserve"><value>Import</value></data>
+  <data name="ShieldPage_Feedback.Content" xml:space="preserve"><value>Feedback</value></data>
   <data name="StatsPage_Title.Text" xml:space="preserve"><value>Stats</value></data>
   <data name="StatsPage_Export.Content" xml:space="preserve"><value>Export Data</value></data>
   <data name="StatsPage_UpgradeTitle.Text" xml:space="preserve"><value>Upgrade for more insights</value></data>
@@ -78,6 +124,10 @@
   <data name="FrictionOverlay_Allow15.Text" xml:space="preserve"><value>Allow 15 min</value></data>
   <data name="FrictionOverlay_Allow30.Text" xml:space="preserve"><value>Allow 30 min</value></data>
   <data name="FrictionOverlay_AllowSession.Text" xml:space="preserve"><value>Allow for this session</value></data>
+  <data name="MainWindow_NavFocus.Content" xml:space="preserve"><value>Focus</value></data>
+  <data name="MainWindow_NavBlock.Content" xml:space="preserve"><value>Block</value></data>
+  <data name="MainWindow_NavStats.Content" xml:space="preserve"><value>Stats</value></data>
+  <data name="Tray_Tooltip" xml:space="preserve"><value>ZenFocus — First block, then see your time</value></data>
   <data name="Tray_Title" xml:space="preserve"><value>ZenFocus</value></data>
   <data name="Tray_Focusing" xml:space="preserve"><value>Focusing · {0} min today</value></data>
   <data name="Tray_Idle" xml:space="preserve"><value>Idle · {0} min today</value></data>
@@ -88,7 +138,7 @@
   <data name="Tray_ShieldOff" xml:space="preserve"><value>Blocking: Off</value></data>
   <data name="Tray_ShieldDisable" xml:space="preserve"><value>Disable Blocking</value></data>
   <data name="Tray_ShieldEnable" xml:space="preserve"><value>Enable Blocking</value></data>
-  <data name="Tray_QuickShield" xml:space="preserve"><value>Quick Block: TikTok/Bilibili</value></data>
+  <data name="Tray_QuickShield" xml:space="preserve"><value>Quick Block: TikTok/YouTube</value></data>
   <data name="Tray_Open" xml:space="preserve"><value>Open ZenFocus</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Exit</value></data>
   <data name="LimitDialog_Title" xml:space="preserve"><value>Daily Limit Reached</value></data>
@@ -96,7 +146,10 @@
   <data name="LimitDialog_Primary" xml:space="preserve"><value>Continue anyway (5 min)</value></data>
   <data name="LimitDialog_Close" xml:space="preserve"><value>That's it for today</value></data>
   <data name="Notify_LimitAllowed" xml:space="preserve"><value>Temporarily allowed "{0}" for 5 min. Will re-block after.</value></data>
-  <data name="Notify_CodingDetected" xml:space="preserve"><value>Detected continuous coding. Suggest switching to "Work" scene · tap "Work" on home</value></data>
+  <data name="Notify_CodingDetected" xml:space="preserve"><value>Detected continuous coding. Work scene will apply after this session (wish/time only).</value></data>
+  <data name="Notify_CodingSwitched" xml:space="preserve"><value>Switched to Work scene (wish/time). Categories stay as on the Block page.</value></data>
+  <data name="Notify_OrphanHostsCleared" xml:space="preserve"><value>Cleared leftover website blocks from last exit.</value></data>
+  <data name="Notify_OrphanHostsNeedAdmin" xml:space="preserve"><value>Leftover website blocks found. Run as administrator to clear them.</value></data>
   <data name="Notify_AppAllowed" xml:space="preserve"><value>Temporarily allowed "{0}" {1}. Will re-block after timeout.</value></data>
   <data name="Notify_ShieldOff" xml:space="preserve"><value>Blocking disabled</value></data>
   <data name="Notify_ShieldOn" xml:space="preserve"><value>Blocking enabled (untimed)</value></data>
@@ -104,7 +157,7 @@
   <data name="Notify_Resumed" xml:space="preserve"><value>Focus resumed</value></data>
   <data name="Notify_Paused" xml:space="preserve"><value>Paused · paused time not counted</value></data>
   <data name="Notify_Rest30" xml:space="preserve"><value>30 min focused. Take a break.</value></data>
-  <data name="Notify_AdhdOn" xml:space="preserve"><value>ADHD mode on: 15-min cycles · kill-process blocking · positive feedback</value></data>
+  <data name="Notify_AdhdOn" xml:space="preserve"><value>ADHD mode on: 15-min cycles · positive feedback. Blocking mode stays as set on the Block page.</value></data>
   <data name="Notify_AdhdOnShield" xml:space="preserve"><value>ADHD mode on: auto-switched to kill-process strong blocking, 15-min cycles. Block categories follow current scene, editable in Block page.</value></data>
   <data name="Notify_DomainAllowed" xml:space="preserve"><value>"{0}" temporarily allowed for {1} min.</value></data>
   <data name="SceneDialog_Categories" xml:space="preserve"><value>Block Categories</value></data>
@@ -113,7 +166,7 @@
   <data name="SceneDialog_Close" xml:space="preserve"><value>Cancel</value></data>
   <data name="Notify_SceneSaved" xml:space="preserve"><value>Saved: {0} scene · {1} min · {2} categories</value></data>
   <data name="Notify_SceneReset" xml:space="preserve"><value>Reset to default: {0}</value></data>
-  <data name="MainPage_AdhdHint" xml:space="preserve"><value>ADHD-friendly mode · 15-min cycles · kill-process blocking · positive feedback</value></data>
+  <data name="MainPage_AdhdHint" xml:space="preserve"><value>ADHD-friendly mode · 15-min cycles · positive feedback</value></data>
   <data name="SceneDialog_WishHeader" xml:space="preserve"><value>Intention</value></data>
   <data name="SceneDialog_WishPlaceholder" xml:space="preserve"><value>What is the one thing you most want to accomplish right now…</value></data>
   <data name="SceneDialog_Quota" xml:space="preserve"><value> (free: {0}/1 custom slot used)</value></data>
@@ -135,6 +188,274 @@
   <data name="FrictionOverlay_Decision" xml:space="preserve"><value>"{0}" is {1}. Really want to distract? Choose allow duration.</value></data>
   <data name="RestLabel_Short" xml:space="preserve"><value>Quick Break</value></data>
   <data name="RestLabel_Long" xml:space="preserve"><value>Away Mode</value></data>
-  <data name="Notify_RestStart" xml:space="preserve"><value>{0} on · App blocking paused · resumes in {1} min</value></data>
+  <data name="Notify_RestStart" xml:space="preserve"><value>{0} on · Website and app blocking paused · resumes in {1} min</value></data>
   <data name="Notify_RestEnd" xml:space="preserve"><value>{0} ended · App blocking resumed</value></data>
+  <data name="Price_Buyout" xml:space="preserve"><value>$19 lifetime, forever.</value></data>
+  <data name="Price_BuyoutTitle" xml:space="preserve"><value>$19 Lifetime, one-time payment forever</value></data>
+  <data name="Admin_Hint" xml:space="preserve"><value>Not administrator: YouTube/TikTok tabs will stay open (hosts skipped). Desktop apps can still be minimized. Right-click → Run as administrator.</value></data>
+  <data name="Admin_StartTooltip" xml:space="preserve"><value>Without administrator, browser tabs will not close. Desktop app blocking still works.</value></data>
+  <data name="Notify_HostsSkipped" xml:space="preserve"><value>Website blocking skipped (needs administrator). Browser tabs such as YouTube will stay open. Desktop app blocking is still on.</value></data>
+  <data name="Admin_ElevateTitle" xml:space="preserve"><value>Administrator required</value></data>
+  <data name="Admin_ElevateContent" xml:space="preserve"><value>"{0}" needs to write the system hosts file.\n\nRestart ZenFocus as administrator and do this automatically?</value></data>
+  <data name="Admin_ElevatePrimary" xml:space="preserve"><value>Restart as admin</value></data>
+  <data name="Admin_ElevateFailed" xml:space="preserve"><value>Could not elevate. You may have cancelled UAC. Right-click the app → Run as administrator and retry.</value></data>
+  <data name="Admin_CleanupNeed" xml:space="preserve"><value>Cleaning leftovers needs administrator. Run as administrator and retry.</value></data>
+  <data name="Admin_CleanupLabel" xml:space="preserve"><value>Clean leftovers</value></data>
+  <data name="App_AlreadyRunning" xml:space="preserve"><value>ZenFocus is already running. Find it in the system tray.</value></data>
+  <data name="App_AlreadyRunningTitle" xml:space="preserve"><value>ZenFocus</value></data>
+  <data name="Scene_Summary" xml:space="preserve"><value>{0} · {1} min · {2} categories on Block page</value></data>
+  <data name="Scene_Hint" xml:space="preserve"><value>{0} · {1} min · Block page: {2} ({3}) · right-click wish/time</value></data>
+  <data name="Scene_Unsaved" xml:space="preserve"><value> · currently {0} categories selected (unsaved — tap Save or start focus to record)</value></data>
+  <data name="Shield_SceneState" xml:space="preserve"><value>Current scene: {0} · {1} min · {2} categories{3}</value></data>
+  <data name="Block_On" xml:space="preserve"><value>On</value></data>
+  <data name="Block_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="MainPage_MinutesFmt" xml:space="preserve"><value>{0} min</value></data>
+  <data name="MainPage_Paused" xml:space="preserve"><value>Paused</value></data>
+  <data name="MainPage_DeepHint" xml:space="preserve"><value>Deep mode · untimed · follow your rhythm · end manually</value></data>
+  <data name="MainPage_WishShow" xml:space="preserve"><value>Intention: {0}</value></data>
+  <data name="MainPage_WishDefault" xml:space="preserve"><value>One thing in front of you. Nothing else.</value></data>
+  <data name="MainPage_DeepFocusHint" xml:space="preserve"><value>Deep mode · follow your rhythm · end manually when done</value></data>
+  <data name="MainPage_AdhdSoftTarget" xml:space="preserve"><value>Past 15 min — looking good. End whenever you're ready.</value></data>
+  <data name="MainPage_FeedbackStreak" xml:space="preserve"><value>✨ {0} sessions completed today</value></data>
+  <data name="MainPage_Encourage5" xml:space="preserve"><value>Settled and building. Keep going.</value></data>
+  <data name="MainPage_Encourage3" xml:space="preserve"><value>Finding your rhythm. Keep going.</value></data>
+  <data name="MainPage_Encourage1" xml:space="preserve"><value>A good start. What you keep doing returns.</value></data>
+  <data name="MainPage_FeedbackMinutes" xml:space="preserve"><value>Focused {0} min today\n{1}</value></data>
+  <data name="MainPage_CooldownText" xml:space="preserve"><value>Focus ended. Take a breath.\nBlocking remains for {0} min</value></data>
+  <data name="MainPage_CooldownReleaseTitle" xml:space="preserve"><value>End blocking early?</value></data>
+  <data name="MainPage_CooldownReleaseContent" xml:space="preserve"><value>Cooldown has {0} min left. Unblock now?</value></data>
+  <data name="MainPage_CooldownReleasePrimary" xml:space="preserve"><value>Unblock now</value></data>
+  <data name="MainPage_CooldownReleaseClose" xml:space="preserve"><value>Wait</value></data>
+  <data name="MainPage_RestContent" xml:space="preserve"><value>{0} for {1} min: website and desktop app blocking pause. Focus time still counts.</value></data>
+  <data name="MainPage_RestPrimary" xml:space="preserve"><value>Confirm</value></data>
+  <data name="MainPage_BreakHintWait" xml:space="preserve"><value>Three breaths. ZenFocus will not stop you — but do you really want to end now?\n\nWait 3 seconds.</value></data>
+  <data name="MainPage_BreakHintReady" xml:space="preserve"><value>Three breaths. ZenFocus will not stop you — but do you really want to end now?</value></data>
+  <data name="MainPage_BreakEndCountdown" xml:space="preserve"><value>End ({0})</value></data>
+  <data name="MainPage_BreakEnd" xml:space="preserve"><value>End</value></data>
+  <data name="MainPage_BreakTitle" xml:space="preserve"><value>What happened?</value></data>
+  <data name="MainPage_BreakContinue" xml:space="preserve"><value>Focus more</value></data>
+  <data name="MainPage_PauseTitle" xml:space="preserve"><value>Pause focus?</value></data>
+  <data name="MainPage_PauseContent" xml:space="preserve"><value>In ADHD mode, pausing often means not coming back. Consider ending or continuing.</value></data>
+  <data name="MainPage_PausePrimary" xml:space="preserve"><value>Pause anyway</value></data>
+  <data name="MainPage_PauseClose" xml:space="preserve"><value>Keep focusing</value></data>
+  <data name="MainPage_NoSiteTitle" xml:space="preserve"><value>No site to allow</value></data>
+  <data name="MainPage_NoSiteContent" xml:space="preserve"><value>No recent blocked site. Open a blocked page first, or wait for a distraction reminder.</value></data>
+  <data name="MainPage_NoSiteClose" xml:space="preserve"><value>Got it</value></data>
+  <data name="MainPage_TodayFeedback" xml:space="preserve"><value>Focused {0} min today · every session counts</value></data>
+  <data name="MainPage_SoftLandingBody" xml:space="preserve"><value>You rested {0} min.\nWhat next?</value></data>
+  <data name="MainPage_DateFmt" xml:space="preserve"><value>MMMM d, dddd</value></data>
+  <data name="MainPage_CompanionPaidTitle" xml:space="preserve"><value>Phone companion (paid)</value></data>
+  <data name="MainPage_CompanionPaidDesc" xml:space="preserve"><value>After upgrade, scan to view stats and start/end focus from your phone.</value></data>
+  <data name="MainPage_CompanionNoServer" xml:space="preserve"><value>Companion server is not running</value></data>
+  <data name="MainPage_CompanionNoNet" xml:space="preserve"><value>No network detected</value></data>
+  <data name="MainPage_CompanionLanHint" xml:space="preserve"><value>{0} (phone and PC on the same Wi‑Fi)</value></data>
+  <data name="MainPage_CompanionNeedAdmin" xml:space="preserve"><value>Run as administrator so the phone can connect (localhost only now)</value></data>
+  <data name="MainPage_CompanionQrFail" xml:space="preserve"><value>Failed to generate QR code</value></data>
+  <data name="SceneDialog_MinutesHeader" xml:space="preserve"><value>Focus length (minutes)</value></data>
+  <data name="SceneUpgrade_Title" xml:space="preserve"><value>Customize "{0}" scene</value></data>
+  <data name="SceneUpgrade_Head" xml:space="preserve"><value>Custom scene quota used</value></data>
+  <data name="SceneUpgrade_Body" xml:space="preserve"><value>Free version allows 1 custom scene (duration + categories + intention). Quota used up.</value></data>
+  <data name="SceneUpgrade_More" xml:space="preserve"><value>Upgrade to customize all 4 scenes.</value></data>
+  <data name="SceneUpgrade_Primary" xml:space="preserve"><value>Learn more</value></data>
+  <data name="AdhdOnboard_T1" xml:space="preserve"><value>ADHD-friendly mode · 1/3</value></data>
+  <data name="AdhdOnboard_C1" xml:space="preserve"><value>Built for easily distracted minds:\n\n[15-min cycles]\nLow barrier to start.\n\n[Blocking stays as you set]\nMinimize or kill is chosen on the Block page. This mode will not change it.\n\n[Positive feedback]\nPraise what you finished. Never scold distractions.</value></data>
+  <data name="AdhdOnboard_T2" xml:space="preserve"><value>ADHD-friendly mode · 2/3</value></data>
+  <data name="AdhdOnboard_C2" xml:space="preserve"><value>[Cooldown]\nBlocking stays on after focus ends.\n\n[Soft landing]\nYou choose Another 15 min or Use freely.\n\n[Pause friction]\nPause asks for confirmation so you don't drift away.</value></data>
+  <data name="AdhdOnboard_T3" xml:space="preserve"><value>ADHD-friendly mode · 3/3</value></data>
+  <data name="AdhdOnboard_C3" xml:space="preserve"><value>[Notes]\n• Kill-process may lose unsaved work\n• Categories follow the current scene\n• You can switch back to Minimize anytime\n• ADHD and Deep modes cannot both be on\n\nReady?</value></data>
+  <data name="AdhdOnboard_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="AdhdOnboard_Start" xml:space="preserve"><value>Get started</value></data>
+  <data name="Feedback_Done" xml:space="preserve"><value>Settled. This session: {0} min</value></data>
+  <data name="Feedback_Broken" xml:space="preserve"><value>What happened? This session: {0} min</value></data>
+  <data name="Feedback_NoDist" xml:space="preserve"><value>, no switches. Keep going.</value></data>
+  <data name="Feedback_Dist1" xml:space="preserve"><value>, 1 distraction — try putting the phone farther next time.</value></data>
+  <data name="Feedback_DistN" xml:space="preserve"><value>, {0} distractions — noticing them is the practice.</value></data>
+  <data name="Feedback_Better" xml:space="preserve"><value> {0} min more than yesterday's average.</value></data>
+  <data name="Feedback_Same" xml:space="preserve"><value> Same as yesterday's average — steady is progress.</value></data>
+  <data name="Shield_CatLabel" xml:space="preserve"><value>{0} ({1} sites)</value></data>
+  <data name="Shield_LoadFail" xml:space="preserve"><value>Page failed to load: {0}</value></data>
+  <data name="Shield_FreeDomainLimit" xml:space="preserve"><value>Free version: up to {0} custom domains. Activate for unlimited. Categories are open.</value></data>
+  <data name="Shield_AddFail" xml:space="preserve"><value>Add failed: {0}</value></data>
+  <data name="Shield_AddLimitFail" xml:space="preserve"><value>Failed to add limit: {0}</value></data>
+  <data name="Shield_NoAllow" xml:space="preserve"><value>No temporary allows</value></data>
+  <data name="Shield_AllowUntil" xml:space="preserve"><value>{0} (until {1:HH:mm})</value></data>
+  <data name="Shield_SaveFail" xml:space="preserve"><value>Save failed: {0}</value></data>
+  <data name="Shield_ClearTitle" xml:space="preserve"><value>Clear all rules?</value></data>
+  <data name="Shield_ClearContent" xml:space="preserve"><value>This clears saved categories and custom domains. Cannot undo. Continue?</value></data>
+  <data name="Shield_ClearPrimary" xml:space="preserve"><value>Clear</value></data>
+  <data name="Shield_Cleared" xml:space="preserve"><value>All block rules cleared (scene presets kept; reset a scene from home via right-click).</value></data>
+  <data name="Shield_ClearFail" xml:space="preserve"><value>Clear failed: {0}</value></data>
+  <data name="Shield_Cleaned" xml:space="preserve"><value>Checked and cleaned ZenFocus hosts markers.</value></data>
+  <data name="Shield_CleanFail" xml:space="preserve"><value>Cleanup failed: {0}</value></data>
+  <data name="Shield_NeedProc" xml:space="preserve"><value>Enter a process name, e.g. Douyin.</value></data>
+  <data name="Shield_KillTitle" xml:space="preserve"><value>Kill-process mode</value></data>
+  <data name="Shield_KillContent" xml:space="preserve"><value>This will force-close blocked apps. Unsaved work may be lost.\n\nUse this mode?</value></data>
+  <data name="Shield_KillPrimary" xml:space="preserve"><value>Use it</value></data>
+  <data name="Shield_Applied" xml:space="preserve"><value>Config saved ({0} domains). Websites apply when focus starts.</value></data>
+  <data name="Shield_NotApplied" xml:space="preserve"><value>Not saved ({0} domains selected — tap Save config)</value></data>
+  <data name="Shield_Exported" xml:space="preserve"><value>Config exported to: {0}</value></data>
+  <data name="Shield_ExportFail" xml:space="preserve"><value>Export failed: {0}</value></data>
+  <data name="Shield_Imported" xml:space="preserve"><value>Config imported. Tap Save config; it applies when focus starts.</value></data>
+  <data name="Shield_ImportFail" xml:space="preserve"><value>Import failed: {0}</value></data>
+  <data name="Shield_AllowPlaceholder" xml:space="preserve"><value>Domain, e.g. example.com</value></data>
+  <data name="FeedbackMail_Subject" xml:space="preserve"><value>ZenFocus feedback - v{0}</value></data>
+  <data name="FeedbackMail_Body" xml:space="preserve"><value>Version: {0}\nOS: {1}\n\nDescribe the issue or suggestion:\n</value></data>
+  <data name="Elevated_Apply" xml:space="preserve"><value>Blocking applied.</value></data>
+  <data name="Elevated_Remove" xml:space="preserve"><value>Blocking removed.</value></data>
+  <data name="Elevated_Cleanup" xml:space="preserve"><value>ZenFocus hosts markers cleaned.</value></data>
+  <data name="Elevated_Fail" xml:space="preserve"><value>Failed: {0}</value></data>
+  <data name="Allow_Session" xml:space="preserve"><value>this session</value></data>
+  <data name="Allow_Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Balloon_Limit" xml:space="preserve"><value>"{0}" hit today's limit. Take a break.</value></data>
+  <data name="Balloon_LimitTitle" xml:space="preserve"><value>ZenFocus · Daily limit</value></data>
+  <data name="Balloon_Dist" xml:space="preserve"><value>You opened "{0}". Breathe, return to the work.</value></data>
+  <data name="Balloon_DistTitle" xml:space="preserve"><value>ZenFocus · Distraction</value></data>
+  <data name="Balloon_Coding" xml:space="preserve"><value>You've been coding in "{0}" for 2 min. Consider starting focus. ({1}/3, then switch to Work wish/time)</value></data>
+  <data name="Balloon_CodingTitle" xml:space="preserve"><value>ZenFocus · Scene tip</value></data>
+  <data name="Balloon_Kill" xml:space="preserve"><value>"{0}" is {1}. It will be closed in 3 seconds — save now.</value></data>
+  <data name="Balloon_AppTitle" xml:space="preserve"><value>ZenFocus · App block</value></data>
+  <data name="Balloon_Min" xml:space="preserve"><value>"{0}" is {1}. Minimized.</value></data>
+  <data name="StatsPage_InsightDefault.Text" xml:space="preserve"><value>Today's insight appears after your first session</value></data>
+  <data name="StatsPage_TodayCountLabel.Text" xml:space="preserve"><value>Sessions</value></data>
+  <data name="StatsPage_TodayMinutesLabel.Text" xml:space="preserve"><value>Minutes</value></data>
+  <data name="StatsPage_StreakLabel.Text" xml:space="preserve"><value>Streak</value></data>
+  <data name="StatsPage_DistractionLabel.Text" xml:space="preserve"><value>Distractions</value></data>
+  <data name="StatsPage_QualityLabel.Text" xml:space="preserve"><value>Quality</value></data>
+  <data name="StatsPage_ShareCard.Content" xml:space="preserve"><value>Share card</value></data>
+  <data name="StatsPage_PeakHourTitle.Text" xml:space="preserve"><value>Peak hours</value></data>
+  <data name="StatsPage_StreakHistoryTitle.Text" xml:space="preserve"><value>Streak history</value></data>
+  <data name="StatsPage_EmptyHint.Text" xml:space="preserve"><value>No sessions yet. Start your first focus on the Focus page.</value></data>
+  <data name="StatsPage_ChartExpander.Text" xml:space="preserve"><value>Charts</value></data>
+  <data name="StatsPage_WeekTitle.Text" xml:space="preserve"><value>Last 7 days</value></data>
+  <data name="StatsPage_HourTitle.Text" xml:space="preserve"><value>Today by hour</value></data>
+  <data name="StatsPage_MonthTitle.Text" xml:space="preserve"><value>This month</value></data>
+  <data name="StatsPage_DistractionSourcesTitle.Text" xml:space="preserve"><value>Top distractions</value></data>
+  <data name="StatsPage_UsageTitle.Text" xml:space="preserve"><value>Today's usage</value></data>
+  <data name="StatsPage_ShareZenChar.Text" xml:space="preserve"><value>Zen</value></data>
+  <data name="StatsPage_ShareTitle.Text" xml:space="preserve"><value>Today's focus</value></data>
+  <data name="StatsPage_ShareCountUnit.Text" xml:space="preserve"><value>sessions</value></data>
+  <data name="StatsPage_ShareMinutesUnit.Text" xml:space="preserve"><value>minutes</value></data>
+  <data name="StatsPage_ShareStreakUnit.Text" xml:space="preserve"><value>streak</value></data>
+  <data name="StatsPage_ShareQualityUnit.Text" xml:space="preserve"><value>quality</value></data>
+  <data name="Stats_InsightHas" xml:space="preserve"><value>Focused {0} min today · {1} sessions · keep going</value></data>
+  <data name="Stats_InsightEmpty" xml:space="preserve"><value>No sessions today · start the first one on Focus</value></data>
+  <data name="Stats_PeriodDawn" xml:space="preserve"><value>early morning</value></data>
+  <data name="Stats_PeriodMorning" xml:space="preserve"><value>morning</value></data>
+  <data name="Stats_PeriodNoon" xml:space="preserve"><value>midday</value></data>
+  <data name="Stats_PeriodAfternoon" xml:space="preserve"><value>afternoon</value></data>
+  <data name="Stats_PeriodEvening" xml:space="preserve"><value>evening</value></data>
+  <data name="Stats_PeriodNight" xml:space="preserve"><value>late night</value></data>
+  <data name="Stats_Pattern" xml:space="preserve"><value>You move most in the {0} (around {1}:00). {2}% of last-7-day activity is in this window. Add a daily limit on the Block page if needed.</value></data>
+  <data name="Stats_Weekday1" xml:space="preserve"><value>Mon</value></data>
+  <data name="Stats_Weekday2" xml:space="preserve"><value>Tue</value></data>
+  <data name="Stats_Weekday3" xml:space="preserve"><value>Wed</value></data>
+  <data name="Stats_Weekday4" xml:space="preserve"><value>Thu</value></data>
+  <data name="Stats_Weekday5" xml:space="preserve"><value>Fri</value></data>
+  <data name="Stats_Weekday6" xml:space="preserve"><value>Sat</value></data>
+  <data name="Stats_Weekday7" xml:space="preserve"><value>Sun</value></data>
+  <data name="Stats_DayTip" xml:space="preserve"><value>{0}/{1}: {2} min</value></data>
+  <data name="Stats_UsageDist" xml:space="preserve"><value>{0} (distraction)</value></data>
+  <data name="Stats_UsageMin" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Stats_DistNone" xml:space="preserve"><value>No distractions in 7 days. Steady.</value></data>
+  <data name="Stats_DistItem" xml:space="preserve"><value>{0} ×{1}</value></data>
+  <data name="Stats_ExportCsv" xml:space="preserve"><value>CSV</value></data>
+  <data name="Stats_ExportJson" xml:space="preserve"><value>JSON</value></data>
+  <data name="Stats_ExportName" xml:space="preserve"><value>ZenFocus_{0:yyyyMMdd}</value></data>
+  <data name="Stats_CsvHeader" xml:space="preserve"><value>Started,Ended,Planned min,Actual min,State,Intention,Distractions,Top sources,ADHD</value></data>
+  <data name="Stats_StateDone" xml:space="preserve"><value>Completed</value></data>
+  <data name="Stats_StateBroken" xml:space="preserve"><value>Broken</value></data>
+  <data name="Stats_StateRunning" xml:space="preserve"><value>In progress</value></data>
+  <data name="Stats_Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Stats_No" xml:space="preserve"><value>No</value></data>
+  <data name="Stats_ShareDlgTitle" xml:space="preserve"><value>Today's focus card</value></data>
+  <data name="Stats_ShareSave" xml:space="preserve"><value>Save image</value></data>
+  <data name="Stats_ShareSaved" xml:space="preserve"><value>Saved to:\n{0}\nCopied to clipboard — paste to share.</value></data>
+  <data name="Stats_ShareFail" xml:space="preserve"><value>Save failed</value></data>
+  <data name="Stats_PeakEmpty" xml:space="preserve"><value>No sessions in 30 days</value></data>
+  <data name="Stats_PeakMorning" xml:space="preserve"><value>6am–12pm</value></data>
+  <data name="Stats_PeakAfternoon" xml:space="preserve"><value>12–6pm</value></data>
+  <data name="Stats_PeakEvening" xml:space="preserve"><value>6pm–12am</value></data>
+  <data name="Stats_PeakNight" xml:space="preserve"><value>12–6am</value></data>
+  <data name="Stats_PeakText" xml:space="preserve"><value>Most focused in {0}: {1} min in 30 days ({2}%). Schedule important work then.</value></data>
+  <data name="Stats_PeakFail" xml:space="preserve"><value>Peak-hour analysis unavailable</value></data>
+  <data name="Stats_StreakEmpty" xml:space="preserve"><value>No streak yet</value></data>
+  <data name="Stats_StreakText" xml:space="preserve"><value>Current {0} days · best {1} days · {2} days this month</value></data>
+  <data name="Stats_StreakFail" xml:space="preserve"><value>Streak stats unavailable</value></data>
+  <data name="Stats_Quote0" xml:space="preserve"><value>A journey of a thousand miles begins with a single step.</value></data>
+  <data name="Stats_Quote1" xml:space="preserve"><value>Where the heart goes, the feet follow.</value></data>
+  <data name="Stats_Quote2" xml:space="preserve"><value>Small daily work compounds.</value></data>
+  <data name="Stats_Quote3" xml:space="preserve"><value>Still water runs deep. Focus travels far.</value></data>
+  <data name="Stats_Quote4" xml:space="preserve"><value>What you keep in mind returns.</value></data>
+  <data name="Stats_Quote5" xml:space="preserve"><value>The longest path starts under your feet.</value></data>
+  <data name="Stats_Quote6" xml:space="preserve"><value>Those who love the work go farther than those who merely know it.</value></data>
+  <data name="Upgrade_Title" xml:space="preserve"><value>Upgrade to Pro</value></data>
+  <data name="Upgrade_Primary" xml:space="preserve"><value>Enter license key</value></data>
+  <data name="Upgrade_Later" xml:space="preserve"><value>Later</value></data>
+  <data name="Upgrade_PaidHead" xml:space="preserve"><value>Paid features:</value></data>
+  <data name="Upgrade_F1" xml:space="preserve"><value>• Unlimited custom domains (free: 3)</value></data>
+  <data name="Upgrade_F2" xml:space="preserve"><value>• All 4 scenes customizable (free: 1)</value></data>
+  <data name="Upgrade_F3" xml:space="preserve"><value>• Phone companion (scan stats + remote control)</value></data>
+  <data name="Upgrade_F4" xml:space="preserve"><value>• Data export (CSV/JSON)</value></data>
+  <data name="Upgrade_F5" xml:space="preserve"><value>• Advanced stats (peak hours + streak history)</value></data>
+  <data name="Upgrade_F6" xml:space="preserve"><value>• ADHD cooldown 20/30 min (free: 5/10/15)</value></data>
+  <data name="Upgrade_How" xml:space="preserve"><value>\nTo buy: email yezhihua_yzh@163.com. License key sent after payment.</value></data>
+  <data name="Activate_Placeholder" xml:space="preserve"><value>Paste the license key you received</value></data>
+  <data name="SceneWish_Work" xml:space="preserve"><value>Finish today's work</value></data>
+  <data name="SceneWish_Write" xml:space="preserve"><value>Write with a quiet mind</value></data>
+  <data name="SceneWish_Study" xml:space="preserve"><value>Study deeply, understand thoroughly</value></data>
+  <data name="SceneWish_Meeting" xml:space="preserve"><value>Stay present in the meeting</value></data>
+  <data name="SceneWish_Default" xml:space="preserve"><value>Focus</value></data>
+  <data name="AppName_douyin" xml:space="preserve"><value>Douyin</value></data>
+  <data name="AppName_kwai" xml:space="preserve"><value>Kwai</value></data>
+  <data name="AppName_bilibili" xml:space="preserve"><value>Bilibili</value></data>
+  <data name="AppName_huya" xml:space="preserve"><value>Huya</value></data>
+  <data name="AppName_douyu" xml:space="preserve"><value>Douyu</value></data>
+  <data name="AppName_iqiyi" xml:space="preserve"><value>iQiyi</value></data>
+  <data name="AppName_youku" xml:space="preserve"><value>Youku</value></data>
+  <data name="AppName_taobao" xml:space="preserve"><value>Taobao</value></data>
+  <data name="AppName_jd" xml:space="preserve"><value>JD</value></data>
+  <data name="AppName_pinduoduo" xml:space="preserve"><value>Pinduoduo</value></data>
+  <data name="AppName_WeChat" xml:space="preserve"><value>WeChat</value></data>
+  <data name="AppName_DingTalk" xml:space="preserve"><value>DingTalk</value></data>
+  <data name="AppName_QQ" xml:space="preserve"><value>QQ</value></data>
+  <data name="AppName_WXWork" xml:space="preserve"><value>WeCom</value></data>
+  <data name="AppName_Lark" xml:space="preserve"><value>Lark</value></data>
+  <data name="AppName_Feishu" xml:space="preserve"><value>Feishu</value></data>
+  <data name="AppName_Telegram" xml:space="preserve"><value>Telegram</value></data>
+  <data name="AppName_Discord" xml:space="preserve"><value>Discord</value></data>
+  <data name="AppName_slack" xml:space="preserve"><value>Slack</value></data>
+  <data name="AppName_TikTok" xml:space="preserve"><value>TikTok</value></data>
+  <data name="AppName_Instagram" xml:space="preserve"><value>Instagram</value></data>
+  <data name="AppName_Spotify" xml:space="preserve"><value>Spotify</value></data>
+  <data name="AppName_Steam" xml:space="preserve"><value>Steam</value></data>
+  <data name="AppName_Netflix" xml:space="preserve"><value>Netflix</value></data>
+  <data name="AppName_Amazon" xml:space="preserve"><value>Amazon</value></data>
+  <data name="AppName_WhatsApp" xml:space="preserve"><value>WhatsApp</value></data>
+  <data name="AppName_Teams" xml:space="preserve"><value>Teams</value></data>
+  <data name="AppName_ms-teams" xml:space="preserve"><value>Teams</value></data>
+  <data name="AppName_Signal" xml:space="preserve"><value>Signal</value></data>
+  <data name="Lang_Label" xml:space="preserve"><value>Language</value></data>
+  <data name="Lang_English" xml:space="preserve"><value>English</value></data>
+  <data name="Lang_Chinese" xml:space="preserve"><value>中文</value></data>
+  <data name="Lang_ConfirmTitle" xml:space="preserve"><value>Switch language?</value></data>
+  <data name="Lang_ConfirmContent" xml:space="preserve"><value>The app will restart. Current focus will end and website blocking will be cleared. Your site list (China / International) will not change — switch it on the Block page.</value></data>
+  <data name="Lang_ConfirmPrimary" xml:space="preserve"><value>Restart</value></data>
+  <data name="MainPage_SettingsTooltip" xml:space="preserve"><value>Mode and language</value></data>
+  <data name="Shield_HostsActive" xml:space="preserve"><value>Websites and apps are blocking now ({0} domains).</value></data>
+  <data name="Shield_SavedPendingFocus" xml:space="preserve"><value>Saved ({0} domains). Websites apply when focus starts.</value></data>
+  <data name="Shield_SavedAppsOnly" xml:space="preserve"><value>Saved ({0} domains). Desktop apps will block. Websites need administrator.</value></data>
+  <data name="Notify_SaveNeedAdmin" xml:space="preserve"><value>Saved. Desktop apps will block. Websites need administrator.</value></data>
+  <data name="Admin_ElevateHosts" xml:space="preserve"><value>Write website block to hosts</value></data>
+  <data name="Stats_HourTooltip" xml:space="preserve"><value>{0} — {1} min</value></data>
+  <data name="MainPage_Hotkeys" xml:space="preserve"><value>Shortcuts: Ctrl+Alt+F start/end · P pause · R 3-min break · S block page</value></data>
+  <data name="Shield_CatalogLabel" xml:space="preserve"><value>Site list</value></data>
+  <data name="Shield_CatalogIntl" xml:space="preserve"><value>International (YouTube / TikTok)</value></data>
+  <data name="Shield_CatalogChina" xml:space="preserve"><value>China (Douyin / Bilibili)</value></data>
+  <data name="Shield_CatalogHintEn" xml:space="preserve"><value>International list: YouTube, TikTok, Reddit. Switching UI language will not change this.</value></data>
+  <data name="Shield_CatalogHintZh" xml:space="preserve"><value>China list: Douyin, Bilibili, Weibo. Switching UI language will not change this.</value></data>
+  <data name="Shield_CatalogConfirmTitle" xml:space="preserve"><value>Switch site list?</value></data>
+  <data name="Shield_CatalogConfirmContent" xml:space="preserve"><value>Checked categories stay. Sites and apps switch between China and International lists. UI language is unchanged.</value></data>
+  <data name="Shield_CatalogConfirmPrimary" xml:space="preserve"><value>Switch list</value></data>
+  <data name="Notify_CatalogEn" xml:space="preserve"><value>Switched to International site list.</value></data>
+  <data name="Notify_CatalogZh" xml:space="preserve"><value>Switched to China site list.</value></data>
 </root>

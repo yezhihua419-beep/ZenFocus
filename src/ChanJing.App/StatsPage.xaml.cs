@@ -19,16 +19,16 @@ namespace ChanJing_App;
 /// </summary>
 public sealed partial class StatsPage : Page
 {
-    private static readonly string[] Quotes =
-    {
-        "不积跬步，无以至千里。",
-        "心之所向，素履以往。",
-        "日拱一卒，功不唐捐。",
-        "静水流深，专注致远。",
-        "念念不忘，必有回响。",
-        "千里之行，始于足下。",
-        "知之者不如好之者，好之者不如乐之者。"
-    };
+    private static string[] Quotes() =>
+    [
+        I18n.Get("Stats_Quote0", "A journey of a thousand miles begins with a single step."),
+        I18n.Get("Stats_Quote1", "Where the heart goes, the feet follow."),
+        I18n.Get("Stats_Quote2", "Small daily work compounds."),
+        I18n.Get("Stats_Quote3", "Still water runs deep. Focus travels far."),
+        I18n.Get("Stats_Quote4", "What you keep in mind returns."),
+        I18n.Get("Stats_Quote5", "The longest path starts under your feet."),
+        I18n.Get("Stats_Quote6", "Those who love the work go farther than those who merely know it.")
+    ];
 
     private readonly AppDatabase _db = AppServices.Db;
     private readonly DispatcherTimer _refreshTimer;
@@ -36,10 +36,42 @@ public sealed partial class StatsPage : Page
     public StatsPage()
     {
         InitializeComponent();
+        ApplyLocalized();
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
         _refreshTimer.Tick += (_, _) => RefreshAll();
+    }
+
+    private void ApplyLocalized()
+    {
+        I18n.SetContent(TitleText, "StatsPage_Title.Text", "Stats");
+        I18n.SetContent(ExportButton, "StatsPage_Export.Content", "Export Data");
+        I18n.SetContent(ShareCardButton, "StatsPage_ShareCard.Content", "Share card");
+        I18n.SetContent(UpgradeButton, "StatsPage_UpgradeButton.Content", "Upgrade $19 Lifetime");
+        I18n.SetContent(TodayCountLabel, "StatsPage_TodayCountLabel.Text", "Sessions");
+        I18n.SetContent(TodayMinutesLabel, "StatsPage_TodayMinutesLabel.Text", "Minutes");
+        I18n.SetContent(StreakLabel, "StatsPage_StreakLabel.Text", "Streak");
+        I18n.SetContent(DistractionLabel, "StatsPage_DistractionLabel.Text", "Distractions");
+        I18n.SetContent(QualityLabel, "StatsPage_QualityLabel.Text", "Quality");
+        I18n.SetContent(UpgradeTitleText, "StatsPage_UpgradeTitle.Text", "Upgrade for more insights");
+        I18n.SetContent(UpgradeDescText, "StatsPage_UpgradeDesc.Text", "Paid insights and companion.");
+        I18n.SetContent(PeakHourTitle, "StatsPage_PeakHourTitle.Text", "Peak hours");
+        I18n.SetContent(StreakHistoryTitle, "StatsPage_StreakHistoryTitle.Text", "Streak history");
+        I18n.SetContent(EmptyHint, "StatsPage_EmptyHint.Text", "No sessions yet.");
+        I18n.SetContent(ChartExpanderHeader, "StatsPage_ChartExpander.Text", "Charts");
+        I18n.SetContent(WeekTitle, "StatsPage_WeekTitle.Text", "Last 7 days");
+        I18n.SetContent(HourTitle, "StatsPage_HourTitle.Text", "Today by hour");
+        I18n.SetContent(MonthTitle, "StatsPage_MonthTitle.Text", "This month");
+        I18n.SetContent(DistSourcesTitle, "StatsPage_DistractionSourcesTitle.Text", "Top distractions");
+        I18n.SetContent(UsageTitle, "StatsPage_UsageTitle.Text", "Today's usage");
+        I18n.SetContent(ShareZenChar, "StatsPage_ShareZenChar.Text", "Zen");
+        I18n.SetContent(ShareTitleText, "StatsPage_ShareTitle.Text", "Today's focus");
+        I18n.SetContent(ShareCountUnit, "StatsPage_ShareCountUnit.Text", "sessions");
+        I18n.SetContent(ShareMinutesUnit, "StatsPage_ShareMinutesUnit.Text", "minutes");
+        I18n.SetContent(ShareStreakUnit, "StatsPage_ShareStreakUnit.Text", "streak");
+        I18n.SetContent(ShareQualityUnit, "StatsPage_ShareQualityUnit.Text", "quality");
+        App.LogAction("i18n-stats", $"export={ExportButton.Content} share={ShareCardButton.Content}");
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -63,8 +95,8 @@ public sealed partial class StatsPage : Page
             var totalMinutes = sessions.Sum(s => s.ActualMinutes);
             TodayMinutes.Text = totalMinutes.ToString();
             InsightText.Text = totalMinutes > 0
-                ? $"今日已专注 {totalMinutes} 分钟 · 完成 {sessions.Count} 次定心 · 继续保持"
-                : "今日还没有专注记录 · 回到「禅定」页开始第一次定心";
+                ? I18n.GetFormat("Stats_InsightHas", totalMinutes, sessions.Count)
+                : I18n.Get("Stats_InsightEmpty", "No sessions today · start the first one on Focus");
             StreakDays.Text = CalcStreak().ToString();
             var totalDistractions = sessions.Sum(s => s.DistractionCount);
             DistractionCount.Text = totalDistractions.ToString();
@@ -133,14 +165,14 @@ public sealed partial class StatsPage : Page
             var ratio = (int)Math.Round((double)distCount / totalDist * 100);
             var periodName = bestHour switch
             {
-                >= 5 and < 9 => "清晨",
-                >= 9 and < 12 => "上午",
-                >= 12 and < 14 => "午间",
-                >= 14 and < 18 => "下午",
-                >= 18 and < 22 => "晚间",
-                _ => "深夜"
+                >= 5 and < 9 => I18n.Get("Stats_PeriodDawn", "early morning"),
+                >= 9 and < 12 => I18n.Get("Stats_PeriodMorning", "morning"),
+                >= 12 and < 14 => I18n.Get("Stats_PeriodNoon", "midday"),
+                >= 14 and < 18 => I18n.Get("Stats_PeriodAfternoon", "afternoon"),
+                >= 18 and < 22 => I18n.Get("Stats_PeriodEvening", "evening"),
+                _ => I18n.Get("Stats_PeriodNight", "late night")
             };
-            PatternInsight.Text = $"观察：你在{periodName}（{bestHour}点前后）最容易起身活动，近7天{ratio}%的活动集中在这个时段。可在屏蔽页为此时段加设每日限额。";
+            PatternInsight.Text = I18n.GetFormat("Stats_Pattern", periodName, bestHour, ratio);
             PatternInsight.Visibility = Visibility.Visible;
         }
         catch (Exception ex)
@@ -263,7 +295,7 @@ public sealed partial class StatsPage : Page
                 Margin = new Thickness(1, 0, 1, 0),
                 Opacity = isCurrentHour ? 1.0 : 0.7
             };
-            ToolTipService.SetToolTip(bar, $"{h:00}:00 - {hourly[h]} 分钟");
+            ToolTipService.SetToolTip(bar, I18n.GetFormat("Stats_HourTooltip", $"{h:00}:00", hourly[h]));
             Grid.SetColumn(bar, h);
             HourlyChart.Children.Add(bar);
 
@@ -305,7 +337,13 @@ public sealed partial class StatsPage : Page
             MonthChart.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         }
 
-        var weekdayNames = new[] { "一", "二", "三", "四", "五", "六", "日" };
+        var weekdayNames = new[]
+        {
+            I18n.Get("Stats_Weekday1", "Mon"), I18n.Get("Stats_Weekday2", "Tue"),
+            I18n.Get("Stats_Weekday3", "Wed"), I18n.Get("Stats_Weekday4", "Thu"),
+            I18n.Get("Stats_Weekday5", "Fri"), I18n.Get("Stats_Weekday6", "Sat"),
+            I18n.Get("Stats_Weekday7", "Sun")
+        };
         var labelBrush = GetBrush("BrushTextSecondary");
 
         // 周几表头
@@ -347,7 +385,7 @@ public sealed partial class StatsPage : Page
                 CornerRadius = new CornerRadius(5),
                 Background = brush
             };
-            ToolTipService.SetToolTip(cell, $"{date:M 月 d 日}：{minutes} 分钟");
+            ToolTipService.SetToolTip(cell, I18n.GetFormat("Stats_DayTip", date.Month, date.Day, minutes));
             Grid.SetColumn(cell, col);
             Grid.SetRow(cell, row);
             MonthChart.Children.Add(cell);
@@ -364,7 +402,7 @@ public sealed partial class StatsPage : Page
             {
                 var isDistraction = AppServices.Blocklist.MatchBlockedApp(kv.Key) is not null;
                 return new UsageItem(
-                    isDistraction ? $"{kv.Key}（分心）" : kv.Key,
+                    isDistraction ? I18n.GetFormat("Stats_UsageDist", kv.Key) : kv.Key,
                     kv.Value,
                     1,
                     string.Empty,
@@ -375,7 +413,7 @@ public sealed partial class StatsPage : Page
             .ToList();
         var max = items.Count > 0 ? items.Select(x => x.Value).Max() : 1;
         UsageList.ItemsSource = items
-            .Select(i => new UsageItem(i.Name, i.Value, max, $"{i.Value / 60} 分", i.IsDistraction))
+            .Select(i => new UsageItem(i.Name, i.Value, max, I18n.GetFormat("Stats_UsageMin", i.Value / 60), i.IsDistraction))
             .ToList();
     }
 
@@ -401,8 +439,8 @@ public sealed partial class StatsPage : Page
             }
             var top3 = totals.OrderByDescending(kv => kv.Value).Take(3).ToList();
             DistractionSourcesText.Text = top3.Count == 0
-                ? "近7天没有分心记录，定心状态很好"
-                : string.Join(" · ", top3.Select(kv => $"{kv.Key} {kv.Value}次"));
+                ? I18n.Get("Stats_DistNone", "No distractions in 7 days. Steady.")
+                : string.Join(" · ", top3.Select(kv => I18n.GetFormat("Stats_DistItem", kv.Key, kv.Value)));
         }
         catch (Exception ex)
         {
@@ -420,9 +458,9 @@ public sealed partial class StatsPage : Page
         {
             var picker = new Windows.Storage.Pickers.FileSavePicker();
             picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-            picker.FileTypeChoices.Add("CSV 表格", new List<string> { ".csv" });
-            picker.FileTypeChoices.Add("JSON 数据", new List<string> { ".json" });
-            picker.SuggestedFileName = $"禅净专注数据_{DateTime.Today:yyyyMMdd}";
+            picker.FileTypeChoices.Add(I18n.Get("Stats_ExportCsv", "CSV"), new List<string> { ".csv" });
+            picker.FileTypeChoices.Add(I18n.Get("Stats_ExportJson", "JSON"), new List<string> { ".json" });
+            picker.SuggestedFileName = I18n.GetFormat("Stats_ExportName", DateTime.Today);
             if (App.MainWindow is not null)
             {
                 var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
@@ -448,14 +486,14 @@ public sealed partial class StatsPage : Page
     private static string BuildCsv(IReadOnlyList<ChanJing.Core.Models.FocusSession> sessions)
     {
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("开始时间,结束时间,计划分钟,实际分钟,状态,今日一愿,分心次数,分心来源TOP3,ADHD");
+        sb.AppendLine(I18n.Get("Stats_CsvHeader", "Started,Ended,Planned min,Actual min,State,Intention,Distractions,Top sources,ADHD"));
         foreach (var s in sessions)
         {
             var state = s.State switch
             {
-                ChanJing.Core.Models.FocusSessionState.Completed => "圆满结束",
-                ChanJing.Core.Models.FocusSessionState.Broken => "破功",
-                _ => "进行中"
+                ChanJing.Core.Models.FocusSessionState.Completed => I18n.Get("Stats_StateDone", "Completed"),
+                ChanJing.Core.Models.FocusSessionState.Broken => I18n.Get("Stats_StateBroken", "Broken"),
+                _ => I18n.Get("Stats_StateRunning", "In progress")
             };
             sb.Append('"').Append(s.StartedAt.ToString("yyyy-MM-dd HH:mm")).Append("\",");
             sb.Append('"').Append(s.EndedAt?.ToString("yyyy-MM-dd HH:mm") ?? "").Append("\",");
@@ -465,7 +503,7 @@ public sealed partial class StatsPage : Page
             sb.Append('"').Append((s.Wish ?? "").Replace("\"", "\"\"")).Append("\",");
             sb.Append(s.DistractionCount).Append(',');
             sb.Append('"').Append((s.DistractionSources ?? "").Replace("\"", "\"\"")).Append("\",");
-            sb.Append(s.IsAdhd ? "是" : "否");
+            sb.Append(s.IsAdhd ? I18n.Get("Stats_Yes", "Yes") : I18n.Get("Stats_No", "No"));
             sb.AppendLine();
         }
         return sb.ToString();
@@ -503,15 +541,16 @@ public sealed partial class StatsPage : Page
         var totalMin = sessions.Sum(s => s.ActualMinutes);
         var baseSc = Math.Min(100, totalMin * 2);
         ShareQuality.Text = (totalMin > 0 ? Math.Max(0, baseSc - totalDist * 5) : 0).ToString();
-        ShareQuote.Text = Quotes[Random.Shared.Next(Quotes.Length)];
+        var quotes = Quotes();
+        ShareQuote.Text = quotes[Random.Shared.Next(quotes.Length)];
         ShareCard.Visibility = Visibility.Visible;
 
         var dialog = new ContentDialog
         {
-            Title = "Today's Focus Card",
+            Title = I18n.Get("Stats_ShareDlgTitle", "Today's focus card"),
             Content = ShareCard,
-            PrimaryButtonText = "Save Image",
-            CloseButtonText = "Close",
+            PrimaryButtonText = I18n.Get("Stats_ShareSave", "Save image"),
+            CloseButtonText = I18n.Get("Common_Close.Content", "Close"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -539,9 +578,9 @@ public sealed partial class StatsPage : Page
 
             var pixels = (await renderer.GetPixelsAsync()).ToArray();
             var dir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "禅净");
+                Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), I18n.Get("Tray_Title", "ZenFocus"));
             Directory.CreateDirectory(dir);
-            var path = Path.Combine(dir, $"今日定心-{DateTime.Now:yyyyMMdd-HHmmss}.png");
+            var path = Path.Combine(dir, $"{I18n.Get("StatsPage_ShareTitle.Text", "Today")}-{DateTime.Now:yyyyMMdd-HHmmss}.png");
 
             using var stream = new InMemoryRandomAccessStream();
             var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
@@ -569,9 +608,9 @@ public sealed partial class StatsPage : Page
 
             var info = new ContentDialog
             {
-                Title = "Saved",
-                Content = $"卡片已保存到：\n{path}\n且已复制到剪贴板，可直接粘贴分享。",
-                CloseButtonText = "OK",
+                Title = I18n.Get("Common_OK.Content", "OK"),
+                Content = I18n.GetFormat("Stats_ShareSaved", path),
+                CloseButtonText = I18n.Get("Common_OK.Content", "OK"),
                 XamlRoot = XamlRoot
             };
             await info.ShowAsync();
@@ -581,9 +620,9 @@ public sealed partial class StatsPage : Page
         {
             var error = new ContentDialog
             {
-                Title = "Save Failed",
+                Title = I18n.Get("Stats_ShareFail", "Save failed"),
                 Content = ex.Message,
-                CloseButtonText = "好",
+                CloseButtonText = I18n.Get("Common_OK.Content", "OK"),
                 XamlRoot = XamlRoot
             };
             await error.ShowAsync();
@@ -599,23 +638,29 @@ public sealed partial class StatsPage : Page
             var sessions = _db.GetSessions(start, DateTime.Today.AddDays(1));
             if (sessions.Count == 0)
             {
-                PeakHourText.Text = "近30天暂无专注记录";
+                PeakHourText.Text = I18n.Get("Stats_PeakEmpty", "No sessions in 30 days");
                 return;
             }
             var morning = sessions.Where(s => s.StartedAt.Hour >= 6 && s.StartedAt.Hour < 12).Sum(s => s.ActualMinutes);
             var afternoon = sessions.Where(s => s.StartedAt.Hour >= 12 && s.StartedAt.Hour < 18).Sum(s => s.ActualMinutes);
             var evening = sessions.Where(s => s.StartedAt.Hour >= 18 && s.StartedAt.Hour < 24).Sum(s => s.ActualMinutes);
             var night = sessions.Where(s => s.StartedAt.Hour >= 0 && s.StartedAt.Hour < 6).Sum(s => s.ActualMinutes);
-            var periods = new (string Name, long Minutes)[] { ("上午6-12点", morning), ("下午12-18点", afternoon), ("晚上18-24点", evening), ("凌晨0-6点", night) };
+            var periods = new (string Name, long Minutes)[]
+            {
+                (I18n.Get("Stats_PeakMorning", "6am–12pm"), morning),
+                (I18n.Get("Stats_PeakAfternoon", "12–6pm"), afternoon),
+                (I18n.Get("Stats_PeakEvening", "6pm–12am"), evening),
+                (I18n.Get("Stats_PeakNight", "12–6am"), night)
+            };
             var best = periods.OrderByDescending(p => p.Minutes).First();
             var total = periods.Sum(p => p.Minutes);
             var percent = total > 0 ? (int)(best.Minutes * 100.0 / total) : 0;
-            PeakHourText.Text = $"你在{best.Name}最专注，近30天共{best.Minutes}分钟（占{percent}%）。建议把重要工作安排在这个时段。";
+            PeakHourText.Text = I18n.GetFormat("Stats_PeakText", best.Name, best.Minutes, percent);
         }
         catch (Exception ex)
         {
             App.LogCrash("StatsPage.AnalyzePeakHours", ex);
-            PeakHourText.Text = "时段分析暂不可用";
+            PeakHourText.Text = I18n.Get("Stats_PeakFail", "Peak-hour analysis unavailable");
         }
     }
 
@@ -627,7 +672,7 @@ public sealed partial class StatsPage : Page
             var allSessions = _db.GetSessions(DateTime.Today.AddDays(-365), DateTime.Today.AddDays(1));
             if (allSessions.Count == 0)
             {
-                StreakHistoryText.Text = "暂无专注纪录";
+                StreakHistoryText.Text = I18n.Get("Stats_StreakEmpty", "No streak yet");
                 return;
             }
             var currentStreak = 0;
@@ -660,12 +705,12 @@ public sealed partial class StatsPage : Page
             longestStreak = Math.Max(longestStreak, tempStreak);
             var monthStart = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
             var monthDays = allSessions.Where(s => s.StartedAt.Date >= monthStart).Select(s => s.StartedAt.Date).Distinct().Count();
-            StreakHistoryText.Text = $"当前连续{currentStreak}天 · 最长连续{longestStreak}天 · 本月专注{monthDays}天";
+            StreakHistoryText.Text = I18n.GetFormat("Stats_StreakText", currentStreak, longestStreak, monthDays);
         }
         catch (Exception ex)
         {
             App.LogCrash("StatsPage.AnalyzeStreakHistory", ex);
-            StreakHistoryText.Text = "纪录统计暂不可用";
+            StreakHistoryText.Text = I18n.Get("Stats_StreakFail", "Streak stats unavailable");
         }
     }
 
@@ -678,25 +723,25 @@ public sealed partial class StatsPage : Page
         {
             var dialog = new ContentDialog
             {
-                Title = "Upgrade to Pro",
+                Title = I18n.Get("Upgrade_Title", "Upgrade to Pro"),
                 XamlRoot = XamlRoot,
-                PrimaryButtonText = "Enter License Key",
-                CloseButtonText = "Later",
+                PrimaryButtonText = I18n.Get("Upgrade_Primary", "Enter license key"),
+                CloseButtonText = I18n.Get("Upgrade_Later", "Later"),
                 DefaultButton = ContentDialogButton.Primary,
                 Content = new StackPanel
                 {
                     Spacing = 8,
                     Children =
                     {
-                        new TextBlock { Text = "$19 Lifetime, one-time payment forever", FontSize = 16, FontWeight = FontWeights.SemiBold },
-                        new TextBlock { Text = "Paid features:", FontSize = 13, FontWeight = FontWeights.SemiBold },
-                        new TextBlock { Text = "• Unlimited custom domains (free: 3 max)", FontSize = 12 },
-                        new TextBlock { Text = "• All 4 scenes customizable (free: 1 max)", FontSize = 12 },
-                        new TextBlock { Text = "• Phone companion (scan to view stats + remote control)", FontSize = 12 },
-                        new TextBlock { Text = "• Data export (CSV/JSON)", FontSize = 12 },
-                        new TextBlock { Text = "• Advanced stats (peak hour analysis + streak history)", FontSize = 12 },
-                        new TextBlock { Text = "• ADHD cooldown 20/30 min (free: 5/10/15)", FontSize = 12 },
-                        new TextBlock { Text = "\nTo purchase: email yezhihua_yzh@163.com, license key sent manually after payment.", FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
+                        new TextBlock { Text = I18n.Get("Price_BuyoutTitle", "$19 Lifetime, one-time payment forever"), FontSize = 16, FontWeight = FontWeights.SemiBold },
+                        new TextBlock { Text = I18n.Get("Upgrade_PaidHead", "Paid features:"), FontSize = 13, FontWeight = FontWeights.SemiBold },
+                        new TextBlock { Text = I18n.Get("Upgrade_F1", "• Unlimited custom domains (free: 3)"), FontSize = 12 },
+                        new TextBlock { Text = I18n.Get("Upgrade_F2", "• All 4 scenes customizable (free: 1)"), FontSize = 12 },
+                        new TextBlock { Text = I18n.Get("Upgrade_F3", "• Phone companion"), FontSize = 12 },
+                        new TextBlock { Text = I18n.Get("Upgrade_F4", "• Data export (CSV/JSON)"), FontSize = 12 },
+                        new TextBlock { Text = I18n.Get("Upgrade_F5", "• Advanced stats"), FontSize = 12 },
+                        new TextBlock { Text = I18n.Get("Upgrade_F6", "• ADHD cooldown 20/30 min"), FontSize = 12 },
+                        new TextBlock { Text = I18n.Get("Upgrade_How", "Email yezhihua_yzh@163.com after payment."), FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
                     }
                 }
             };
@@ -716,7 +761,7 @@ public sealed partial class StatsPage : Page
         {
             var input = new TextBox
             {
-                PlaceholderText = "请输入购买后收到的激活码",
+                PlaceholderText = I18n.Get("Activate_Placeholder", "Paste the license key you received"),
                 FontSize = 14,
                 Padding = new Thickness(12, 8, 12, 8)
             };

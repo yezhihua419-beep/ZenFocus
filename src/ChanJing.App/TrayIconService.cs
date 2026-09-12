@@ -17,6 +17,7 @@ public sealed class TrayIconService : IDisposable
     private const uint NIF_INFO = 0x00000010;
     private const uint WM_APP = 0x8000;
     private const uint WM_TRAYICON = WM_APP + 1;
+    private const uint WM_LBUTTONUP = 0x0202;
     private const uint WM_LBUTTONDBLCLK = 0x0203;
     private const uint WM_RBUTTONUP = 0x0205;
     private const uint WM_COMMAND = 0x0111;
@@ -68,7 +69,7 @@ public sealed class TrayIconService : IDisposable
         var reg = RegisterClass(ref wc);
         App.LogAction("托盘窗口类", $"RegisterClass={reg} err={Marshal.GetLastWin32Error()}");
 
-        _hwnd = CreateWindowEx(0, "ChanJingTrayWindow", "禅净托盘", 0, 0, 0, 0, 0,
+        _hwnd = CreateWindowEx(0, "ChanJingTrayWindow", "ZenFocus Tray", 0, 0, 0, 0, 0,
             IntPtr.Zero, IntPtr.Zero, hInstance, IntPtr.Zero);
         App.LogAction("托盘窗口", $"CreateWindowEx={_hwnd} err={Marshal.GetLastWin32Error()}");
 
@@ -113,7 +114,7 @@ public sealed class TrayIconService : IDisposable
         if (msg == WM_TRAYICON)
         {
             var evt = (uint)(lParam.ToInt64() & 0xFFFF);
-            if (evt == WM_LBUTTONDBLCLK)
+            if (evt == WM_LBUTTONUP || evt == WM_LBUTTONDBLCLK)
             {
                 _onOpen();
                 return IntPtr.Zero;
@@ -142,14 +143,11 @@ public sealed class TrayIconService : IDisposable
 
     private void ToggleLanguage()
     {
-        var current = App.GetLanguage();
-        var next = current == "en-US" ? "zh-CN" : "en-US";
-        App.SetLanguage(next);
-        // 提示重启
-        var msg = next == "en-US"
-            ? "Language switched to English. Please restart the app to apply."
-            : "语言已切换为中文，请重启应用生效。";
-        MessageBox(IntPtr.Zero, msg, "ZenFocus", 0x40);
+        var title = I18n.Get("Lang_ConfirmTitle", "Switch language?");
+        var body = I18n.Get("Lang_ConfirmContent", "The app will restart. Current focus will end and website blocking will be cleared. Your site list will not change.");
+        if (MessageBox(IntPtr.Zero, body, title, 0x00000001) != 1) return; // MB_OKCANCEL / IDOK
+        var next = App.GetLanguage() == "en-US" ? "zh-CN" : "en-US";
+        App.SwitchLanguage(next);
     }
 
     private void ShowMenu()
@@ -285,9 +283,6 @@ public sealed class TrayIconService : IDisposable
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern bool AppendMenu(IntPtr hMenu, uint uFlags, int uIDNewItem, string lpNewItem);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
-
     [DllImport("user32.dll")]
     private static extern bool TrackPopupMenu(IntPtr hMenu, uint uFlags, int x, int y, int nReserved, IntPtr hWnd, IntPtr prcRect);
 
@@ -302,4 +297,7 @@ public sealed class TrayIconService : IDisposable
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
     private static extern IntPtr GetModuleHandle(string? lpModuleName);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 }

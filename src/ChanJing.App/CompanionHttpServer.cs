@@ -22,6 +22,8 @@ public sealed class CompanionHttpServer : IDisposable
 
     public int Port { get; }
     public bool IsRunning { get; private set; }
+    /// <summary>扫码 URL 带上的访问令牌。局域网 API 无此参数一律 401。</summary>
+    public string AccessToken { get; }
     /// <summary>实际监听地址（可能是localhost或所有接口）。</summary>
     public string? ListenAddress { get; private set; }
     /// <summary>是否支持局域网访问（非localhost）。</summary>
@@ -33,6 +35,29 @@ public sealed class CompanionHttpServer : IDisposable
         _db = db;
         _blocklist = blocklist;
         Port = port;
+        AccessToken = LoadOrCreateToken();
+    }
+
+    private static string LoadOrCreateToken()
+    {
+        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ChanJing");
+        var path = Path.Combine(dir, "companion.token");
+        try
+        {
+            if (File.Exists(path))
+            {
+                var saved = File.ReadAllText(path).Trim();
+                if (saved.Length >= 8) return saved;
+            }
+            Directory.CreateDirectory(dir);
+            var token = Guid.NewGuid().ToString("N");
+            File.WriteAllText(path, token);
+            return token;
+        }
+        catch
+        {
+            return Guid.NewGuid().ToString("N");
+        }
     }
 
     public void Start()
@@ -120,6 +145,13 @@ public sealed class CompanionHttpServer : IDisposable
 
             App.LogAction("伴侣请求", $"{method} {path}");
 
+            if (path.StartsWith("/api", StringComparison.OrdinalIgnoreCase) && !TokenMatches(request))
+            {
+                response.StatusCode = 401;
+                SendText(response, "Unauthorized");
+                return;
+            }
+
             switch (path)
             {
                 case "/" when method == "GET":
@@ -187,7 +219,8 @@ public sealed class CompanionHttpServer : IDisposable
         string[] distractionKeywords = { "douyin", "抖音", "bilibili", "b站", "哔哩哔哩", "kuaishou", "快手",
             "weibo", "微博", "zhihu", "知乎", "xiaohongshu", "小红书", "taobao", "淘宝", "jd", "京东",
             "pinduoduo", "拼多多", "iqiyi", "爱奇艺", "youku", "优酷", "tencentvideo", "腾讯视频",
-            "huya", "虎牙", "douyu", "斗鱼", "youtube", "netflix", "chrome", "edge", "firefox" };
+            "huya", "虎牙", "douyu", "斗鱼", "youtube", "netflix", "tiktok", "instagram", "twitter",
+            "facebook", "reddit", "discord", "twitch", "chrome", "edge", "firefox" };
         return distractionKeywords.Any(k => lower.Contains(k));
     }
 
@@ -203,8 +236,14 @@ public sealed class CompanionHttpServer : IDisposable
             elapsedMinutes = _engine.IsRunning ? (int)_engine.Elapsed.TotalMinutes : 0,
             plannedMinutes = current?.PlannedMinutes ?? 0,
             blocklistEnabled = _blocklist.IsApplied(),
-            enabledCategories = _blocklist.GetEnabledCategories().ToList()
+            enabledCategories = _blocklist.GetEnabledCategories().Select(I18n.CategoryName).ToList()
         };
+    }
+
+    private bool TokenMatches(HttpListenerRequest request)
+    {
+        var token = request.QueryString["token"] ?? request.Headers["X-ChanJing-Token"];
+        return string.Equals(token, AccessToken, StringComparison.Ordinal);
     }
 
     private object StartFocus()

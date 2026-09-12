@@ -160,10 +160,16 @@ let isFocusing = false;
 let startTime = null;
 let timerInterval = null;
 
+const pageToken = new URLSearchParams(location.search).get('token') || '';
+function apiUrl(path) {
+  if (!pageToken) return path;
+  return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'token=' + encodeURIComponent(pageToken);
+}
+
 function formatTime(minutes) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return h > 0 ? h > 0 ? h + 'h ' + m + 'm' : m + 'min';
+  return h > 0 ? h + 'h ' + m + 'm' : m + 'min';
 }
 
 function formatElapsed(seconds) {
@@ -190,7 +196,7 @@ async function fetchJSON(url, options) {
 }
 
 async function loadStats() {
-  const data = await fetchJSON('/api/stats');
+  const data = await fetchJSON(apiUrl('/api/stats'));
   if (!data) return;
   document.getElementById('date').textContent = data.date + ' ' + data.serverTime;
   document.getElementById('focusMinutes').textContent = data.focusMinutes;
@@ -202,12 +208,12 @@ async function loadStats() {
       '<div class=""distraction-item""><span class=""app"">' + d.app + '</span><span class=""count"">' + d.count + 'x</span></div>'
     ).join('');
   } else {
-    list.innerHTML = '<div class=""empty"">暂无分心记录</div>';
+    list.innerHTML = '<div class=""empty"">No distraction records</div>';
   }
 }
 
 async function loadFocusStatus() {
-  const data = await fetchJSON('/api/focus/status');
+  const data = await fetchJSON(apiUrl('/api/focus/status'));
   if (!data) return;
   isFocusing = data.isFocusing;
   const statusEl = document.getElementById('focusStatus');
@@ -257,7 +263,7 @@ function stopTimer() {
 }
 
 async function startFocus() {
-  const data = await fetchJSON('/api/focus/start', { method: 'POST' });
+  const data = await fetchJSON(apiUrl('/api/focus/start'), { method: 'POST' });
   if (data && data.success) {
     showToast('Focus started');
     loadFocusStatus();
@@ -268,7 +274,7 @@ async function startFocus() {
 }
 
 async function stopFocus() {
-  const data = await fetchJSON('/api/focus/stop', { method: 'POST' });
+  const data = await fetchJSON(apiUrl('/api/focus/stop'), { method: 'POST' });
   if (data && data.success) {
     showToast('Focus ended');
     loadFocusStatus();
@@ -291,7 +297,10 @@ async function loadPeerStatus() {
   const el = document.getElementById('peerStatus');
   if (!url) { el.textContent = 'No peer address set'; return; }
   try {
-    const res = await fetch(url.replace(/\\/$/, '') + '/api/focus/status');
+    const base = new URL(url);
+    const peerToken = base.searchParams.get('token');
+    const statusUrl = base.origin + '/api/focus/status' + (peerToken ? '?token=' + encodeURIComponent(peerToken) : '');
+    const res = await fetch(statusUrl);
     const data = await res.json();
     el.textContent = data.isFocusing ? 'Peer is focusing' : 'Peer is idle';
     el.style.color = data.isFocusing ? '#2e7d32' : '#888';

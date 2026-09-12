@@ -16,14 +16,15 @@ public class HostsBlockerPreApplyTests : IDisposable
         var hostsFile = Path.Combine(_tempDir, "hosts");
         File.WriteAllText(hostsFile, "127.0.0.1 localhost\n");
         HostsBlocker.HostsPathOverride = hostsFile;
-        // 清除可能存在的预应用文件
+        HostsBlocker.PreApplyPathOverride = Path.Combine(_tempDir, "hosts.pre");
         HostsBlocker.ClearPreApply();
     }
 
     public void Dispose()
     {
-        HostsBlocker.HostsPathOverride = null;
         HostsBlocker.ClearPreApply();
+        HostsBlocker.HostsPathOverride = null;
+        HostsBlocker.PreApplyPathOverride = null;
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* 忽略 */ }
     }
 

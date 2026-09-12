@@ -36,17 +36,17 @@
                         IsSettingsVisible="False"
                         SelectionChanged="Nav_SelectionChanged">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Focus" Tag="home">
+                <NavigationViewItem x:Name="NavFocus" x:Uid="MainWindow_NavFocus" Tag="home">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Favorite" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Block" Tag="shield">
+                <NavigationViewItem x:Name="NavBlock" x:Uid="MainWindow_NavBlock" Tag="shield">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="World" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Stats" Tag="stats">
+                <NavigationViewItem x:Name="NavStats" x:Uid="MainWindow_NavStats" Tag="stats">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Clock" />
                     </NavigationViewItem.Icon>
