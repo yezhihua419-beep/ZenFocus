@@ -93,6 +93,7 @@ public sealed partial class MainPage : Page
         var show = !I18n.IsElevated();
         AdminHint.Text = I18n.Get("Admin_Hint", "Not administrator: YouTube/TikTok tabs will stay open (hosts skipped). Desktop apps can still be minimized. Right-click → Run as administrator.");
         AdminHint.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        AdminPrivacy.Text = I18n.Get("Admin_Privacy", "Admin is only for hosts and desktop-app blocking. Nothing is uploaded. Data stays on this PC.");
         ToolTipService.SetToolTip(StartButton, show
             ? I18n.Get("Admin_StartTooltip", "Without administrator, browser tabs will not close. Desktop app blocking still works.")
             : I18n.Get("MainPage_StartButton.Content", "Start Focus"));

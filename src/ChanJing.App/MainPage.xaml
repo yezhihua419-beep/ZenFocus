@@ -124,6 +124,8 @@
                                 Background="{StaticResource BrushState}" Foreground="White" />
                         <TextBlock x:Name="AdminHint" FontSize="11" TextWrapping="Wrap" HorizontalAlignment="Center"
                                    Foreground="{StaticResource BrushWarning}" MaxWidth="400" Visibility="Collapsed" />
+                        <TextBlock x:Name="AdminPrivacy" FontSize="11" TextWrapping="Wrap" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource BrushTextSecondary}" MaxWidth="400" />
                         <TextBlock x:Name="SessionHint" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    x:Uid="MainPage_SessionHint" Text="" />

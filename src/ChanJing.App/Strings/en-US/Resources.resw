@@ -15,8 +15,8 @@
   <data name="MainPage_SceneMeeting.Content" xml:space="preserve"><value>Meeting</value></data>
   <data name="MainPage_SceneConfigHint.Text" xml:space="preserve"><value>Tap a scene to apply it, then Start Focus · Right-click to customize</value></data>
   <data name="MainPage_GuideTitle.Text" xml:space="preserve"><value>Welcome to ZenFocus · Get started in 3 steps</value></data>
-  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>1. Write your intention, tap a scene to apply it, then Start Focus</value></data>
-  <data name="MainPage_GuideStep2.Text" xml:space="preserve"><value>2. Go to Block page, check sites/apps to block — auto-applies when focus starts</value></data>
+  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>1. Write your intention, tap a scene for wish/time (right-click to change duration), then Start Focus</value></data>
+  <data name="MainPage_GuideStep2.Text" xml:space="preserve"><value>2. Categories live on the Block page — tapping a scene will not overwrite your checks. Blocking applies when focus starts</value></data>
   <data name="MainPage_GuideStep3.Text" xml:space="preserve"><value>3. Go to Stats page to review your data · Closing the window minimizes to tray</value></data>
   <data name="MainPage_GuideClose.Content" xml:space="preserve"><value>Get Started</value></data>
   <data name="MainPage_WishLabel.Text" xml:space="preserve"><value>Intention for Today</value></data>
@@ -193,10 +193,11 @@
   <data name="Price_Buyout" xml:space="preserve"><value>$19 lifetime, forever.</value></data>
   <data name="Price_BuyoutTitle" xml:space="preserve"><value>$19 Lifetime, one-time payment forever</value></data>
   <data name="Admin_Hint" xml:space="preserve"><value>Not administrator: YouTube/TikTok tabs will stay open (hosts skipped). Desktop apps can still be minimized. Right-click → Run as administrator.</value></data>
+  <data name="Admin_Privacy" xml:space="preserve"><value>Admin is only for the hosts file and desktop-app blocking. Nothing is uploaded. All data stays on this PC.</value></data>
   <data name="Admin_StartTooltip" xml:space="preserve"><value>Without administrator, browser tabs will not close. Desktop app blocking still works.</value></data>
   <data name="Notify_HostsSkipped" xml:space="preserve"><value>Website blocking skipped (needs administrator). Browser tabs such as YouTube will stay open. Desktop app blocking is still on.</value></data>
   <data name="Admin_ElevateTitle" xml:space="preserve"><value>Administrator required</value></data>
-  <data name="Admin_ElevateContent" xml:space="preserve"><value>"{0}" needs to write the system hosts file.\n\nRestart ZenFocus as administrator and do this automatically?</value></data>
+  <data name="Admin_ElevateContent" xml:space="preserve"><value>"{0}" needs to write the system hosts file so blocked sites stop resolving.\n\nAdmin is only for hosts and desktop-app blocking. Nothing is uploaded.\n\nRestart ZenFocus as administrator and do this automatically?</value></data>
   <data name="Admin_ElevatePrimary" xml:space="preserve"><value>Restart as admin</value></data>
   <data name="Admin_ElevateFailed" xml:space="preserve"><value>Could not elevate. You may have cancelled UAC. Right-click the app → Run as administrator and retry.</value></data>
   <data name="Admin_CleanupNeed" xml:space="preserve"><value>Cleaning leftovers needs administrator. Run as administrator and retry.</value></data>
@@ -458,4 +459,22 @@
   <data name="Shield_CatalogConfirmPrimary" xml:space="preserve"><value>Switch list</value></data>
   <data name="Notify_CatalogEn" xml:space="preserve"><value>Switched to International site list.</value></data>
   <data name="Notify_CatalogZh" xml:space="preserve"><value>Switched to China site list.</value></data>
+  <data name="Crash_Prompt" xml:space="preserve"><value>ZenFocus hit a problem and wrote a log. Restart if the app looks wrong.
+
+{0}</value></data>
+  <data name="Shield_Diagnose" xml:space="preserve"><value>Diagnose</value></data>
+  <data name="Diag_Title" xml:space="preserve"><value>Diagnose</value></data>
+  <data name="Diag_Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Diag_No" xml:space="preserve"><value>No</value></data>
+  <data name="Diag_Elevated" xml:space="preserve"><value>Administrator: {0}</value></data>
+  <data name="Diag_HostsWrite" xml:space="preserve"><value>Can write hosts: {0}</value></data>
+  <data name="Diag_Marker" xml:space="preserve"><value>Leftover website block in hosts: {0}</value></data>
+  <data name="Diag_Pre" xml:space="preserve"><value>Saved block config: {0}</value></data>
+  <data name="Diag_Catalog" xml:space="preserve"><value>Site list: {0}</value></data>
+  <data name="Diag_WebsiteHosts" xml:space="preserve"><value>Websites: hosts can block new visits.</value></data>
+  <data name="Diag_WebsiteNeedAdmin" xml:space="preserve"><value>Websites: need administrator. Browser tabs stay open.</value></data>
+  <data name="Diag_App" xml:space="preserve"><value>Desktop apps: process name. Store apps: window title (the store host is never killed).</value></data>
+  <data name="Diag_BrowserHosts" xml:space="preserve"><value>Browser: new visits fail. Already-open tabs may stay.</value></data>
+  <data name="Diag_BrowserBubble" xml:space="preserve"><value>Browser: distraction bubble only. Tabs are not closed.</value></data>
+  <data name="Diag_Log" xml:space="preserve"><value>Crash log: {0}</value></data>
 </root>

@@ -380,15 +380,19 @@ public partial class App : Application
         }
     }
 
+    private static int _crashPrompted;
+
     private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         LogCrash("UI", e.Exception);
         e.Handled = true; // 记录后阻止闪退；状态不一致可重启恢复
+        PromptCrashOnce();
     }
 
     private static void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
     {
         LogCrash("AppDomain", e.ExceptionObject as Exception);
+        PromptCrashOnce();
     }
 
     private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
@@ -397,25 +401,46 @@ public partial class App : Application
         e.SetObserved();
     }
 
-    /// <summary>崩溃日志：%LOCALAPPDATA%\ChanJing\crash.log（仅 DEBUG 构建启用，Release 为空实现）。</summary>
-    public static void LogCrash(string source, Exception? ex)
+    /// <summary>Release 也写：客服要看得见。人话弹窗只出一次，避免连环框。</summary>
+    private static void PromptCrashOnce()
     {
-#if DEBUG
+        if (System.Threading.Interlocked.Exchange(ref _crashPrompted, 1) != 0) return;
         try
         {
-            var dir = System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ChanJing");
-            System.IO.Directory.CreateDirectory(dir);
-            var path = System.IO.Path.Combine(dir, "crash.log");
+            var path = CrashLogPath;
+            var msg = "ZenFocus hit a problem and wrote a log. Restart if the app looks wrong.\n\n" + path;
+            try
+            {
+                var localized = I18n.GetFormat("Crash_Prompt", path);
+                if (!string.IsNullOrWhiteSpace(localized) && localized != "Crash_Prompt")
+                    msg = localized;
+            }
+            catch { }
+            MessageBox(IntPtr.Zero, msg, "ZenFocus", 0x40);
+        }
+        catch { }
+    }
+
+    public static string CrashLogPath =>
+        System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ChanJing", "crash.log");
+
+    /// <summary>崩溃日志：Release 也写 %LOCALAPPDATA%\ChanJing\crash.log。例行 catch 只记文件，不弹窗。</summary>
+    public static void LogCrash(string source, Exception? ex)
+    {
+        try
+        {
+            var dir = System.IO.Path.GetDirectoryName(CrashLogPath);
+            if (!string.IsNullOrEmpty(dir)) System.IO.Directory.CreateDirectory(dir);
             var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{source}] {ex}";
-            System.IO.File.AppendAllText(path, line + Environment.NewLine);
+            System.IO.File.AppendAllText(CrashLogPath, line + Environment.NewLine);
             LogAction("异常", $"{source}: {ex?.GetType().Name}: {ex?.Message}");
         }
         catch
         {
             // 日志失败不再抛
         }
-#endif
     }
 
     /// <summary>操作流水日志：%LOCALAPPDATA%\ChanJing\actions.log（仅 DEBUG 构建启用，Release 为空实现）。</summary>

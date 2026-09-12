@@ -15,8 +15,8 @@
   <data name="MainPage_SceneMeeting.Content" xml:space="preserve"><value>会议</value></data>
   <data name="MainPage_SceneConfigHint.Text" xml:space="preserve"><value>点场景只应用配置，再点开始专注 · 右键可自定义</value></data>
   <data name="MainPage_GuideTitle.Text" xml:space="preserve"><value>欢迎使用禅净 · 三步上手</value></data>
-  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>① 写下「今日一愿」，点场景应用配置，再点开始专注</value></data>
-  <data name="MainPage_GuideStep2.Text" xml:space="preserve"><value>② 到「屏蔽」页勾选想拦的网站/应用，开始专注时自动生效</value></data>
+  <data name="MainPage_GuideStep1.Text" xml:space="preserve"><value>① 写下「今日一愿」，点场景只填愿望/时长（右键可改时长），再点开始专注</value></data>
+  <data name="MainPage_GuideStep2.Text" xml:space="preserve"><value>② 分类在「屏蔽」页，点场景不会覆盖勾选。开始专注后屏蔽才生效</value></data>
   <data name="MainPage_GuideStep3.Text" xml:space="preserve"><value>③ 到「统计」页回看专注数据；关窗口只是最小化到托盘，不会退出</value></data>
   <data name="MainPage_GuideClose.Content" xml:space="preserve"><value>开始使用</value></data>
   <data name="MainPage_WishLabel.Text" xml:space="preserve"><value>今日一愿</value></data>
@@ -193,10 +193,11 @@
   <data name="Price_Buyout" xml:space="preserve"><value>¥69 买断，一次付费终身使用。</value></data>
   <data name="Price_BuyoutTitle" xml:space="preserve"><value>¥69 买断，一次付费终身使用</value></data>
   <data name="Admin_Hint" xml:space="preserve"><value>当前不是管理员：浏览器里的 YouTube/抖音不会被关掉（hosts 会跳过）。桌面应用仍可最小化。请右键「以管理员身份运行」。</value></data>
+  <data name="Admin_Privacy" xml:space="preserve"><value>管理员权限只用于写 hosts 和拦截桌面应用。不会上传任何数据，全部留在这台电脑。</value></data>
   <data name="Admin_StartTooltip" xml:space="preserve"><value>没有管理员权限时，浏览器标签不会被关掉。桌面应用拦截仍生效。</value></data>
   <data name="Notify_HostsSkipped" xml:space="preserve"><value>网站屏蔽已跳过（需要管理员）。浏览器里的 YouTube/抖音不会被关掉。桌面应用拦截仍生效。</value></data>
   <data name="Admin_ElevateTitle" xml:space="preserve"><value>需要管理员权限</value></data>
-  <data name="Admin_ElevateContent" xml:space="preserve"><value>「{0}」需要写入系统 hosts 文件。\n\n是否以管理员身份重启禅净并自动执行？</value></data>
+  <data name="Admin_ElevateContent" xml:space="preserve"><value>「{0}」需要写入系统 hosts，被拦网站才会解析失败。\n\n管理员权限只用于 hosts 和桌面应用拦截，不会上传任何数据。\n\n是否以管理员身份重启禅净并自动执行？</value></data>
   <data name="Admin_ElevatePrimary" xml:space="preserve"><value>以管理员身份重启</value></data>
   <data name="Admin_ElevateFailed" xml:space="preserve"><value>未能以管理员身份启动：可能取消了授权。请右键「以管理员身份运行」本程序后重试。</value></data>
   <data name="Admin_CleanupNeed" xml:space="preserve"><value>需要管理员权限清理残留：请以管理员身份运行后重试。</value></data>
@@ -458,4 +459,22 @@
   <data name="Shield_CatalogConfirmPrimary" xml:space="preserve"><value>切换名单</value></data>
   <data name="Notify_CatalogEn" xml:space="preserve"><value>已切换到国际站名单。</value></data>
   <data name="Notify_CatalogZh" xml:space="preserve"><value>已切换到国内站名单。</value></data>
+  <data name="Crash_Prompt" xml:space="preserve"><value>禅净遇到问题，已写下日志。若界面异常请重启。
+
+{0}</value></data>
+  <data name="Shield_Diagnose" xml:space="preserve"><value>诊断</value></data>
+  <data name="Diag_Title" xml:space="preserve"><value>诊断</value></data>
+  <data name="Diag_Yes" xml:space="preserve"><value>是</value></data>
+  <data name="Diag_No" xml:space="preserve"><value>否</value></data>
+  <data name="Diag_Elevated" xml:space="preserve"><value>管理员：{0}</value></data>
+  <data name="Diag_HostsWrite" xml:space="preserve"><value>能写 hosts：{0}</value></data>
+  <data name="Diag_Marker" xml:space="preserve"><value>hosts 里有残留屏蔽：{0}</value></data>
+  <data name="Diag_Pre" xml:space="preserve"><value>已保存屏蔽配置：{0}</value></data>
+  <data name="Diag_Catalog" xml:space="preserve"><value>屏蔽名单：{0}</value></data>
+  <data name="Diag_WebsiteHosts" xml:space="preserve"><value>网站：hosts 能拦新访问。</value></data>
+  <data name="Diag_WebsiteNeedAdmin" xml:space="preserve"><value>网站：需要管理员。浏览器标签不会被关掉。</value></data>
+  <data name="Diag_App" xml:space="preserve"><value>桌面应用：按进程名。商店应用：按窗口标题（不会结束商店壳进程）。</value></data>
+  <data name="Diag_BrowserHosts" xml:space="preserve"><value>浏览器：新访问会失败。已打开的标签可能还在。</value></data>
+  <data name="Diag_BrowserBubble" xml:space="preserve"><value>浏览器：只出分心气泡，不会关标签。</value></data>
+  <data name="Diag_Log" xml:space="preserve"><value>崩溃日志：{0}</value></data>
 </root>

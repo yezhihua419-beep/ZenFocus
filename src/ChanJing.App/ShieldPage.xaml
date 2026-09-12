@@ -37,6 +37,8 @@
                                x:Uid="ShieldPage_Subtitle" Text="" />
                     <TextBlock x:Name="AdminHint" FontSize="12" TextWrapping="Wrap"
                                Foreground="{StaticResource BrushWarning}" Visibility="Collapsed" />
+                    <TextBlock x:Name="AdminPrivacy" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushTextSecondary}" />
                     <Button x:Name="ElevateButton" Click="Elevate_Click" Margin="0,8,0,0"
                             Padding="16,8" CornerRadius="16" Visibility="Collapsed" />
                     <ToggleSwitch x:Name="ManualShieldSwitch"
@@ -259,6 +261,10 @@
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />
                     <Button x:Name="ImportButton" Content="Import" Click="ImportConfig_Click"
+                            Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
+                            Foreground="{StaticResource BrushTextSecondary}"
+                            Padding="20,10" CornerRadius="24" FontSize="12" />
+                    <Button x:Name="DiagnoseButton" Content="Diagnose" Click="Diagnose_Click"
                             Background="Transparent" BorderBrush="{StaticResource BrushTextSecondary}"
                             Foreground="{StaticResource BrushTextSecondary}"
                             Padding="20,10" CornerRadius="24" FontSize="12" />

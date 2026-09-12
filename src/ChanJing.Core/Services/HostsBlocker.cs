@@ -30,6 +30,19 @@ public static class HostsBlocker
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "ChanJing", "hosts.pre");
 
+    /// <summary>诊断用：能否打开 hosts 写入。不改文件内容。</summary>
+    public static bool CanWrite()
+    {
+        try
+        {
+            if (!File.Exists(HostsPath)) return false;
+            using var fs = new FileStream(HostsPath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            return fs.CanWrite;
+        }
+        catch (UnauthorizedAccessException) { return false; }
+        catch (IOException) { return false; }
+    }
+
     /// <summary>当前是否已应用屏蔽段（系统hosts中）。</summary>
     public static bool IsApplied()
     {

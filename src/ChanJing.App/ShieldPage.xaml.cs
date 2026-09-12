@@ -100,6 +100,7 @@ public sealed partial class ShieldPage : Page
         I18n.SetContent(ClearButton, "ShieldPage_Clear.Content", "Clear");
         I18n.SetContent(ExportButton, "ShieldPage_Export.Content", "Export");
         I18n.SetContent(ImportButton, "ShieldPage_Import.Content", "Import");
+        I18n.SetContent(DiagnoseButton, "Shield_Diagnose", "Diagnose");
         I18n.SetContent(FeedbackButton, "ShieldPage_Feedback.Content", "Feedback");
         I18n.SetContent(Allow5Item, "MainPage_Allow5.Text", "Allow 5 min");
         I18n.SetContent(Allow15Item, "MainPage_Allow15.Text", "Allow 15 min");
@@ -120,6 +121,7 @@ public sealed partial class ShieldPage : Page
         var show = !I18n.IsElevated();
         AdminHint.Text = I18n.Get("Admin_Hint", "Not administrator: YouTube/TikTok tabs will stay open (hosts skipped). Desktop apps can still be minimized. Right-click → Run as administrator.");
         AdminHint.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        AdminPrivacy.Text = I18n.Get("Admin_Privacy", "Admin is only for hosts and desktop-app blocking. Nothing is uploaded. Data stays on this PC.");
         ElevateButton.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -781,6 +783,48 @@ public sealed partial class ShieldPage : Page
             ManualShieldHint.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
         }
         catch (Exception ex) { App.LogCrash("ManualShield_Toggled", ex); }
+    }
+
+    /// <summary>一键诊断：只读，说清网站/桌面/浏览器各拦到哪一层。</summary>
+    private async void Diagnose_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var r = FocusDiagnose.Run(_blocklist, AppServices.Engine.IsRunning, I18n.IsElevated());
+            var yes = I18n.Get("Diag_Yes", "Yes");
+            var no = I18n.Get("Diag_No", "No");
+            var catalog = r.Catalog.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                ? I18n.Get("Shield_CatalogChina", "China")
+                : I18n.Get("Shield_CatalogIntl", "International");
+            var website = r.WebsiteLayer == "hosts"
+                ? I18n.Get("Diag_WebsiteHosts", "Websites: hosts can block new visits.")
+                : I18n.Get("Diag_WebsiteNeedAdmin", "Websites: need administrator. Browser tabs stay open.");
+            var browser = r.BrowserLayer == "hosts-new-nav"
+                ? I18n.Get("Diag_BrowserHosts", "Browser: new visits fail. Already-open tabs may stay.")
+                : I18n.Get("Diag_BrowserBubble", "Browser: distraction bubble only. Tabs are not closed.");
+            var lines = new List<string>
+            {
+                I18n.GetFormat("Diag_Elevated", r.Elevated ? yes : no),
+                I18n.GetFormat("Diag_HostsWrite", r.HostsWritable ? yes : no),
+                I18n.GetFormat("Diag_Marker", r.OrphanMarker ? yes : no),
+                I18n.GetFormat("Diag_Pre", r.PreApplyPresent ? yes : no),
+                I18n.GetFormat("Diag_Catalog", catalog),
+                website,
+                I18n.Get("Diag_App", "Desktop apps: process name. Store apps: window title (never kill the store host)."),
+                browser,
+                I18n.GetFormat("Diag_Log", App.CrashLogPath)
+            };
+            var dialog = new ContentDialog
+            {
+                Title = I18n.Get("Diag_Title", "Diagnose"),
+                Content = string.Join("\n", lines),
+                CloseButtonText = I18n.Get("Common_Close.Content", "OK"),
+                XamlRoot = XamlRoot
+            };
+            await dialog.ShowAsync();
+            App.LogAction("一键诊断", $"{r.WebsiteLayer}/{r.BrowserLayer} elevated={r.Elevated}");
+        }
+        catch (Exception ex) { App.LogCrash("ShieldPage.Diagnose", ex); }
     }
 
     /// <summary>反馈建议：打开默认邮件客户端，收件人预填。</summary>
