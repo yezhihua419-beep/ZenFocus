@@ -33,3 +33,6 @@ packages/
 # Logs
 *.log
 logs/
+
+# Inner-test publish output (rebuilt by tools/pack-inner.ps1)
+dist/

@@ -1,6 +1,12 @@
-# 禅净 ChanJing
+# 禅净 ChanJing / ZenFocus
 
-> 先管住手，再看清时间 —— Windows 桌面「时间主人」教练
+> 先管住手，再看清时间 —— Windows desktop focus coach
+
+ZenFocus blocks distracting sites and apps on this PC, then shows where the time went. Data stays local. **$19 / ¥69 lifetime** (license key). Free plan already covers blocking + focus timer.
+
+**Limits (not bugs):** without administrator, browser tabs such as YouTube stay open (distraction bubble only). Store/PWA windows minimize only when the title matches the list. Unsigned build: Windows may warn — Run anyway. Website blocking needs *Run as administrator*.
+
+**Run locally:** `tools\pack-inner.ps1` → `dist\ZenFocus-inner\ChanJing.App.exe` (keep the whole folder). GitHub Release is not published yet (no remote).
 
 禅净是一款 Windows 桌面专注 / 防沉迷工具。系统级屏蔽 + 本地统计 + 禅意体验，
 帮你管住电脑前的网页分心，看见自己的时间去向。
@@ -26,9 +32,9 @@
 | 限额提醒 | 每日限额超限 → 弹窗强制阻断（放行 5 分钟 / 就此打住） | ✅ v0.8.0 |
 | 系统集成 | 托盘常驻（**单击打开**）+ 菜单（开始/结束=破功 · 休息 3 分钟 · 一键屏蔽短视频+视频娱乐）+ 快捷键 Ctrl+Alt+F/P/R/S（齿轮写明）+ **编码检测第 3 次未专注时切工作愿望/时长** + 深色模式 | ✅ v0.9.0 |
 | 国际化 | 默认 en-US，可切 zh-CN；未打包用 WASDK `PrimaryLanguageOverride`；偏好 `language.txt`；切语言确认并先结束专注、清 hosts | ✅ v0.9.0 |
-| 商业位 | 自定义域名限 3 个 + 场景自定义免费 1 个 + 手机伴侣付费 + 激活占位（待接支付） | ✅ 预留 |
+| 商业位 | 灰锁（场景第 2 个 / 域名第 4 个 / 伴侣 / 统计导出 / ADHD 20/30）点出升级框；激活码 HMAC 已通；**收款 URL 未接**（禁止跳空页） | ✅ v0.9.2 |
 | **移动联动** | 局域网伴侣页（扫码 token 鉴权）+ 远程开始/结束（结束走破功）+ 同伴状态 | ✅ v0.8.0 + v0.9.0 |
-| **体验** | 齿轮收纳深度/ADHD + 模式/场景重启恢复 + 首启 3 步引导 + 回首页不拆缓冲/反馈 | ✅ v0.8.0 + v0.9.0 |
+| **体验** | 齿轮收纳深度/ADHD + 模式/场景重启恢复 + 首启 3 步引导 + 回首页不拆缓冲/反馈 + 一键诊断 | ✅ v0.8.0 + v0.9.1 |
 
 ## 免费版 vs 付费版
 
@@ -94,12 +100,32 @@
 - ✅ **W2** 场景模式 + 屏蔽绑定专注 + 手机伴侣 + 多角色全面优化（checkpoint v0.4.3）
 - ✅ **W2.5** 第一阶段11项功能（深度模式/ADHD模式/全局快捷键/暂离模式/质量评分/分心模式识别/同伴状态/编码检测推荐等）+ 两轮多角色端到端测试（checkpoint v0.5.6）
 - ✅ **W2.9** 未打包 i18n + 英文/国内双名单 + 体验对齐（checkpoint **v0.9.0**）
-- ⏳ **W3** 真实用户内测 10-20 人 + 官网直装版上线
-- **M2** V1.1：今日时间线 + 场景化规则 + 白噪音
-- **M3** 内容营销启动 + 早鸟价（中文 ¥69 / 英文 $19）
+- ✅ **W2.95** 诊断/信任 + 付费灰锁 + 直装打包脚本（checkpoint **v0.9.2**）
+- ⏭ **W3** 真人内测已跳过（第一批付款用户即测试员）
+- ⏳ **收款** 中文爱发电 / 英文先试 Lemon（PayPal 入账），开不过则 PayPal.me；应用只跳转+填激活码
+- **发现** 英文落地（本 README 顶部）+ GitHub Release（需登录并建 remote）+ AlternativeTo / Reddit；微软商店不作第一渠道
+- **M2** V1.1：今日时间线 + 场景化规则 + 白噪音（未做，不承诺）
 - **M6** 复盘止损（月入 ≥¥1000 加码，<¥1000 降级副业）
 
 ## 更新日志
+
+### v0.9.2（2026-09-12）checkpoint
+
+**付费灰锁 + 直装包 + 商业路径写清**
+
+- 未激活：额外场景自定义 / 第 4 个自定义域名 / 手机伴侣 / 统计导出 / ADHD 缓冲 20/30 — 灰+🔒+hover，点击出升级框，**不** `IsEnabled=false`，不跳空支付页
+- 已自定义的那个场景仍可右键编辑；免费导入配置裁到 3 个域名
+- 屏蔽名单导入导出收到诊断框，免费不灰锁
+- `tools/pack-inner.ps1` 打 Release 自包含目录 `dist/ZenFocus-inner/`（未签名）
+- 定价表去掉未做的「周报」
+- 海外收款：Lemon（PayPal 入账）优先，大陆银行卡 MoR 入账不通；微软商店因 hosts/杀进程/审核周期不作第一渠道
+
+**测试**
+- 单元测试 160 通过；x64 构建 0 警告
+
+### v0.9.1（2026-09-12）checkpoint
+
+Release 也写 `crash.log`；管理员说明补隐私；首启引导；屏蔽页只读一键诊断。
 
 ### v0.9.0（2026-09-12）checkpoint
 
