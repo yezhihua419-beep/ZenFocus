@@ -10,4 +10,21 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
   </ItemGroup>
 
+  <!-- 密钥：环境变量 CHANJING_LICENSE_SECRET 或仓库根 license.secret（gitignore）。Release 缺了就失败。 -->
+  <Target Name="EmbedLicenseSecret" BeforeTargets="BeforeCompile">
+    <PropertyGroup>
+      <_LicPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\license.secret'))</_LicPath>
+      <_LicSecret Condition="'$(CHANJING_LICENSE_SECRET)' != ''">$(CHANJING_LICENSE_SECRET)</_LicSecret>
+      <_LicSecret Condition="'$(_LicSecret)' == '' and Exists('$(_LicPath)')">$([System.IO.File]::ReadAllText('$(_LicPath)').Trim())</_LicSecret>
+      <_LicSecret Condition="'$(_LicSecret)' == '' and '$(Configuration)' != 'Release'">chanjing-dev-local-only</_LicSecret>
+    </PropertyGroup>
+    <Error Condition="'$(_LicSecret)' == ''" Text="Release 需要仓库根目录 license.secret 或环境变量 CHANJING_LICENSE_SECRET" />
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)LicenseSecret.g.cs" Overwrite="true" Encoding="UTF-8"
+                      Lines="namespace ChanJing.Core.Services { internal static class LicenseSecretHolder { public const string Value = &quot;$(_LicSecret)&quot;%3B } }" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)LicenseSecret.g.cs" />
+    </ItemGroup>
+  </Target>
+
 </Project>

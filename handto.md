@@ -18,6 +18,7 @@
 - [x] 配置导入导出：诊断框里，免费；导入裁到 3 域名
 - [x] `tools/pack-inner.ps1` → `dist/ZenFocus-inner/` + `READ_ME.txt`（目录 gitignore）
 - [x] W3 真人内测跳过；商业路径：双收银台 + 手发 HMAC 码；发现靠内容不靠商店
+- [x] 激活密钥移出仓库（`license.secret` gitignore）；测试用 `LicenseKey.Issue` 现算，不提交能用的样例码
 
 ## 当前卡点
 - 无 git remote、未 `gh auth login`，发不出 GitHub Release。
@@ -62,3 +63,4 @@
 - 微软商店不作第一渠道（hosts / 杀进程 / 审核周期）
 - 不要用 Polar 在线 License 替换离线 HMAC
 - 大陆银行卡走不通 Lemon/Polar 银行入账，先试 PayPal
+- 激活密钥禁止进 GitHub；Release 必须有本机 `license.secret`。公开仓库当渠道，不指望防破解

@@ -36,3 +36,7 @@ logs/
 
 # Inner-test publish output (rebuilt by tools/pack-inner.ps1)
 dist/
+
+# 激活密钥：只留本机，不要进 GitHub
+license.secret
+**/LicenseSecret.g.cs

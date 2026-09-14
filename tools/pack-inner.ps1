@@ -3,6 +3,11 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
 Set-Location $root
 
+$secretFile = Join-Path $root "license.secret"
+if (-not (Test-Path $secretFile) -and -not $env:CHANJING_LICENSE_SECRET) {
+    throw "Release 需要仓库根目录 license.secret（见 license.secret.example）"
+}
+
 taskkill /F /IM ChanJing.App.exe 2>$null | Out-Null
 
 dotnet test "$root\tests\ChanJing.Tests\ChanJing.Tests.csproj" --nologo

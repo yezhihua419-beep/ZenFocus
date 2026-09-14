@@ -1,8 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-
-namespace ChanJing.Core.Services;
+﻿namespace ChanJing.Core.Services;
 
 /// <summary>
 /// 屏蔽名单服务：管理国内分类名单与自定义域名、临时放行、激活状态，
@@ -10,12 +6,6 @@ namespace ChanJing.Core.Services;
 /// </summary>
 public sealed class BlocklistService
 {
-    /// <summary>HMAC激活码签名密钥（编译在软件内，离线验证）。</summary>
-    private const string LicenseSecret = "chanjing-zen-focus-2026-v1";
-
-    /// <summary>激活码格式：CJ-XXXX(序号hex)-XXXXXX(签名hex)。</summary>
-    private static readonly Regex LicenseKeyPattern = new(@"^CJ-[0-9A-F]{4}-[0-9A-F]{6}$", RegexOptions.Compiled);
-
     public const string SettingKeyCategories = "blocked_categories";
     public const string SettingKeyCustomDomains = "custom_domains";
     public const string SettingKeyTempAllow = "temp_allow";
@@ -416,33 +406,13 @@ public sealed class BlocklistService
     /// <summary>是否已激活（买断/订阅）。V1 为占位，支付上线后接入。</summary>
     public bool IsActivated() => _db.GetSetting(SettingKeyActivated) == "true";
 
-    /// <summary>验证激活码格式与HMAC签名。格式：CJ-XXXX(序号)-XXXXXX(签名)。</summary>
-    public static bool ValidateLicenseKey(string? key)
-    {
-        if (string.IsNullOrWhiteSpace(key)) return false;
-        var k = key.Trim().ToUpperInvariant();
-        if (!LicenseKeyPattern.IsMatch(k)) return false;
-        // 提取序号（第4-7位，即 CJ-XXXX- 中的 XXXX）
-        var seq = k.Substring(3, 4);
-        // 计算签名：HMAC-SHA256(密钥, "CJ-" + 序号) 取前6位hex
-        var expectedSig = ComputeSignature(seq);
-        var actualSig = k.Substring(8, 6);
-        return string.Equals(expectedSig, actualSig, StringComparison.OrdinalIgnoreCase);
-    }
+    /// <summary>验证激活码。密钥不在仓库里。</summary>
+    public static bool ValidateLicenseKey(string? key) => LicenseKey.Validate(key);
 
-    /// <summary>计算激活码签名：HMAC-SHA256(密钥, "CJ-" + 序号hex) 前6位大写hex。</summary>
-    private static string ComputeSignature(string seqHex)
-    {
-        var data = Encoding.UTF8.GetBytes("CJ-" + seqHex);
-        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(LicenseSecret));
-        var hash = hmac.ComputeHash(data);
-        return Convert.ToHexString(hash).Substring(0, 6);
-    }
-
-    /// <summary>激活正式版：先验证HMAC签名，通过后写本地 activated=true。返回是否激活成功。</summary>
+    /// <summary>激活正式版：验证通过后写本地 activated=true。</summary>
     public bool Activate(string licenseKey)
     {
-        if (!ValidateLicenseKey(licenseKey)) return false;
+        if (!LicenseKey.Validate(licenseKey)) return false;
         _db.SetSetting(SettingKeyActivated, "true");
         _db.SetSetting("license_key", licenseKey.Trim().ToUpperInvariant());
         return true;
