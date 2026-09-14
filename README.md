@@ -16,11 +16,21 @@ Windows desktop focus coach. Blocks distracting sites and apps on this PC, then 
 
 The UI defaults to English. You can switch to 中文 in settings.
 
+## How to buy (lifetime)
+
+Chinese **¥69**, one time — not a subscription. USD checkout is not open yet.
+
+1. Open [Afdian](https://afdian.com/a/zenfocus). Click **发电**. Do not pick a monthly plan.
+2. Enter **69**. Pay once.
+3. Email [yezhihua419@gmail.com](mailto:yezhihua419@gmail.com) (cc [yezhihua_yzh@163.com](mailto:yezhihua_yzh@163.com)).
+4. We send a lifetime key by hand (`CJ-xxxx-xxxxxx`).
+
+The in-app upgrade button (Chinese UI) opens the same page.
+
 ## Limits (not bugs)
 
 - Without administrator, browser tabs such as YouTube stay open. You only get a distraction bubble.
 - Store / PWA windows minimize only when the window title matches the block list.
-- There is no in-app card form. Chinese lifetime: [Afdian](https://afdian.com/a/zenfocus) — custom **¥69**, one time. Email us after payment for a key. USD checkout is not open yet.
 
 ## Free vs lifetime
 

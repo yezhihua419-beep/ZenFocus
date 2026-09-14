@@ -25,6 +25,7 @@
 - [x] 公开仓库 https://github.com/yezhihua419-beep/ZenFocus ；Release 挂直装 zip
 - [x] 对外 README 英文；中文见 `README.zh-CN.md`。进度/坑只写本文件，不挂仓库首页
 - [x] 中文升级跳转爱发电 `https://afdian.com/a/zenfocus`（自定义 69，不是按月方案）
+- [x] GitHub README 中英「怎么买断」与爱发电主页介绍对齐
 
 ## 当前卡点
 - 中文升级已跳 https://afdian.com/a/zenfocus ；英文仍无收银台（大陆 PayPal/Gumroad 提不出来）。
