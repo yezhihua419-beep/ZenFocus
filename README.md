@@ -20,7 +20,7 @@ The UI defaults to English. You can switch to 中文 in settings.
 
 - Without administrator, browser tabs such as YouTube stay open. You only get a distraction bubble.
 - Store / PWA windows minimize only when the window title matches the block list.
-- There is no in-app checkout. Gray-locked items open an upgrade note. After you pay, email us and we send a key by hand.
+- There is no in-app card form. Chinese lifetime: [Afdian](https://afdian.com/a/zenfocus) — custom **¥69**, one time. Email us after payment for a key. USD checkout is not open yet.
 
 ## Free vs lifetime
 

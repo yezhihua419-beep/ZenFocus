@@ -23,14 +23,16 @@
 - [x] README / 直装说明 / 升级与反馈写上 yezhihua419@gmail.com 与 yezhihua_yzh@163.com
 - [x] 公开仓库 https://github.com/yezhihua419-beep/ZenFocus ；Release 挂直装 zip
 - [x] 对外 README 英文；中文见 `README.zh-CN.md`。进度/坑只写本文件，不挂仓库首页
+- [x] 中文升级跳转爱发电 `https://afdian.com/a/zenfocus`（自定义 69，不是按月方案）
 
 ## 当前卡点
-- 无 Lemon / PayPal / 爱发电商品链接，升级按钮不能跳收款。
+- 中文升级已跳 https://afdian.com/a/zenfocus ；英文仍无收银台（大陆 PayPal/Gumroad 提不出来）。
 - 英文**不能保证**仅浏览器页在无管理员时被拦死。商店 PWA 仅当标题对得上才最小化。
 
 ## 下一步（要你出面）
-1. 开收款：中文爱发电；英文先试 Lemon（PayPal 入账），开不过用 PayPal.me。把 URL 发来再接线。
+1. 爱发电主页确认能「自定义发电 69」；有人付了用 `python tools/gen_license.py` 回码。
 2. 发现：AlternativeTo / Reddit（你的号）。微软商店以后再说。
+3. 英文 $19 仍无可用下款通道，先别接空页。
 
 我这边可接着做：激活码生成器、升级按钮接 URL（有链接之后）。
 

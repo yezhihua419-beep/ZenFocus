@@ -742,6 +742,9 @@ public sealed partial class StatsPage : Page
                 Title = I18n.Get("Upgrade_Title", "Upgrade to Pro"),
                 XamlRoot = XamlRoot,
                 PrimaryButtonText = I18n.Get("Upgrade_Primary", "Enter license key"),
+                SecondaryButtonText = Checkout.PayUrl() is null
+                    ? null
+                    : I18n.Get("Upgrade_Pay", "Pay ¥69 on Afdian"),
                 CloseButtonText = I18n.Get("Upgrade_Later", "Later"),
                 DefaultButton = ContentDialogButton.Primary,
                 Content = new StackPanel
@@ -763,9 +766,9 @@ public sealed partial class StatsPage : Page
             };
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
-            {
                 await ShowActivationDialog();
-            }
+            else if (result == ContentDialogResult.Secondary)
+                Checkout.TryOpen();
         }
         catch (Exception ex) { App.LogCrash("StatsPage.Upgrade_Click", ex); }
     }

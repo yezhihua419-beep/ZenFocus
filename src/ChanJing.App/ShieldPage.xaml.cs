@@ -357,13 +357,18 @@ public sealed partial class ShieldPage : Page
                     new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
                 }
             },
-            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            PrimaryButtonText = Checkout.PayUrl() is null
+                ? I18n.Get("SceneUpgrade_Primary", "Learn more")
+                : I18n.Get("Upgrade_Pay", "Pay ¥69 on Afdian"),
             CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
             XamlRoot = XamlRoot
         };
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
+        {
             App.LogAction("ADHD缓冲升级提示", "用户点击了解升级");
+            Checkout.TryOpen();
+        }
     }
 
     private async System.Threading.Tasks.Task ShowDomainUpgradeHint()
@@ -381,13 +386,18 @@ public sealed partial class ShieldPage : Page
                     new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
                 }
             },
-            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            PrimaryButtonText = Checkout.PayUrl() is null
+                ? I18n.Get("SceneUpgrade_Primary", "Learn more")
+                : I18n.Get("Upgrade_Pay", "Pay ¥69 on Afdian"),
             CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
             XamlRoot = XamlRoot
         };
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
+        {
             App.LogAction("域名升级提示", "用户点击了解升级");
+            Checkout.TryOpen();
+        }
     }
 
     // ---------- 自定义域名 ----------

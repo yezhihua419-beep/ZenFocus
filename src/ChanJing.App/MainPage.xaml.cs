@@ -436,7 +436,9 @@ public sealed partial class MainPage : Page
                     new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
                 }
             },
-            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            PrimaryButtonText = Checkout.PayUrl() is null
+                ? I18n.Get("SceneUpgrade_Primary", "Learn more")
+                : I18n.Get("Upgrade_Pay", "Pay ¥69 on Afdian"),
             CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
             XamlRoot = this.XamlRoot
         };
@@ -445,7 +447,7 @@ public sealed partial class MainPage : Page
         if (result == ContentDialogResult.Primary)
         {
             App.LogAction("场景自定义升级提示", $"{tag} 用户点击了解升级");
-            // 支付上线前只出说明，不跳转
+            Checkout.TryOpen(); // 无收银台则不跳
         }
     }
 
@@ -471,13 +473,18 @@ public sealed partial class MainPage : Page
                     new TextBlock { Text = I18n.Get("Price_Buyout", "$19 lifetime, forever."), Foreground = (Brush)Application.Current.Resources["BrushAccent"] }
                 }
             },
-            PrimaryButtonText = I18n.Get("SceneUpgrade_Primary", "Learn more"),
+            PrimaryButtonText = Checkout.PayUrl() is null
+                ? I18n.Get("SceneUpgrade_Primary", "Learn more")
+                : I18n.Get("Upgrade_Pay", "Pay ¥69 on Afdian"),
             CloseButtonText = I18n.Get("Common_Cancel.Content", "Cancel"),
             XamlRoot = XamlRoot
         };
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
+        {
             App.LogAction("伴侣升级提示", "用户点击了解升级");
+            Checkout.TryOpen();
+        }
     }
 
     /// <summary>显示场景自定义配置对话框：时长+屏蔽分类+愿望文案。</summary>
