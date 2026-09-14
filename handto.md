@@ -7,6 +7,7 @@
 - **v0.9.0**（2026-09-12）：`b47163b` i18n + 双名单 + 体验对齐。
 - **v0.9.1**（2026-09-12）：`f536a6e` 诊断/信任（crash.log、管理员隐私、首启引导、一键诊断）。
 - **v0.9.2**（2026-09-12）：`8fd1457` 直装脚本 + md 对齐（灰锁在 `d9a97d3`）。
+- **v0.9.3**（2026-09-14）：https://github.com/yezhihua419-beep/ZenFocus/releases/tag/v0.9.3 （zip 约 100MB，不含 `license.secret`）
 
 ## 阶段与进展
 - [x] 未打包 i18n（WASDK `ApplicationLanguages` + `language.txt`）；分类 key 中文、展示翻译
@@ -20,16 +21,16 @@
 - [x] W3 真人内测跳过；商业路径：双收银台 + 手发 HMAC 码；发现靠内容不靠商店
 - [x] 激活密钥移出仓库（`license.secret` gitignore）；测试用 `LicenseKey.Issue` 现算，不提交能用的样例码
 - [x] README / 直装说明 / 升级与反馈写上 yezhihua419@gmail.com 与 yezhihua_yzh@163.com
+- [x] 公开仓库 https://github.com/yezhihua419-beep/ZenFocus ；Release 挂直装 zip
+- [x] 对外 README 英文；中文见 `README.zh-CN.md`。进度/坑只写本文件，不挂仓库首页
 
 ## 当前卡点
-- 无 git remote、未 `gh auth login`，发不出 GitHub Release。
 - 无 Lemon / PayPal / 爱发电商品链接，升级按钮不能跳收款。
 - 英文**不能保证**仅浏览器页在无管理员时被拦死。商店 PWA 仅当标题对得上才最小化。
 
 ## 下一步（要你出面）
-1. `gh auth login` + 建公开仓库，Release 挂 `dist/ZenFocus-inner`。
-2. 开收款：中文爱发电；英文先试 Lemon（PayPal 入账），开不过用 PayPal.me。把 URL 发来再接线。
-3. 发现：AlternativeTo / Reddit（你的号）。微软商店以后再说。
+1. 开收款：中文爱发电；英文先试 Lemon（PayPal 入账），开不过用 PayPal.me。把 URL 发来再接线。
+2. 发现：AlternativeTo / Reddit（你的号）。微软商店以后再说。
 
 我这边可接着做：激活码生成器、升级按钮接 URL（有链接之后）。
 
@@ -65,3 +66,4 @@
 - 不要用 Polar 在线 License 替换离线 HMAC
 - 大陆银行卡走不通 Lemon/Polar 银行入账，先试 PayPal
 - 激活密钥禁止进 GitHub；Release 必须有本机 `license.secret`。公开仓库当渠道，不指望防破解
+- 仓库首页 README 对外英文；中文只放 `README.zh-CN.md`；不要把 handto/changelog 贴回 README

@@ -1,414 +1,83 @@
-# 禅净 ChanJing / ZenFocus
+# ZenFocus
 
-> 先管住手，再看清时间 —— Windows desktop focus coach
+[中文说明](README.zh-CN.md)
 
-ZenFocus blocks distracting sites and apps on this PC, then shows where the time went. Data stays local. **$19 / ¥69 lifetime** (license key). Free plan already covers blocking + focus timer.
+Windows desktop focus coach. Blocks distracting sites and apps on this PC, then shows where the time went. Data stays on the machine.
 
-**Limits (not bugs):** without administrator, browser tabs such as YouTube stay open (distraction bubble only). Store/PWA windows minimize only when the title matches the list. Unsigned build: Windows may warn — Run anyway. Website blocking needs *Run as administrator*.
+**$19 / ¥69 lifetime** (license key). Free already covers blocking + a focus timer.
 
-**Contact / license / feedback:** [yezhihua419@gmail.com](mailto:yezhihua419@gmail.com) · [yezhihua_yzh@163.com](mailto:yezhihua_yzh@163.com). Buyout: email after payment, key sent by hand.
+## Download
 
-**Run locally:** `tools\pack-inner.ps1` → `dist\ZenFocus-inner\ChanJing.App.exe` (keep the whole folder). GitHub Release is not published yet (no remote).
+[Latest release](https://github.com/yezhihua419-beep/ZenFocus/releases/latest) — get `ZenFocus-v0.9.3-win-x64.zip`.
 
-禅净是一款 Windows 桌面专注 / 防沉迷工具。系统级屏蔽 + 本地统计 + 禅意体验，
-帮你管住电脑前的网页分心，看见自己的时间去向。
+1. Unzip and **keep the whole folder**. Do not copy only `ChanJing.App.exe`.
+2. Right-click `ChanJing.App.exe` → **Run as administrator** (needed to write the hosts file).
+3. Windows may warn about an unsigned app — choose **Run anyway**.
 
-## 产品定位
+The UI defaults to English. You can switch to 中文 in settings.
 
-- **一句话**：先管住手（系统级屏蔽），再看清时间（本地统计洞察）
-- **目标用户**：在电脑前学习 / 工作、分心于浏览器的人（远程办公者、程序员、写作者、电脑备考者）
-- **差异化**：系统级屏蔽体系 + 国内/国际双名单（与界面语言脱钩）+ 局域网移动联动 + 零截图隐私叙事 + 抗焦虑设计
-- **竞品锚点**：Cold Turkey（海外，屏蔽强）、TimeLens（国内，纯统计无屏蔽）、Forest（移动端，订阅翻车反面教材）
+## Limits (not bugs)
 
-## 核心功能（V1 已实现）
+- Without administrator, browser tabs such as YouTube stay open. You only get a distraction bubble.
+- Store / PWA windows minimize only when the window title matches the block list.
+- There is no in-app checkout. Gray-locked items open an upgrade note. After you pay, email us and we send a key by hand.
 
-| 模块 | 功能 | 状态 |
+## Free vs lifetime
+
+Free is meant to solve the core job: block distractions and run a focus session. Lifetime unlocks extras.
+
+| | Free | Lifetime ($19 / ¥69) |
 |---|---|---|
-| 屏蔽体系 | 6 类名单（短视频/视频娱乐/社交/资讯/购物/沟通工具）+ **国内/国际两套目录（`catalog.txt`，与界面语言脱钩，屏蔽页可单独切换）** + 自定义域名（可单条删除）+ 每日限额 + 超限强制阻断 + 临时放行 5/15/30 分钟 + **屏蔽绑定专注** + **手动屏蔽** | ✅ v0.9.0 |
-| 屏蔽能力 | hosts 标记段（不碰其他条目，写入前备份）+ 无管理员时开始按钮旁写清「标签关不掉」+ 品牌词标题匹配（中英）+ **启动清崩溃残留 hosts**（专注中/手动屏蔽不碰） | ✅ v0.9.0 |
-| **桌面应用拦截** | 国内 App + 国际 App（TikTok/YouTube/Discord/Steam 等别名）+ 自定义 App + 最小化/结束进程 + 专注中持续拦截 + **商店壳按窗口标题最小化（不杀 ApplicationFrameHost）** + 暂离同时暂停 hosts 与桌面拦截 | ✅ v0.9.0 |
-| 专注引擎 | 正计时 + 今日一愿 + 呼吸引导 + 暂停/继续 + 破功冷却 + 即时反馈 + 深度模式 + ADHD 15 分钟（**不偷改杀进程**） | ✅ v0.5.0 + v0.9.0 |
-| **场景模式** | 4 个预设（工作/写作/学习/会议）+ **点场景只填愿望/时长，分类以屏蔽页为准** + 高亮持久化 + 长按自定义（免费 1 个额度） | ✅ v0.9.0 |
-| 专注联动 | 专注中打开被屏蔽站 → 记分心 + 托盘提醒 + 分心来源 TOP3；**「放行此站点」用最近一次分心目标** | ✅ v0.8.0 + v0.9.0 |
-| 统计 | 今日定心/分钟/连续天数 + 7 天/热力/小时图 + 分享卡（英文 Zen / 中文「定」）+ 导出 CSV/JSON + 质量分 + 分心时段 | ✅ v0.8.0 + v0.9.0 |
-| 限额提醒 | 每日限额超限 → 弹窗强制阻断（放行 5 分钟 / 就此打住） | ✅ v0.8.0 |
-| 系统集成 | 托盘常驻（**单击打开**）+ 菜单（开始/结束=破功 · 休息 3 分钟 · 一键屏蔽短视频+视频娱乐）+ 快捷键 Ctrl+Alt+F/P/R/S（齿轮写明）+ **编码检测第 3 次未专注时切工作愿望/时长** + 深色模式 | ✅ v0.9.0 |
-| 国际化 | 默认 en-US，可切 zh-CN；未打包用 WASDK `PrimaryLanguageOverride`；偏好 `language.txt`；切语言确认并先结束专注、清 hosts | ✅ v0.9.0 |
-| 商业位 | 灰锁（场景第 2 个 / 域名第 4 个 / 伴侣 / 统计导出 / ADHD 20/30）点出升级框；激活码 HMAC 已通；**收款 URL 未接**（禁止跳空页） | ✅ v0.9.2 |
-| **移动联动** | 局域网伴侣页（扫码 token 鉴权）+ 远程开始/结束（结束走破功）+ 同伴状态 | ✅ v0.8.0 + v0.9.0 |
-| **体验** | 齿轮收纳深度/ADHD + 模式/场景重启恢复 + 首启 3 步引导 + 回首页不拆缓冲/反馈 + 一键诊断 | ✅ v0.8.0 + v0.9.1 |
+| Site categories (6) + desktop app block | Yes | Yes |
+| Focus timer, count-up, breath-in, deep / ADHD 15 min | Yes | Yes |
+| Daily limits, allow 5/15/30 min, early-stop cooldown | Yes | Yes |
+| Stats (today / 7-day / heatmap / quality) | Yes | Yes |
+| Custom domains | 3 | Unlimited |
+| Customize a scene (duration / categories / wish) | 1 scene | All 4 scenes |
+| Phone companion (LAN QR) | — | Yes |
+| Export stats (CSV / JSON) | — | Yes |
+| ADHD buffer 20 / 30 min | — | Yes (free is 5 / 10 / 15) |
 
-## 免费版 vs 付费版
+Gray-locked items stay clickable. They show a lock and an upgrade note. They are not disabled buttons, and they do not open an empty payment page.
 
-| 功能 | 免费版 | 付费版（中文 ¥69 / 英文 $19 买断） |
-|---|---|---|
-| 屏蔽分类（6大类） | ✅ 全部可用 | ✅ 全部可用 |
-| 桌面应用拦截（10+预设应用+自定义App） | ✅ | ✅ |
-| 手动屏蔽（不依赖专注计时） | ✅ | ✅ |
-| 深度模式 / ADHD友好模式 | ✅ | ✅ |
-| 全局快捷键（Ctrl+Alt+F） | ✅ | ✅ |
-| 全局快捷键（Ctrl+Alt+P/R/S：暂停/休息/设置） | ✅ | ✅ |
-| 专注质量评分 / 分心模式识别 | ✅ | ✅ |
-| 自定义域名 | 限3个 | 无限 |
-| 场景预设（工作/写作/学习/会议） | ✅ 可用 | ✅ 可用 |
-| 场景自定义（改时长/屏蔽分类/愿望文案） | 免费 1 个场景 | ✅ 全部 4 个场景 |
-| 专注计时+正计时+呼吸引导 | ✅ | ✅ |
-| 摩擦式拦截+临时放行+破功冷却+暂离模式 | ✅ | ✅ |
-| 使用统计（今日/7天/热力图/质量分） | ✅ | ✅ |
-| 数据导出（CSV/JSON） | ❌ | ✅ |
-| ADHD 缓冲期 20/30 分钟 | ❌（免费 5/10/15） | ✅ |
-| 分心来源TOP3 | ✅ | ✅ |
-| 每日限额 | ✅ | ✅ |
-| 编码检测场景推荐 | ✅ | ✅ |
-| 手机伴侣（局域网扫码查看统计/远程控制专注/同伴状态） | ❌ | ✅ |
-| 多设备同步 | ❌ | ✅（V2） |
+## What it does
 
-> 设计原则：基础功能全开放，让免费版用户能解决核心问题（屏蔽分心+专注计时）；高级功能（场景自定义、手机伴侣、统计导出、多设备同步）作为付费钩子。
+- **Block:** China / international catalogs (independent of UI language), custom domains, daily limits, temporary allow, manual shield, desktop apps (minimize or kill). Store PWAs are title-matched only.
+- **Focus:** four scenes (Work / Write / Study / Meeting), count-up timer, one wish, breath-in, pause, early-stop cooldown, deep mode, ADHD short cycles.
+- **Stats:** local minutes, streaks, 7-day / hour charts, share card, distraction sources.
+- **System:** tray, dark mode, hotkeys `Ctrl+Alt+F` (toggle) · `P` (pause) · `R` (3 min break) · `S` (settings).
+- **Companion (lifetime):** phone on the same Wi-Fi, QR token, remote start / early-stop.
 
-## 抗焦虑设计原则
+Clicking a scene fills wish and duration only. The block-page checkboxes stay as you left them.
 
-- 藏起剩余时间（正计时显示已用时），不制造倒计时焦虑
-- 给足出口：临时放行、暂离模式、破功冷静期后可走、限额随时可调
-- 教练话术：进步框架（"比昨天多 5 分钟"），不审判（"你又浪费了…"）
-- 把"禁止"变"留白"：开始专注 3 秒呼吸引导，破功用赭石色提问而非刺眼红
-- 不评判视觉语言："分心"→"起身活动"，颜色从红改为中性灰
-- 深度模式：不计时，随心而定，完成后手动结束
+## Design
 
-## 技术栈
+Count-up instead of a countdown. Easy exits (allow, step-away, early stop after cooldown). Coach copy talks about progress, not shame. Deep mode has no clock — you end it yourself.
 
-- C# / .NET 8 LTS
-- WinUI 3（Microsoft.WindowsAppSDK 2.4）
-- SQLite（本地存储，`busy_timeout=3000` 并发防护）
-- 屏蔽实现：hosts 劫持（`# BEGIN CHANJING` … `# END CHANJING` 标记段管理）
-- 时间基准：`Environment.TickCount64` 单调时钟（防改系统时间作弊），专注支持暂停
-- 桌面应用拦截：`Process.MainWindowHandle + ShowWindow`（对 Electron 应用如抖音可靠）
+## Privacy
 
-## 设计令牌（枯山水）
+- Local only: `%LOCALAPPDATA%\ChanJing\` (SQLite). No account, no cloud, no telemetry, no screenshots.
+- Foreground window is process name + title, for matching and stats. No keylogging.
+- Release builds do not write debug `actions.log`. If it crashes, send `crash.log` from that folder.
 
-| 令牌 | 色值 | 用途 |
-|---|---|---|
-| 宣纸白 | `#F4F1E8` | 背景 |
-| 素绢 | `#ECE8DD` | 面板底色 |
-| 墨色 | `#2B2925` | 主文字 |
-| 雾灰 | `#7A7265` | 次级文字（对比度 4.6:1） |
-| 苔青 | `#6E7F63` | 状态色（专注中/达标） |
-| 金缮金 | `#A8842C` | 点睛色（仅完成/达标时刻，≤1%） |
-| 赭石 | `#A0563B` | 破功提示（极低频） |
+## Build from source
 
-## 路线图
-
-- ✅ **W1** MVP 完成：屏蔽 + 专注 + 统计 + 限额 + 联动 + 抗焦虑全套（checkpoint v0.1.0）
-- ✅ **W1.5** 桌面应用拦截 + 提权重启稳定性 + 设置持久化修复（checkpoint v0.2.0）
-- ✅ **W2** 场景模式 + 屏蔽绑定专注 + 手机伴侣 + 多角色全面优化（checkpoint v0.4.3）
-- ✅ **W2.5** 第一阶段11项功能（深度模式/ADHD模式/全局快捷键/暂离模式/质量评分/分心模式识别/同伴状态/编码检测推荐等）+ 两轮多角色端到端测试（checkpoint v0.5.6）
-- ✅ **W2.9** 未打包 i18n + 英文/国内双名单 + 体验对齐（checkpoint **v0.9.0**）
-- ✅ **W2.95** 诊断/信任 + 付费灰锁 + 直装打包脚本（checkpoint **v0.9.2**）
-- ⏭ **W3** 真人内测已跳过（第一批付款用户即测试员）
-- ⏳ **收款** 中文爱发电 / 英文先试 Lemon（PayPal 入账），开不过则 PayPal.me；应用只跳转+填激活码
-- **发现** 英文落地（本 README 顶部）+ GitHub Release（需登录并建 remote）+ AlternativeTo / Reddit；微软商店不作第一渠道
-- **M2** V1.1：今日时间线 + 场景化规则 + 白噪音（未做，不承诺）
-- **M6** 复盘止损（月入 ≥¥1000 加码，<¥1000 降级副业）
-
-## 更新日志
-
-### v0.9.2（2026-09-12）checkpoint
-
-**付费灰锁 + 直装包 + 商业路径写清**
-
-- 未激活：额外场景自定义 / 第 4 个自定义域名 / 手机伴侣 / 统计导出 / ADHD 缓冲 20/30 — 灰+🔒+hover，点击出升级框，**不** `IsEnabled=false`，不跳空支付页
-- 已自定义的那个场景仍可右键编辑；免费导入配置裁到 3 个域名
-- 屏蔽名单导入导出收到诊断框，免费不灰锁
-- `tools/pack-inner.ps1` 打 Release 自包含目录 `dist/ZenFocus-inner/`（未签名）
-- 定价表去掉未做的「周报」
-- 海外收款：Lemon（PayPal 入账）优先，大陆银行卡 MoR 入账不通；微软商店因 hosts/杀进程/审核周期不作第一渠道
-
-**测试**
-- 单元测试 160 通过；x64 构建 0 警告
-
-### v0.9.1（2026-09-12）checkpoint
-
-Release 也写 `crash.log`；管理员说明补隐私；首启引导；屏蔽页只读一键诊断。
-
-### v0.9.0（2026-09-12）checkpoint
-
-**未打包 i18n 可用 + 英文可拦国际站 + 文案与行为对齐**
-
-**国际化**
-- 未打包进程必须用 `Microsoft.Windows.Globalization.ApplicationLanguages`；误用 `Windows.Globalization` 会 `0xC000027B`
-- 语言偏好 `%LOCALAPPDATA%\ChanJing\language.txt`，启动路径禁止碰 SQLite
-- 默认 en-US，可切 zh-CN；切语言先结束专注并清 hosts，再重启
-- 用户可见文案走 PRI + `I18n.SetContent`；分类存库 key 仍是中文
-
-**屏蔽名单**
-- 国内 / 国际两套目录，独立于界面语言（`catalog.txt`），屏蔽页下拉切换
-- 英文目录：YouTube/TikTok/Instagram/X/Reddit/Discord 等；进程别名 + hosts 扩展域；`x.com` 标题靠别名
-- 英文 Work 默认含社交；点场景 / `FocusController.Start` **不覆盖**屏蔽页勾选
-
-**体验对齐**
-- 无管理员：开始按钮旁写死「浏览器标签关不掉」，点开始即 InfoBar
-- 暂离同时清系统 hosts，到点再写回
-- 放行用最近一次分心目标；托盘单击打开；托盘/快捷键结束走破功
-- ADHD / 深度 / 当前场景写入 Settings，`OnLaunched` 恢复；ADHD 不改 kill
-- 编码检测第 3 次未专注时切工作愿望/时长（不改分类）
-- 启动清崩溃残留 hosts；商店壳按标题最小化，禁止杀 `ApplicationFrameHost`
-- 自定义域名可单条删除；伴侣 API 需扫码 token；齿轮写明快捷键
-
-**能力边界（不承诺）**
-- 无管理员时浏览器里的 YouTube 只出分心气泡，不关标签
-- 商店 PWA 仅当窗口标题能对上名单才最小化
-
-**测试**
-- 单元测试 150/150 通过（含英文目录 / hosts 隔离 / 残留 hosts / 名单语言文件）
-- 构建 0 警告 0 错误
-
-### v0.8.0（2026-09-11）
-
-**15项全面优化全部落地（P0 5项 + P1 5项 + P2 5项）**
-
-**P0 核心体验**
-- P0-1 首页设置收纳：深度模式/ADHD模式开关收进右上角齿轮菜单（互斥提示保留），首页更清爽
-- P0-2 托盘增强：专注中显示"休息3分钟（暂离）"菜单项；"暂停专注"修正为"结束专注"（语义与行为一致）；休息逻辑抽出为 AppServices.StartRestBreak 供托盘/首页/快捷键统一复用
-- P0-3 每日限额强制阻断：超限后弹窗（不再只是托盘气泡），可选"我就要继续（放行5分钟）"或"今天就到这里"；临时放行到期自动恢复阻断（DailyLimitService 临时放行机制）
-- P0-4 文案统一禅意：ADHD正反馈改为"今日已完成N次定心"（强调累计非连续），鼓励语统一禅意（"心已定，功自成"）
-- P0-5 统计页默认简化：详细图表（7天/24小时/热力/使用分布）收进"查看详细图表"折叠区，首页只留核心数字+洞察
-
-**P1 界面与架构**
-- P1-6 窗口缩放自适应：窗口缩到 780×600 以下自动钳制回最小尺寸；统计页数字区改 ItemsWrapGrid 自动换行（不再叠加）
-- P1-7 深色模式：ThemeDictionaries 双主题（宣纸白浅色 + 墨色深色），跟随系统自动切换
-- P1-8 首页状态机：MainUiState 枚举（Idle/Breathing/Focusing/Cooldown/SoftLanding/Feedback）+ SetUiState 统一面板流转，消除布尔字段漂移导致的状态不一致
-- P1-9 伴侣页统一走 FocusController：远程开始/结束（提前结束=StopEarly）与首页/托盘/快捷键完全同逻辑
-- P1-10 微交互：摩擦遮罩淡入（300ms）、专注结束反馈"绽放"（淡入+轻微放大）
-
-**P2 数据与引导**
-- P2-11 分心来源TOP3：分心时记录来源域名/进程名（DB新列 DistractionSources，含迁移），统计页展示近7天TOP3
-- P2-12 数据导出：统计页"导出数据"按钮，FileSavePicker 选位置，CSV/JSON 双格式（近90天会话全字段）
-- P2-13 首启3步引导：弹窗改为首页浮层卡片（非阻塞），关闭后不再出现
-- P2-14 禅意分享卡片：墨色底 + 金色大"定"字 + 宣纸白数据，禅意品牌感
-- P2-15 更多快捷键：Ctrl+Alt+P 暂停/恢复 · Ctrl+Alt+R 休息3分钟 · Ctrl+Alt+S 打开设置
-
-**测试**
-- 单元测试 109/109 通过
-- 构建 0 警告 0 错误
-
-### v0.5.6（2026-09-10）
-
-**第二轮多角色端到端测试修复4个问题**
-- StartButton_Click深度模式时CurrentMinutes设为0（之前设为场景时长，导致场景自动记忆保存错误时长——与ToggleFocus同一问题）
-- WindowActivityService.OnFocusStarted加EmergencyPass检查（防御性编程，防止暂离模式下重新触发FocusStarted时误最小化）
-- App.xaml.cs FocusStarted重置EmergencyPass（防止上一次专注未正确重置导致新专注开始时桌面应用拦截不生效）
-- App.xaml.cs FocusFinished重置EmergencyPass（所有结束专注路径统一重置，包括全局快捷键/伴侣页远程等非UI路径）
-
-**测试**
-- 单元测试 70/70 通过
-- 构建 0 错误
-
-### v0.5.5（2026-09-10）
-
-**第一轮多角色端到端测试修复4个集成问题**
-- ToggleFocus深度模式时CurrentMinutes设为0（之前设为场景时长，导致场景自动记忆保存错误时长）
-- 伴侣页远程开始专注：调用_blocklist.Apply()写hosts.pre、设置CurrentWish/CurrentMinutes、走当前场景配置、考虑深度模式（之前固定25分钟且屏蔽可能不生效）
-- 伴侣页远程StopFocus：重置EmergencyPass（之前暂离模式下远程结束后桌面应用拦截不恢复）
-- 暂离模式日志文案从"紧急放行结束"改为"暂离模式结束"
-
-**测试**
-- 单元测试 70/70 通过
-- 构建 0 错误
-
-### v0.5.4（2026-09-10）
-
-**暂离模式真正生效（方案B）**
-- BlocklistService加EmergencyPass标志
-- WindowActivityService两个拦截点（OnFocusStarted+Tick）加!EmergencyPass判断
-- 暂离开启时EmergencyPass=true，桌面应用（抖音/B站等）暂停拦截，网站屏蔽保持生效
-- 5分钟后自动恢复EmergencyPass=false
-- 结束专注（破功/正常完成）时重置EmergencyPass=false
-- 文案全部从"紧急放行"改为"暂离模式"，按钮文字从"紧急放行"改为"暂离"
-
-**测试**
-- 单元测试 70/70 通过
-- 构建 0 错误
-
-### v0.5.3（2026-09-10）
-
-**修复深度模式严重bug**
-- FocusEngine.Start把plannedMinutes=0重置为25，导致深度模式完全失效
-- 改成允许plannedMinutes=0表示不计时（手动结束）
-- 多角色全方位测试发现
-
-**测试**
-- 单元测试 70/70 通过
-- 构建 0 错误
-
-### v0.5.2（2026-09-10）
-
-**第一轮"全部模拟测试"修复3个bug+1个小优化**
-- Bug1（紧急放行）：结束专注时（破功/正常完成）没停_emergencyTimer，5分钟后会发错误通知
-- Bug2（场景推荐）：第3次只发"已为你切换到工作场景"通知但没真正切换场景，误导用户→改成"建议切换"
-- Bug3（全局快捷键）：ToggleFocus开始专注时不尊重深度模式（_deepMode是MainPage私有字段）→AppServices加DeepMode属性
-- 小优化（同伴状态）：同伴状态没加入10秒轮询
-
-**测试**
-- 单元测试 70/70 通过
-- 构建 0 错误
-
-### v0.5.1（2026-09-10）
-
-**第一阶段剩余4项功能**
-- P1-8 分享卡片增强：新增质量分显示
-- P2-6 应用检测推荐场景：持续编码2分钟→前2次弹托盘提示（显示第N/3次），第3次Notify"建议切换到工作场景"并清零（渐进式自动化）
-- P2-9 分心模式识别：近7天有分心记录的会话按小时分组，找出最易分心时段，显示"观察：你在下午（14点前后）最容易起身活动"
-- P1-11 同伴专注状态：伴侣页新增"同伴专注（可选·非社交）"区块，输入同伴地址可查看同伴专注状态，10秒自动刷新
-
-**测试**
-- 单元测试 70/70 通过
-- 构建 0 错误
-
-### v0.5.0（2026-09-10）
-
-**第一阶段7项核心功能（多角色圆桌结论）**
-- P0-1 专注质量评分：统计页新增"专注质量（分）"卡片，公式=MIN(100, 时长×2) - 分心次数×5，下限0
-- P0-2 不评判视觉语言："今日分心（次）"→"起身活动（次）"，颜色#A0563B→BrushTextSecondary
-- P0-3 超专注模式（深度模式）：首页"深度模式"ToggleSwitch，开启后plannedMinutes=0不计时，专注界面显示"深度模式·随心而定·完成后手动结束"
-- P1-4 全局快捷键：Ctrl+Alt+F触发ToggleFocus，_hotkeyPressed防重复
-- P1-5 紧急放行（后改为暂离模式）：专注界面加"紧急放行"按钮，ContentDialog确认后记录日志+Notify提示，_emergencyTimer 5分钟后自动恢复
-- P0-7 付费功能预览钩子：统计页加PremiumPreview Border，免费版且有专注记录时显示"升级解锁更多洞察"
-- P1-10 ADHD友好模式：首页加"ADHD友好模式"ToggleSwitch，开启后_pendingMinutes=15，SessionHint显示"ADHD友好模式·15分钟短周期·视觉化时间·减少焦虑"
-
-**测试**
-- 单元测试 70/70 通过
-- 构建 0 错误
-
-### v0.4.3（2026-09-10）
-
-**P0-P2 全面优化（多角色全面评估结论，全部落地）**
-- 场景逻辑抽取为 SceneManager 单文件（预设/读取/保存/重置/摘要/免费额度），MainPage 瘦身
-- 场景跨页面同步：首页选场景 → 屏蔽页顶部显示"当前场景"摘要；回到首页自动恢复场景高亮；托盘开始专注也走当前场景配置
-- 屏蔽页分区折叠：自定义域名/每日限额/临时放行折叠为可展开区，高频的"桌面应用拦截"前置，长页变短页
-- 临时放行统一为 5/15/30 分钟菜单选择（首页快捷放行 + 屏蔽页放行），并修复"日志写10分钟实际5分钟"文案bug
-- 统计页空状态引导：无记录时显示"还没有专注记录"并隐藏图表区
-- 统计页分心红色改为赭石 #A0563B（与禅意色板统一，去刺眼红）
-- 分享卡片新增复制到剪贴板出口：保存PNG的同时自动复制，可直接粘贴到微信/朋友圈
-- 托盘新增"一键屏蔽 抖音/B站"快捷项（短视频+视频娱乐分类，专注后生效）
-- 全局统一通知条（InfoBar）：放行/快捷屏蔽等操作反馈不再开弹窗，4秒自动收起
-- 免费版开放 1 个自定义场景额度（超出提示升级，升级文案同步更新）
-- 页面切换自动刷新：屏蔽页/首页 OnNavigatedTo 时刷新场景与统计（跨页面状态不再脱节）
-- P0-1 手动屏蔽总开关：屏蔽页加ManualShieldSwitch，开启后立即写系统hosts+桌面App拦截生效，专注结束后不自动关闭
-- P0-2 首页重构：场景标签移到顶部独立行，中间区域四态切换，开始按钮放大
-
-**测试**
-- 单元测试 48/48 通过
-- 构建 0 错误，冒烟启动通过
-
-### v0.4.2（2026-09-10）
-
-**手机伴侣改为付费功能**
-- 免费版：不启动伴侣服务，首页二维码区域显示"手机伴侣（付费功能）"升级提示（付费钩子）
-- 付费版：正常启动伴侣服务，首页显示二维码扫码连接
-
-### v0.4.1（2026-09-10）
-
-**屏蔽绑定专注（核心逻辑重构）**
-- 屏蔽页"应用屏蔽"改为"保存配置"：配置先存到临时文件（`%LOCALAPPDATA%\ChanJing\hosts.pre`），不立即写系统hosts
-- 专注开始时自动同步：从临时文件读取配置写入系统hosts，桌面App拦截同时生效
-- 专注结束时自动解除：清除系统hosts中的标记段，桌面App拦截解除
-- 普通权限运行时网站屏蔽自动跳过（需管理员权限），桌面App屏蔽仍生效
-
-**场景自动记忆（方案B：延迟同步）**
-- 用户在屏蔽页修改分类后，点击"开始专注"时自动把当前配置保存到当前场景
-- 下次选择该场景时，自动应用用户修改后的配置（愿望+时长+屏蔽分类）
-
-**场景配置摘要显示**
-- 场景按钮下方动态显示当前选中场景的配置摘要："工作 · 50分钟 · 屏蔽3类（短视频/视频娱乐/购物） · 右键可自定义"
-
-**屏蔽页分类布局优化（WrapPanel自动换行）**
-- 网站分类从水平StackPanel改为ItemsWrapGrid自动换行布局
-- 每个分类显示"分类名（站点数）"
-
-**测试**
-- 单元测试 48/48 通过（新增 HostsBlockerPreApplyTests 10个 + FocusEngineEventTests 8个）
-
-### v0.4.0（2026-09-10）
-
-**P2-13 局域网 Web 伴侣页（手机联动最小版）**
-- 电脑端本地 HTTP 服务（端口 8765），手机和电脑同一 WiFi 即可访问
-- 手机浏览器页面：禅意风格，显示今日专注分钟/次数/分心次数/分心来源 Top5
-- 远程控制：手机一键开始/结束电脑上的专注
-- 专注状态同步：手机实时显示当前专注状态、已专注时长、愿望
-- 首页二维码：手机扫码直接连接（自动获取局域网 IP）
-- 零云端、零配置、零账号，数据全本地
-
-**移除**
-- P2-12 命令行工具（目标用户非程序员，GUI 已能完成所有功能）
-
-### v0.2.1（2026-09-09）
-
-**场景模式**
-- 4个场景预设：工作（50分钟/短视频+视频娱乐+购物）、写作（45分钟/5类全屏蔽）、学习（25分钟/5类全屏蔽）、会议（30分钟/仅短视频+视频娱乐）
-- 点场景按钮一键应用：愿望自动填充 + 时长自动设置 + 屏蔽分类自动切换 + 按钮高亮
-- 长按场景按钮弹出自定义小窗：可修改时长/屏蔽分类/愿望文案，保存后立即生效
-
-**免费版策略调整**
-- 屏蔽分类全开放：6大类不再限制数量
-- 自定义域名限3个
-- 场景自定义为付费功能：免费版长按场景按钮提示升级
-
-**测试**
-- 单元测试 33/33 通过
-
-### v0.2.0（2026-09-09）
-
-**桌面应用拦截**
-- 国内应用预设名单（抖音/快手/B站/虎牙/斗鱼/爱奇艺/优酷/淘宝/京东/拼多多）
-- 自定义 App 添加
-- 两种拦截方式：自动最小化（温和可绕过）/ 结束进程（强制）
-- 专注中持续拦截（2秒冷却），进程预扫描
-
-**稳定性修复**
-- 提权重启后两个进程都没了：主动 ReleaseMutex + Environment.Exit(0)
-- 设置不持久化：AppMode_Changed 加 !IsLoaded 检查
-- 托盘图标不显示：DllImport 缺 CharSet.Unicode
-- 屏蔽页内容叠加：补第7行Grid.RowDefinitions
-- 最小化按钮也到托盘
-
-**测试**
-- 单元测试 33/33 通过
-- 日志仅 DEBUG 构建启用，Release 禁用
-
-## 目录结构
-
-```
-chanjing/
-├── src/
-│   ├── ChanJing.App/      # WinUI 3 桌面应用（界面/托盘/窗口采集）
-│   └── ChanJing.Core/     # 核心逻辑（屏蔽/限额/专注/统计/SQLite）
-├── tests/                 # 单元测试（150/150 通过）
-└── README.md
-```
-
-## 开发命令
+Windows, .NET 8 SDK, x64. Kill the running app first or the build cannot overwrite the exe.
 
 ```powershell
-# 构建前必须先杀 ChanJing.App 进程（否则 dll 被锁导致 MSB3027 静默失败）
-Get-Process ChanJing.App -ErrorAction SilentlyContinue | Stop-Process -Force
-
-# 构建（App 项目，必须带 Platform=x64，勿用 sln）
-dotnet build src/ChanJing.App/ChanJing.App.csproj -p:Platform=x64
-
-# 测试（后台运行，无需 GUI）
-dotnet test tests/ChanJing.Tests/ChanJing.Tests.csproj
-
-# 冒烟（构建后的可执行文件）
-src\ChanJing.App\bin\x64\Debug\net8.0-windows10.0.26100.0\win-x64\ChanJing.App.exe
+taskkill /F /IM ChanJing.App.exe
+dotnet test tests\ChanJing.Tests\ChanJing.Tests.csproj
+dotnet build src\ChanJing.App\ChanJing.App.csproj -p:Platform=x64
 ```
 
-> 注：构建请勿用 `dotnet build ChanJing.sln`（WinUI 需显式 Platform）；产物目录以
-> `bin\x64\Debug\net8.0-windows10.0.26100.0\win-x64\` 为准。
-> 管理员权限进程普通 Stop-Process 杀不掉（Access denied），需 `taskkill /PID <id> /F` 弹 UAC。
+Self-contained folder (needs a local `license.secret` at the repo root — see `license.secret.example`):
 
-## 隐私承诺
+```powershell
+powershell -File tools\pack-inner.ps1
+```
 
-- 数据全本地（`%LOCALAPPDATA%\ChanJing\chanjing.db`），零上传、零截图
-- 前台窗口仅采集进程名 + 窗口标题（用于分心匹配与统计），无键盘记录
-- 无账号、无云端、无遥测
-- 数据明文存储于本机，README 明示位置（隐私优先，不藏不传）
-- 调试日志（`actions.log`/`crash.log`）仅 DEBUG 构建启用，Release 构建完全禁用（`#if DEBUG`）
+Output: `dist\ZenFocus-inner\`. Do not build the `.sln` without `-p:Platform=x64`.
+
+## Contact
+
+License / feedback: [yezhihua419@gmail.com](mailto:yezhihua419@gmail.com) · [yezhihua_yzh@163.com](mailto:yezhihua_yzh@163.com)
