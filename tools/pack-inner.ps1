@@ -8,7 +8,7 @@ if (-not (Test-Path $secretFile) -and -not $env:CHANJING_LICENSE_SECRET) {
     throw "Release needs license.secret at repo root (see license.secret.example)"
 }
 
-taskkill /F /IM ChanJing.App.exe 2>$null | Out-Null
+cmd /c "taskkill /F /IM ChanJing.App.exe >nul 2>&1" | Out-Null
 
 dotnet test (Join-Path $root "tests\ChanJing.Tests\ChanJing.Tests.csproj") --nologo
 if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }

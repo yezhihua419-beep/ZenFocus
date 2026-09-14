@@ -8,7 +8,7 @@ Windows desktop focus coach. Blocks distracting sites and apps on this PC, then 
 
 ## Download
 
-[Latest release](https://github.com/yezhihua419-beep/ZenFocus/releases/latest) — get `ZenFocus-v0.9.3-win-x64.zip`.
+[Latest release](https://github.com/yezhihua419-beep/ZenFocus/releases/latest) — get `ZenFocus-v0.9.4-win-x64.zip`.
 
 1. Unzip and **keep the whole folder**. Do not copy only `ChanJing.App.exe`.
 2. Right-click `ChanJing.App.exe` → **Run as administrator** (needed to write the hosts file).

@@ -8,6 +8,7 @@
 - **v0.9.1**（2026-09-12）：`f536a6e` 诊断/信任（crash.log、管理员隐私、首启引导、一键诊断）。
 - **v0.9.2**（2026-09-12）：`8fd1457` 直装脚本 + md 对齐（灰锁在 `d9a97d3`）。
 - **v0.9.3**（2026-09-14）：https://github.com/yezhihua419-beep/ZenFocus/releases/tag/v0.9.3 （zip 约 100MB，不含 `license.secret`）
+- **v0.9.4**（2026-09-14）：中文升级跳爱发电；https://github.com/yezhihua419-beep/ZenFocus/releases/tag/v0.9.4
 
 ## 阶段与进展
 - [x] 未打包 i18n（WASDK `ApplicationLanguages` + `language.txt`）；分类 key 中文、展示翻译
@@ -34,7 +35,7 @@
 2. 发现：AlternativeTo / Reddit（你的号）。微软商店以后再说。
 3. 英文 $19 仍无可用下款通道，先别接空页。
 
-我这边可接着做：激活码生成器、升级按钮接 URL（有链接之后）。
+我这边可接着做：有人付款后的发码流程（`python tools/gen_license.py`）。
 
 ## DPI 回归（本机过一遍）
 - 缩放：100% / 125% / 150%
