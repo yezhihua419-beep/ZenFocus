@@ -6,6 +6,8 @@ ZenFocus blocks distracting sites and apps on this PC, then shows where the time
 
 **Limits (not bugs):** without administrator, browser tabs such as YouTube stay open (distraction bubble only). Store/PWA windows minimize only when the title matches the list. Unsigned build: Windows may warn — Run anyway. Website blocking needs *Run as administrator*.
 
+**Contact / license / feedback:** [yezhihua419@gmail.com](mailto:yezhihua419@gmail.com) · [yezhihua_yzh@163.com](mailto:yezhihua_yzh@163.com). Buyout: email after payment, key sent by hand.
+
 **Run locally:** `tools\pack-inner.ps1` → `dist\ZenFocus-inner\ChanJing.App.exe` (keep the whole folder). GitHub Release is not published yet (no remote).
 
 禅净是一款 Windows 桌面专注 / 防沉迷工具。系统级屏蔽 + 本地统计 + 禅意体验，

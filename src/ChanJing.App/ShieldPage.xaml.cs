@@ -946,7 +946,7 @@ public sealed partial class ShieldPage : Page
             var os = Environment.OSVersion.VersionString;
             var subject = Uri.EscapeDataString(I18n.GetFormat("FeedbackMail_Subject", version));
             var body = Uri.EscapeDataString(I18n.GetFormat("FeedbackMail_Body", version, os));
-            var url = $"mailto:yezhihua_yzh@163.com?subject={subject}&body={body}";
+            var url = $"mailto:yezhihua419@gmail.com?cc=yezhihua_yzh@163.com&subject={subject}&body={body}";
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             App.LogAction("反馈建议", "打开邮件客户端");
         }

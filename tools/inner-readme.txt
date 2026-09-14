@@ -22,6 +22,7 @@ Please try
 
 Data: %LOCALAPPDATA%\ChanJing\
 If it crashes, send crash.log from that folder.
+Contact / license: yezhihua419@gmail.com · yezhihua_yzh@163.com
 
 ---
 
@@ -46,3 +47,4 @@ If it crashes, send crash.log from that folder.
 - 显示缩放 125% / 150%：场景按钮和底栏
 
 数据在 %LOCALAPPDATA%\ChanJing\，出事把 crash.log 发回来。
+联系 / 买断激活码：yezhihua419@gmail.com · yezhihua_yzh@163.com

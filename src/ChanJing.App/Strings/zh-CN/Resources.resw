@@ -399,7 +399,7 @@
   <data name="Upgrade_F4" xml:space="preserve"><value>• 数据导出（CSV/JSON）</value></data>
   <data name="Upgrade_F5" xml:space="preserve"><value>• 进阶统计（高效时段 + 连续纪录）</value></data>
   <data name="Upgrade_F6" xml:space="preserve"><value>• ADHD 缓冲期 20/30 分钟（免费版 5/10/15）</value></data>
-  <data name="Upgrade_How" xml:space="preserve"><value>\n购买：发邮件到 yezhihua_yzh@163.com，付款后人工发送激活码。</value></data>
+  <data name="Upgrade_How" xml:space="preserve"><value>\n购买：发邮件到 yezhihua419@gmail.com 或 yezhihua_yzh@163.com，付款后人工发送激活码。</value></data>
   <data name="Activate_Placeholder" xml:space="preserve"><value>请输入购买后收到的激活码</value></data>
   <data name="SceneWish_Work" xml:space="preserve"><value>完成今日工作任务</value></data>
   <data name="SceneWish_Write" xml:space="preserve"><value>专注写作，心无旁骛</value></data>

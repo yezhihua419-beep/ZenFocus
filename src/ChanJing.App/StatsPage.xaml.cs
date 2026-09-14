@@ -757,7 +757,7 @@ public sealed partial class StatsPage : Page
                         new TextBlock { Text = I18n.Get("Upgrade_F4", "• Data export (CSV/JSON)"), FontSize = 12 },
                         new TextBlock { Text = I18n.Get("Upgrade_F5", "• Advanced stats"), FontSize = 12 },
                         new TextBlock { Text = I18n.Get("Upgrade_F6", "• ADHD cooldown 20/30 min"), FontSize = 12 },
-                        new TextBlock { Text = I18n.Get("Upgrade_How", "Email yezhihua_yzh@163.com after payment."), FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
+                        new TextBlock { Text = I18n.Get("Upgrade_How", "Email yezhihua419@gmail.com or yezhihua_yzh@163.com after payment."), FontSize = 12, Foreground = GetBrush("BrushTextSecondary") },
                     }
                 }
             };
