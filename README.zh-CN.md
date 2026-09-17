@@ -8,7 +8,7 @@ Windows 桌面专注工具。在这台电脑上屏蔽分心网站和应用，再
 
 ## 下载
 
-[最新 Release](https://github.com/yezhihua419-beep/ZenFocus/releases/latest) — 文件名 `ZenFocus-v0.9.4-win-x64.zip`。
+[最新 Release](https://github.com/yezhihua419-beep/ZenFocus/releases/latest) — 文件名 `ZenFocus-v0.9.5-win-x64.zip`。
 
 1. 解压后**保留整个文件夹**，不要只拷 `ChanJing.App.exe`。
 2. 右键 `ChanJing.App.exe` → **以管理员身份运行**（写 hosts 需要）。

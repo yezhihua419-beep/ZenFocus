@@ -9,6 +9,7 @@
 - **v0.9.2**（2026-09-12）：`8fd1457` 直装脚本 + md 对齐（灰锁在 `d9a97d3`）。
 - **v0.9.3**（2026-09-14）：`ec3a560` 首个公开 zip。https://github.com/yezhihua419-beep/ZenFocus/releases/tag/v0.9.3
 - **v0.9.4**（2026-09-14）：`4ccf05b` 中文跳爱发电 + 直装包（163 测过，zip 无 secret）。买断文案对齐：`3858e60`。https://github.com/yezhihua419-beep/ZenFocus/releases/tag/v0.9.4
+- **v0.9.5**（2026-09-17）：`d45a955` 崩溃/杀进程 hosts 残留清理。https://github.com/yezhihua419-beep/ZenFocus/releases/tag/v0.9.5
 
 ## 阶段与进展
 - [x] 未打包 i18n（WASDK `ApplicationLanguages` + `language.txt`）；分类 key 中文、展示翻译
