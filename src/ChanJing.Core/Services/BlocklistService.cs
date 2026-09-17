@@ -662,19 +662,7 @@ public sealed class BlocklistService
     {
         if (focusRunning || IsManualShieldActive()) return false;
         if (!HostsBlocker.IsApplied()) return false;
-        try
-        {
-            HostsBlocker.Remove();
-            return true;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return false;
-        }
-        catch (IOException)
-        {
-            return false;
-        }
+        return HostsBlocker.TryRemove() && !HostsBlocker.IsApplied();
     }
 
     /// <summary>暂离：清系统 hosts（网站暂时能开）。权限不足时静默，桌面拦截仍靠 EmergencyPass。</summary>

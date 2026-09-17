@@ -26,6 +26,7 @@
 - [x] 对外 README 英文；中文见 `README.zh-CN.md`。进度/坑只写本文件，不挂仓库首页
 - [x] 中文升级跳转爱发电 `https://afdian.com/a/zenfocus`（自定义 69，不是按月方案）
 - [x] GitHub README 中英「怎么买断」与爱发电主页介绍对齐
+- [x] hosts：启动清残留 + ProcessExit 兜底；Apply 先剥残缺 BEGIN/END
 
 ## 当前卡点
 - 英文 $19 仍无下款通道（大陆个人 PayPal / Gumroad 中国账户提不出来）。
@@ -59,6 +60,8 @@
 - 点场景不要 `SetEnabledCategories`；`FocusController.Start` 同样
 - 托盘结束必须 `StopEarly`
 - 诊断只读，禁止为探测改系统 hosts
+- 杀进程/崩溃：启动清残留 + ProcessExit 兜底剥标记段。提权/切语言重启设 Suppress，禁止先剥。手动屏蔽启动时若段没了要重写
+- 残缺 BEGIN（无 END）只剥 127.0.0.1 行，禁止把后面用户 hosts 整段吃掉
 - 灰锁禁止 `IsEnabled=false`；中文可跳爱发电；英文无链接禁止跳空页
 - 配置导入导出不是付费钩子；免费导入裁到 3 域名
 - 已自定义场景仍可右键编辑

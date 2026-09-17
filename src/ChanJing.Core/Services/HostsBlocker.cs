@@ -124,6 +124,18 @@ public static class HostsBlocker
         }
     }
 
+    /// <summary>杀进程/崩溃路径用：权限或 IO 失败时 false，不抛。</summary>
+    public static bool TryRemove()
+    {
+        try
+        {
+            Remove();
+            return true;
+        }
+        catch (UnauthorizedAccessException) { return false; }
+        catch (IOException) { return false; }
+    }
+
     /// <summary>备份 hosts 到同目录 hosts.chanjing.bak（仅首次写入前）。</summary>
     private static void BackupIfNeeded(string path)
     {
@@ -135,18 +147,51 @@ public static class HostsBlocker
         }
     }
 
-    /// <summary>移除 BEGIN/END 标记段，返回其余行。</summary>
+    /// <summary>
+    /// 去掉标记段。崩溃若只写了 BEGIN 没写 END，旧逻辑会吞掉后面全部用户 hosts；
+    /// 残缺段只剥 127.0.0.1 行，遇到其它行立刻停。
+    /// </summary>
     private static List<string> RemoveBlock(List<string> lines)
     {
         var result = new List<string>();
-        var inBlock = false;
-        foreach (var line in lines)
+        var i = 0;
+        while (i < lines.Count)
         {
-            var trimmed = line.Trim();
-            if (trimmed.StartsWith(BeginMarker, StringComparison.Ordinal)) { inBlock = true; continue; }
-            if (trimmed.StartsWith(EndMarker, StringComparison.Ordinal)) { inBlock = false; continue; }
-            if (!inBlock) result.Add(line);
+            var trimmed = lines[i].Trim();
+            if (trimmed.StartsWith(BeginMarker, StringComparison.Ordinal))
+            {
+                i++;
+                while (i < lines.Count)
+                {
+                    var inner = lines[i].Trim();
+                    if (inner.StartsWith(EndMarker, StringComparison.Ordinal))
+                    {
+                        i++;
+                        break;
+                    }
+                    if (inner.StartsWith(BeginMarker, StringComparison.Ordinal))
+                        break;
+                    if (inner.Length == 0 || IsLoopbackHostsLine(inner))
+                    {
+                        i++;
+                        continue;
+                    }
+                    break; // 残缺 BEGIN：后面是用户自己的条目
+                }
+                continue;
+            }
+            if (trimmed.StartsWith(EndMarker, StringComparison.Ordinal))
+            {
+                i++;
+                continue;
+            }
+            result.Add(lines[i]);
+            i++;
         }
         return result;
     }
+
+    private static bool IsLoopbackHostsLine(string trimmed)
+        => trimmed.StartsWith("127.0.0.1 ", StringComparison.Ordinal)
+           || trimmed.StartsWith("127.0.0.1\t", StringComparison.Ordinal);
 }

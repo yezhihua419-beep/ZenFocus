@@ -32,6 +32,7 @@ public sealed partial class ShieldPage : Page
             Arguments = $"{arg} --db-path=\"{AppServices.DbPath}\""
         };
         Process.Start(psi); // UAC取消会抛异常，由调用方catch；走到这里说明管理员进程已启动
+        App.SuppressHostsCleanupOnProcessExit = true;
         (App.Current as App)?.ReleaseSingleInstanceMutex();
         Environment.Exit(0); // 强制立即退出，不等待WinUI异步Exit完成
     }

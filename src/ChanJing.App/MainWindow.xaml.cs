@@ -551,7 +551,7 @@ public sealed partial class MainWindow : Window
     {
         _exiting = true;
         // 退出时清除系统hosts中的屏蔽条目（防止退出后网站仍被屏蔽）
-        try { ChanJing.Core.Services.HostsBlocker.Remove(); }
+        try { ChanJing.Core.Services.HostsBlocker.TryRemove(); }
         catch (UnauthorizedAccessException) { /* 普通权限写不了hosts，跳过 */ }
         catch (Exception ex) { App.LogCrash("ExitApp清理hosts", ex); }
         Close();

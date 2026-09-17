@@ -29,6 +29,9 @@ public partial class App : Application
     /// <summary>主窗口引用（供 FileSavePicker 等需要窗口句柄的场景使用）。</summary>
     public static Window? MainWindow { get; private set; }
 
+    /// <summary>提权重启 / 切语言重启会自己接着写 hosts，ProcessExit 不得先剥掉。</summary>
+    internal static bool SuppressHostsCleanupOnProcessExit { get; set; }
+
     /// <summary>提权重启时主动释放单实例锁（仅在管理员进程已启动成功后调用，UAC取消不会走到这里）。</summary>
     public void ReleaseSingleInstanceMutex()
     {
@@ -57,6 +60,8 @@ public partial class App : Application
         UnhandledException += OnUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        // 杀进程/崩溃时 ExitApp 走不到；ProcessExit 能跑就尽量剥标记段（提权/切语言重启要跳过）
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
     }
 
     private static string LanguageFilePath =>
@@ -135,6 +140,7 @@ public partial class App : Application
             catch (Exception ex) { LogCrash("LanguageRestart.Cleanup", ex); }
 
             ReleaseSingleInstanceMutex();
+            SuppressHostsCleanupOnProcessExit = true;
             var exe = Environment.ProcessPath;
             if (!string.IsNullOrEmpty(exe))
             {
@@ -235,6 +241,13 @@ public partial class App : Application
                 LogAction("启动清残留hosts", "需要管理员，已跳过");
                 AppServices.Notify(I18n.Get("Notify_OrphanHostsNeedAdmin", "Leftover website blocks found. Run as administrator to clear them."), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
             }
+            else if (AppServices.Blocklist.IsManualShieldActive()
+                     && !ChanJing.Core.Services.HostsBlocker.IsApplied())
+            {
+                // 手动屏蔽应跨重启仍在；ProcessExit/杀进程若已剥段，这里补写
+                AppServices.Blocklist.RestoreSystemHostsIfNeeded(true);
+                LogAction("启动清残留hosts", "手动屏蔽，已重写");
+            }
         }
         catch (Exception ex) { LogCrash("启动清残留hosts", ex); }
 
@@ -257,6 +270,7 @@ public partial class App : Application
                             var domains = ChanJing.Core.Services.HostsBlocker.GetPreAppliedDomains();
                             if (domains.Count > 0)
                             {
+                                // Apply 先剥旧 BEGIN/END（含崩溃残缺段）再写
                                 ChanJing.Core.Services.HostsBlocker.Apply(domains);
                                 LogAction("专注开始", $"自动应用网站屏蔽（{domains.Count}个域名）");
                             }
@@ -392,7 +406,20 @@ public partial class App : Application
     private static void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
     {
         LogCrash("AppDomain", e.ExceptionObject as Exception);
+        if (e.IsTerminating)
+            TryClearHostsOnAbnormalExit();
         PromptCrashOnce();
+    }
+
+    private static void OnProcessExit(object? sender, EventArgs e)
+        => TryClearHostsOnAbnormalExit();
+
+    /// <summary>托盘退出之外的死法：尽量剥标记段。手动屏蔽跨重启靠启动时重写。</summary>
+    private static void TryClearHostsOnAbnormalExit()
+    {
+        if (SuppressHostsCleanupOnProcessExit) return;
+        try { HostsBlocker.TryRemove(); }
+        catch { }
     }
 
     private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)

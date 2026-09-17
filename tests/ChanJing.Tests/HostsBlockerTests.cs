@@ -91,4 +91,46 @@ public class HostsBlockerTests : IDisposable
         Assert.True(File.Exists(bak));
         Assert.Equal("127.0.0.1 localhost\n", File.ReadAllText(bak));
     }
+
+    [Fact]
+    public void Remove_TruncatedBegin_KeepsUserLinesAfter()
+    {
+        File.WriteAllText(_hostsFile,
+            "127.0.0.1 localhost\n" +
+            HostsBlocker.BeginMarker + "\n" +
+            "127.0.0.1 youtube.com\n" +
+            "192.168.1.1 myrouter.local\n");
+
+        HostsBlocker.Remove();
+
+        var text = File.ReadAllText(_hostsFile);
+        Assert.DoesNotContain(HostsBlocker.BeginMarker, text);
+        Assert.DoesNotContain("youtube.com", text);
+        Assert.Contains("127.0.0.1 localhost", text);
+        Assert.Contains("192.168.1.1 myrouter.local", text);
+    }
+
+    [Fact]
+    public void Apply_AfterTruncatedBegin_RewritesSingleBlock()
+    {
+        File.WriteAllText(_hostsFile,
+            "127.0.0.1 localhost\n" +
+            HostsBlocker.BeginMarker + "\n" +
+            "127.0.0.1 old.com\n");
+
+        HostsBlocker.Apply(new[] { "new.com" });
+
+        var text = File.ReadAllText(_hostsFile);
+        Assert.Equal(1, text.Split(HostsBlocker.BeginMarker).Length - 1);
+        Assert.Contains("new.com", text);
+        Assert.DoesNotContain("old.com", text);
+        Assert.Contains("127.0.0.1 localhost", text);
+    }
+
+    [Fact]
+    public void TryRemove_MissingFile_DoesNotThrow()
+    {
+        File.Delete(_hostsFile);
+        Assert.True(HostsBlocker.TryRemove());
+    }
 }
